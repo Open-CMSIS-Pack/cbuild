@@ -19,10 +19,11 @@ SOURCES := $(wildcard cmd/cbuild/*.go) $(wildcard pkg/*/*.go)
 all:
 	@echo Pick one of:
 	@echo $$ make $(PROG)
-	@echo $$ make run
+	@echo $$ make test-all
+	@echo $$ make release
 	@echo $$ make clean
 	@echo $$ make config
-	@echo $$ make release
+	@echo $$ make coverage-report
 	@echo
 	@echo Build for different OS's and ARCH's by defining these variables. Ex:
 	@echo $$ make OS=windows ARCH=amd64 build/$(BIN_NAME).exe
@@ -62,7 +63,7 @@ format-check:
 
 .PHONY: test release config
 test: $(SOURCES)
-	mkdir -p build && cd cmd/cbuild && go test $(ARGS) ./... -coverprofile ../../build/cover.out
+	mkdir -p build && go test $(ARGS) ./... -coverprofile build/cover.out
 
 test-all: format-check coverage-check lint
 
@@ -70,8 +71,8 @@ coverage-report: test
 	go tool cover -html=build/cover.out
 
 coverage-check: test
-	@echo Checking if test coverage is above 30%
-	test `go tool cover -func build/cover.out | tail -1 | awk '{print ($$3 + 0)*10}'` -gt 300
+	@echo Checking if test coverage is above 80%
+	test `go tool cover -func build/cover.out | tail -1 | awk '{print ($$3 + 0)*10}'` -gt 800
 
 release: test-all $(PROG)
 	@./scripts/release

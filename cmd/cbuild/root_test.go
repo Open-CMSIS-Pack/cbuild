@@ -7,25 +7,63 @@
 package main
 
 import (
+	"os"
 	"testing"
 
-	"github.com/spf13/cobra"
+	cp "github.com/otiai10/copy"
 	"github.com/stretchr/testify/assert"
 )
 
-func executeAndCheck(t *testing.T, cmd *cobra.Command, arguments []string) {
-	cmd.SetArgs(arguments)
-	err := cmd.Execute()
-	assert.NoError(t, err)
+const testRoot = "../../test"
+
+type RunnerMock struct{}
+
+func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) error {
+	return nil
+}
+
+func init() {
+	// Prepare test data
+	_ = os.RemoveAll(testRoot + "/run")
+	_ = cp.Copy(testRoot+"/data", testRoot+"/run")
 }
 
 func TestCommands(t *testing.T) {
-	cmd := NewRootCmd()
+	assert := assert.New(t)
+	cprjFile := testRoot + "/run/minimal.cprj"
 
-	executeAndCheck(t, cmd, []string{"-v"})
+	t.Run("test version", func(t *testing.T) {
+		cmd := NewRootCmd()
+		cmd.SetArgs([]string{"--version"})
+		err := cmd.Execute()
+		assert.Nil(err)
+	})
 
-	// TODO: Implement tests
-	//	executeAndCheck(t, cmd, []string{"../testdata/minimal.cprj",
-	//	                                 "../../test/run/IntDir/",
-	//									 "../../test/run/OutDir/"})
+	t.Run("test help", func(t *testing.T) {
+		cmd := NewRootCmd()
+		cmd.SetArgs([]string{"--help"})
+		err := cmd.Execute()
+		assert.Nil(err)
+	})
+
+	t.Run("invalid flag", func(t *testing.T) {
+		cmd := NewRootCmd()
+		cmd.SetArgs([]string{"--invalid"})
+		err := cmd.Execute()
+		assert.Error(err)
+	})
+
+	t.Run("multiple arguments", func(t *testing.T) {
+		cmd := NewRootCmd()
+		cmd.SetArgs([]string{cprjFile, cprjFile})
+		err := cmd.Execute()
+		assert.Error(err)
+	})
+
+	t.Run("test build", func(t *testing.T) {
+		cmd := NewRootCmd()
+		cmd.SetArgs([]string{cprjFile})
+		err := cmd.Execute()
+		assert.Error(err)
+	})
 }

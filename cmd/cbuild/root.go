@@ -7,10 +7,12 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 
 	builder "cbuild/pkg/builder"
+	"cbuild/pkg/utils"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -63,19 +65,16 @@ func NewRootCmd() *cobra.Command {
 				return nil
 			}
 
-			helpFlag, _ := cmd.Flags().GetBool("help")
-			if helpFlag {
-				_ = cmd.Help()
-				return nil
-			}
-
 			var cprjFile string
-			if len(args) > 0 {
+			if len(args) == 1 {
 				cprjFile = args[0]
 			} else {
 				_ = cmd.Help()
-				return nil
+				err := errors.New("invalid arguments")
+				return err
 			}
+
+			log.Info("cbuild: Build Invocation " + version + " (C) 2022 ARM")
 
 			intDir, _ := cmd.Flags().GetString("intdir")
 			outDir, _ := cmd.Flags().GetString("outdir")
@@ -87,21 +86,26 @@ func NewRootCmd() *cobra.Command {
 			quiet, _ := cmd.Flags().GetBool("quiet")
 			debug, _ := cmd.Flags().GetBool("debug")
 			clean, _ := cmd.Flags().GetBool("clean")
+			schema, _ := cmd.Flags().GetBool("schema")
 
-			cmdOptions := builder.CmdOptions{
-				IntDir:    intDir,
-				OutDir:    outDir,
-				LockFile:  lockFile,
-				LogFile:   logFile,
-				Generator: generator,
-				Target:    target,
-				Jobs:      jobs,
-				Quiet:     quiet,
-				Debug:     debug,
-				Clean:     clean,
+			b := builder.Builder{
+				Runner:   utils.Runner{},
+				CprjFile: cprjFile,
+				Options: builder.Options{
+					IntDir:    intDir,
+					OutDir:    outDir,
+					LockFile:  lockFile,
+					LogFile:   logFile,
+					Generator: generator,
+					Target:    target,
+					Jobs:      jobs,
+					Quiet:     quiet,
+					Debug:     debug,
+					Clean:     clean,
+					Schema:    schema,
+				},
 			}
-
-			err := builder.Build(cprjFile, cmdOptions)
+			err := b.Build()
 			return err
 		},
 	}
@@ -113,6 +117,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.Flags().BoolP("quiet", "q", false, "Suppress output messages except build invocations")
 	rootCmd.Flags().BoolP("debug", "d", false, "Enable debug messages")
 	rootCmd.Flags().BoolP("clean", "c", false, "Remove intermediate and output directories")
+	rootCmd.Flags().BoolP("schema", "s", false, "Check *.cprj file against CPRJ.xsd schema")
 	rootCmd.Flags().StringP("intdir", "i", "", "Set intermediate directory")
 	rootCmd.Flags().StringP("outdir", "o", "", "Set output directory")
 	rootCmd.Flags().StringP("update", "u", "", "Generate cprj file for reproducing current build")

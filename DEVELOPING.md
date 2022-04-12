@@ -7,7 +7,7 @@ Follow steps below to start developing for `cbuild`:
 	- [Install GolangCI-Lint](https://golangci-lint.run/usage/install/#local-installation)
 
 2. Clone the repo:
-`$ git clone TBD`
+`$ git clone https://github.com/Open-CMSIS-Pack/cbuild.git`
 
 3. Enter the checked source
 `cd cbuild`

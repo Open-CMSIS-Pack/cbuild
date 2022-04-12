@@ -4,12 +4,12 @@ Contributions are accepted under Apache 2.0. Only submit contributions where you
 
 ### Proposals, Reviews and Project
 
-Please feel free to raise an [issue on GitHub](TBD)
+Please feel free to raise an [issue on GitHub](https://github.com/Open-CMSIS-Pack/cbuild)
 to start the discussion about your proposal.
 
 ### Issues, Labels
 
-Please feel free to raise an [issue on GitHub](TBD)
+Please feel free to raise an [issue on GitHub](https://github.com/Open-CMSIS-Pack/cbuild)
 to report misbehavior (i.e. bugs)
 
 Issues are your best way to interact directly with the maintenance team and the community.

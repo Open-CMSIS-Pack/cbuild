@@ -24,7 +24,8 @@ Flags:
   -l, --log string         Save output messages in a log file
   -o, --outdir string      Set output directory
   -q, --quiet              Suppress output messages except build invocations
+  -s, --schema             Check *.cprj file against CPRJ.xsd schema
   -t, --target string      Optional CMake target name
-  -u, --update string      Generate <CprjFile> for reproducing current build
+  -u, --update string      Generate cprj file for reproducing current build
   -v, --version            Print version
 ```

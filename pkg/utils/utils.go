@@ -4,11 +4,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package builder
+package utils
 
 import (
 	"os"
-	"os/exec"
 	"path/filepath"
 
 	log "github.com/sirupsen/logrus"
@@ -33,38 +32,29 @@ func GetExecutablePath() (string, error) {
 	return executablePath, nil
 }
 
-func ExecuteCommand(program string, quiet bool, args ...string) error {
-	cmd := exec.Command(program, args...)
-	if !quiet {
-		cmd.Stdout = log.StandardLogger().Out
-		cmd.Stderr = log.StandardLogger().Out
-	}
-	err := cmd.Run()
-	return err
-}
-
-func UpdateEnvVars(binPath string, etcPath string) (env EnvVars, err error) {
+func UpdateEnvVars(binPath string, etcPath string) (env EnvVars) {
 	env.PackRoot = os.Getenv("CMSIS_PACK_ROOT")
 	if env.PackRoot == "" {
-		env.PackRoot = GetDefaultCmsisPackRoot()
-		if env.PackRoot != "" {
+		packRoot := GetDefaultCmsisPackRoot()
+		if packRoot != "" {
+			env.PackRoot, _ = filepath.Abs(packRoot)
 			os.Setenv("CMSIS_PACK_ROOT", env.PackRoot)
 		}
 	}
 	env.CompilerRoot = os.Getenv("CMSIS_COMPILER_ROOT")
 	if env.CompilerRoot == "" {
-		env.CompilerRoot = etcPath
+		env.CompilerRoot, _ = filepath.Abs(etcPath)
 		os.Setenv("CMSIS_COMPILER_ROOT", env.CompilerRoot)
 	}
 	env.BuildRoot = os.Getenv("CMSIS_BUILD_ROOT")
 	if env.BuildRoot == "" {
-		env.BuildRoot = binPath
+		env.BuildRoot, _ = filepath.Abs(binPath)
 		os.Setenv("CMSIS_BUILD_ROOT", env.BuildRoot)
 	}
 	log.Debug("CMSIS_PACK_ROOT: " + env.PackRoot)
 	log.Debug("CMSIS_COMPILER_ROOT: " + env.CompilerRoot)
 	log.Debug("CMSIS_BUILD_ROOT: " + env.BuildRoot)
-	return env, err
+	return env
 }
 
 func GetDefaultCmsisPackRoot() (root string) {
