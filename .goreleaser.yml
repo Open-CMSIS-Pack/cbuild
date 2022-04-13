@@ -11,7 +11,7 @@ builds:
 
 archives:
   - files:
-      - LICENSE.txt
+      - LICENSE
       - README.md
       - CHANGELOG.md
 
@@ -26,5 +26,3 @@ archives:
     # You can also set it to a custom folder name (templating is supported).
     # Default is false.
     wrap_in_directory: true
-
-
