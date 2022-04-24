@@ -191,10 +191,9 @@ func (b Builder) getInternalVars() (vars InternalVars, err error) {
 		return vars, err
 	}
 
-	vars.cpackgetBin = filepath.Join(vars.binPath, "cpackget"+binExtension)
-	if _, err := os.Stat(vars.cpackgetBin); os.IsNotExist(err) {
-		log.Error("cpackget was not found")
-		return vars, err
+	cpackgetBin := filepath.Join(vars.binPath, "cpackget"+binExtension)
+	if _, err := os.Stat(cpackgetBin); !os.IsNotExist(err) {
+		vars.cpackgetBin = cpackgetBin
 	}
 
 	vars.xmllintBin, _ = exec.LookPath("xmllint")
