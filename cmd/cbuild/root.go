@@ -16,7 +16,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var version string
@@ -51,7 +50,6 @@ Use "{{.CommandPath}} [command] --help" for more information about a command.{{e
 `
 
 func NewRootCmd() *cobra.Command {
-	cobra.OnInitialize(initCobra)
 
 	rootCmd := &cobra.Command{
 		Use:           "cbuild <project.cprj> [flags]",
@@ -137,8 +135,4 @@ func FlagErrorFunc(cmd *cobra.Command, err error) error {
 		_ = cmd.Help()
 	}
 	return err
-}
-
-func initCobra() {
-	viper.AutomaticEnv()
 }
