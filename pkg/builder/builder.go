@@ -43,6 +43,8 @@ type Options struct {
 	Debug     bool
 	Clean     bool
 	Schema    bool
+	Packs     bool
+	Rebuild   bool
 }
 
 type BuildDirs struct {
@@ -74,9 +76,10 @@ func (b Builder) configLog() {
 		logFile, err := os.Create(b.Options.LogFile)
 		if err != nil {
 			log.Warn("error creating log file")
+		} else {
+			multiWriter := io.MultiWriter(os.Stdout, logFile)
+			log.SetOutput(multiWriter)
 		}
-		multiWriter := io.MultiWriter(os.Stdout, logFile)
-		log.SetOutput(multiWriter)
 	}
 }
 
@@ -149,7 +152,7 @@ func (b Builder) clean(dirs BuildDirs, vars InternalVars) (err error) {
 			return err
 		}
 	}
-	log.Info("finished successfully!")
+	log.Info("clean finished successfully!")
 	return nil
 }
 
@@ -241,7 +244,12 @@ func (b Builder) Build() error {
 
 	_ = utils.UpdateEnvVars(vars.binPath, vars.etcPath)
 
-	if b.Options.Clean {
+	if b.Options.Rebuild {
+		err = b.clean(dirs, vars)
+		if err != nil {
+			return err
+		}
+	} else if b.Options.Clean {
 		return b.clean(dirs, vars)
 	}
 
@@ -274,21 +282,26 @@ func (b Builder) Build() error {
 	}
 
 	if _, err := os.Stat(vars.packlistFile); !os.IsNotExist(err) {
-		if vars.cpackgetBin == "" {
-			log.Error("cpackget was not found, missing packs cannot be downloaded")
-			return err
-		}
-		args = []string{"pack", "add", "--agree-embedded-license", "--packs-list-filename", vars.packlistFile}
-		if b.Options.Debug {
-			args = append(args, "--verbose")
-		} else if b.Options.Quiet {
-			args = append(args, "--quiet")
-		}
-
-		err = b.Runner.ExecuteCommand(vars.cpackgetBin, b.Options.Quiet, args...)
-		if err != nil {
-			log.Error("error executing 'cpackget pack add'")
-			return err
+		if b.Options.Packs {
+			if vars.cpackgetBin == "" {
+				err := errors.New("cpackget was not found, missing packs cannot be downloaded")
+				log.Error(err)
+				return err
+			}
+			args = []string{"pack", "add", "--agree-embedded-license", "--packs-list-filename", vars.packlistFile}
+			if b.Options.Debug {
+				args = append(args, "--verbose")
+			} else if b.Options.Quiet {
+				args = append(args, "--quiet")
+			}
+			err = b.Runner.ExecuteCommand(vars.cpackgetBin, b.Options.Quiet, args...)
+			if err != nil {
+				log.Error("error executing 'cpackget pack add'")
+				return err
+			}
+		} else {
+			log.Info("missing packs must be installed, rerun cbuild with the --packs option")
+			return nil
 		}
 	}
 
