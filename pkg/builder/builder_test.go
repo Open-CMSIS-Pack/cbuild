@@ -291,6 +291,18 @@ func TestBuild(t *testing.T) {
 		assert.Nil(err)
 	})
 
+	t.Run("test build cprj with packs", func(t *testing.T) {
+		b.Options.Packs = true
+		err := b.Build()
+		assert.Nil(err)
+	})
+
+	t.Run("test rebuild cprj", func(t *testing.T) {
+		b.Options.Rebuild = true
+		err := b.Build()
+		assert.Nil(err)
+	})
+
 	t.Run("test build lock file", func(t *testing.T) {
 		b.Options.LockFile = testRoot + "/run/lockfile.cprj"
 		err := b.Build()

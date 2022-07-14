@@ -72,7 +72,7 @@ func NewRootCmd() *cobra.Command {
 				return err
 			}
 
-			log.Info("cbuild: Build Invocation " + version + " (C) 2022 ARM")
+			log.Info("Build Invocation " + version + " (C) 2022 ARM")
 
 			intDir, _ := cmd.Flags().GetString("intdir")
 			outDir, _ := cmd.Flags().GetString("outdir")
@@ -85,6 +85,8 @@ func NewRootCmd() *cobra.Command {
 			debug, _ := cmd.Flags().GetBool("debug")
 			clean, _ := cmd.Flags().GetBool("clean")
 			schema, _ := cmd.Flags().GetBool("schema")
+			packs, _ := cmd.Flags().GetBool("packs")
+			rebuild, _ := cmd.Flags().GetBool("rebuild")
 
 			b := builder.Builder{
 				Runner:   utils.Runner{},
@@ -101,6 +103,8 @@ func NewRootCmd() *cobra.Command {
 					Debug:     debug,
 					Clean:     clean,
 					Schema:    schema,
+					Packs:     packs,
+					Rebuild:   rebuild,
 				},
 			}
 			err := b.Build()
@@ -116,9 +120,11 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.Flags().BoolP("debug", "d", false, "Enable debug messages")
 	rootCmd.Flags().BoolP("clean", "c", false, "Remove intermediate and output directories")
 	rootCmd.Flags().BoolP("schema", "s", false, "Check *.cprj file against CPRJ.xsd schema")
-	rootCmd.Flags().StringP("intdir", "i", "", "Set intermediate directory")
-	rootCmd.Flags().StringP("outdir", "o", "", "Set output directory")
-	rootCmd.Flags().StringP("update", "u", "", "Generate cprj file for reproducing current build")
+	rootCmd.Flags().BoolP("packs", "p", false, "Download missing software packs with cpackget")
+	rootCmd.Flags().BoolP("rebuild", "r", false, "Remove intermediate and output directories and rebuild")
+	rootCmd.Flags().StringP("intdir", "i", "", "Set directory for intermediate files")
+	rootCmd.Flags().StringP("outdir", "o", "", "Set directory for output files")
+	rootCmd.Flags().StringP("update", "u", "", "Generate *.cprj file for reproducing current build")
 	rootCmd.Flags().StringP("log", "l", "", "Save output messages in a log file")
 	rootCmd.Flags().StringP("generator", "g", "Ninja", "Select build system generator")
 	rootCmd.Flags().IntP("jobs", "j", 0, "Number of job slots for parallel execution")
