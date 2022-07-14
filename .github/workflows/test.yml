@@ -39,7 +39,7 @@ jobs:
   test:
     strategy:
       matrix:
-        platform: [ubuntu-latest, windows-latest]
+        platform: [ubuntu-latest, windows-latest, macos-latest]
         go: [1.18.x]
     name: '${{ matrix.platform }} | ${{ matrix.go }}'
     runs-on: ${{ matrix.platform }}
