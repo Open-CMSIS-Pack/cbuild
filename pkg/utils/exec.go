@@ -20,9 +20,7 @@ type Runner struct{}
 
 func (r Runner) ExecuteCommand(program string, quiet bool, args ...string) error {
 	cmd := exec.Command(program, args...)
-	if !quiet {
-		cmd.Stdout = log.StandardLogger().Out
-		cmd.Stderr = log.StandardLogger().Out
-	}
+	cmd.Stdout = log.StandardLogger().Out
+	cmd.Stderr = log.StandardLogger().Out
 	return cmd.Run()
 }
