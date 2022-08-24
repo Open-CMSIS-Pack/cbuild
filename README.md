@@ -19,13 +19,15 @@ Flags:
   -d, --debug              Enable debug messages
   -g, --generator string   Select build system generator (default "Ninja")
   -h, --help               Print usage
-  -i, --intdir string      Set intermediate directory
+  -i, --intdir string      Set directory for intermediate files
   -j, --jobs int           Number of job slots for parallel execution
   -l, --log string         Save output messages in a log file
-  -o, --outdir string      Set output directory
+  -o, --outdir string      Set directory for output files
+  -p, --packs              Download missing software packs with cpackget
   -q, --quiet              Suppress output messages except build invocations
+  -r, --rebuild            Remove intermediate and output directories and rebuild
   -s, --schema             Check *.cprj file against CPRJ.xsd schema
   -t, --target string      Optional CMake target name
-  -u, --update string      Generate cprj file for reproducing current build
+  -u, --update string      Generate *.cprj file for reproducing current build
   -v, --version            Print version
 ```
