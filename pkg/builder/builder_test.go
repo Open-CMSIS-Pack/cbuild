@@ -13,6 +13,7 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+	"time"
 
 	cp "github.com/otiai10/copy"
 	log "github.com/sirupsen/logrus"
@@ -43,6 +44,7 @@ func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) e
 func init() {
 	// Prepare test data
 	_ = os.RemoveAll(testRoot + "/run")
+	time.Sleep(time.Second)
 	_ = cp.Copy(testRoot+"/data", testRoot+"/run")
 
 	_ = os.MkdirAll(testRoot+"/run/bin", 0755)
@@ -263,6 +265,7 @@ func TestBuild(t *testing.T) {
 		Options: Options{
 			IntDir: testRoot + "/run/IntDir",
 			OutDir: testRoot + "/run/OutDir",
+			Packs:  true,
 		},
 	}
 	os.Setenv("CMSIS_BUILD_ROOT", testRoot+"/run/bin")
@@ -287,12 +290,6 @@ func TestBuild(t *testing.T) {
 
 	t.Run("test build cprj debug", func(t *testing.T) {
 		b.Options.Debug = true
-		err := b.Build()
-		assert.Nil(err)
-	})
-
-	t.Run("test build cprj with packs", func(t *testing.T) {
-		b.Options.Packs = true
 		err := b.Build()
 		assert.Nil(err)
 	})
@@ -339,5 +336,24 @@ func TestBuild(t *testing.T) {
 		b.Options.Clean = true
 		err := b.Build()
 		assert.Nil(err)
+	})
+}
+
+func TestBuildFail(t *testing.T) {
+	assert := assert.New(t)
+	b := Builder{
+		Runner:   RunnerMock{},
+		CprjFile: testRoot + "/run/minimal.cprj",
+		Options: Options{
+			IntDir: testRoot + "/run/IntDir",
+			OutDir: testRoot + "/run/OutDir",
+		},
+	}
+	os.Setenv("CMSIS_BUILD_ROOT", testRoot+"/run/bin")
+
+	t.Run("test build cprj without packs", func(t *testing.T) {
+		b.Options.Packs = false
+		err := b.Build()
+		assert.Error(err)
 	})
 }

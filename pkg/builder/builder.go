@@ -300,8 +300,9 @@ func (b Builder) Build() error {
 				return err
 			}
 		} else {
-			log.Info("missing packs must be installed, rerun cbuild with the --packs option")
-			return nil
+			err := errors.New("missing packs must be installed, rerun cbuild with the --packs option")
+			log.Error(err)
+			return err
 		}
 	}
 

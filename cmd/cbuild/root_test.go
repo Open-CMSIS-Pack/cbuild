@@ -9,6 +9,7 @@ package main
 import (
 	"os"
 	"testing"
+	"time"
 
 	cp "github.com/otiai10/copy"
 	"github.com/stretchr/testify/assert"
@@ -25,6 +26,7 @@ func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) e
 func init() {
 	// Prepare test data
 	_ = os.RemoveAll(testRoot + "/run")
+	time.Sleep(time.Second)
 	_ = cp.Copy(testRoot+"/data", testRoot+"/run")
 }
 
