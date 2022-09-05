@@ -18,9 +18,17 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: ${{ matrix.go }}
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: go
+          queries: security-and-quality
       - name: Build
         run: |
           make build/cbuild
           make OS=windows ARCH=amd64 build/cbuild.exe
           make clean
           make OS=darwin  ARCH=amd64 build/cbuild
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+
