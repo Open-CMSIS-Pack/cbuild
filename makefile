@@ -2,7 +2,7 @@
 OS ?= $(shell uname)
 
 # Having this will allow CI scripts to build for many OS's and ARCH's
-ARCH := $(or $(ARCH),$(ARCH),amd64)
+ARCH := $(or $(ARCH),amd64)
 
 # Path to lint tool
 GOLINTER ?= golangci-lint
