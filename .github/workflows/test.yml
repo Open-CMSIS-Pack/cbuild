@@ -3,7 +3,6 @@ name: Test
 on: [push, pull_request]
 
 jobs:
-
   lint:
     name: Lint
     timeout-minutes: 10
@@ -53,3 +52,15 @@ jobs:
       - name: Unit testing
         run: |
           make coverage-check
+      - name: Install qemu (for Linux-Arm64)
+        if: ${{ startsWith(runner.os, 'Linux') }}
+        run: |
+          sudo apt update
+          sudo apt-get install -y \
+            gcc-aarch64-linux-gnu \
+            g++-aarch64-linux-gnu \
+            qemu-user-binfmt
+      - name: Unit testing (for Linux-Arm64)
+        if: ${{ startsWith(runner.os, 'Linux') }}
+        run: |
+          make ARCH=arm64 coverage-check
