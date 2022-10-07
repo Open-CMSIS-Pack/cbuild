@@ -2,7 +2,7 @@
 OS ?= $(shell uname)
 
 # Having this will allow CI scripts to build for many OS's and ARCH's
-ARCH := $(or $(ARCH),$(ARCH),amd64)
+ARCH := $(or $(ARCH),amd64)
 
 # Path to lint tool
 GOLINTER ?= golangci-lint
@@ -70,7 +70,7 @@ format-check:
 
 .PHONY: test release config
 test: $(SOURCES)
-	mkdir -p build && go test $(ARGS) ./... -coverprofile build/cover.out
+	mkdir -p build && GOOS=$(OS) GOARCH=$(ARCH) go test $(ARGS) ./... -coverprofile build/cover.out
 
 test-all: format-check coverage-check lint
 

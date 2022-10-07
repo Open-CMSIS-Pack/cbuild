@@ -26,9 +26,12 @@ jobs:
       - name: Build
         run: |
           make build/cbuild
+          make clean
           make OS=windows ARCH=amd64 build/cbuild.exe
           make clean
           make OS=darwin  ARCH=amd64 build/cbuild
+          make clean
+          make OS=linux   ARCH=arm64 build/cbuild
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2
 
