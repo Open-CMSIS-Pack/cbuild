@@ -53,3 +53,7 @@ jobs:
       - name: Unit testing
         run: |
           make coverage-check
+      - name: Unit testing (for Linux-Arm64)
+        if: ${{ matrix.platform == 'ubuntu-latest' }}
+        run: |
+          GOARCH=arm64 make coverage-check
