@@ -19,6 +19,7 @@ import (
 )
 
 var version string
+
 const versionNotice = " (C) 2022 Arm Ltd. and Contributors"
 
 func printVersion(file io.Writer) {
