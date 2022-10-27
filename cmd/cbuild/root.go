@@ -18,26 +18,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var version string = getVersion()
+var version string
+const versionNotice = " (C) 2022 Arm Ltd. and Contributors"
 
 func printVersion(file io.Writer) {
-	fmt.Fprintf(file, "cbuild %v\n", version)
-}
-
-func getVersion()string{
-	var cbuildVersion string
-	semanticVersion := "1.1.0"
-	firstPublished := "2020"
-	latestUpdate := "2022"
-	copyrightSymbol := "(C)"
-	copyRightText := " Arm Ltd. and Contributors"
-
-	if firstPublished == latestUpdate{
-		cbuildVersion = semanticVersion + " " + copyrightSymbol + " " + latestUpdate + " " + copyRightText
-	}else{
-		cbuildVersion = semanticVersion + " " + copyrightSymbol + " " + firstPublished + "-" + latestUpdate + " " + copyRightText
-	}
-	return cbuildVersion
+	fmt.Fprintf(file, "cbuild %v %v\n", version, versionNotice)
 }
 
 // UsageTemplate returns usage template for the command.
@@ -69,7 +54,7 @@ func NewRootCmd() *cobra.Command {
 
 	rootCmd := &cobra.Command{
 		Use:           "cbuild <project.cprj> [flags]",
-		Short:         "cbuild: Build Invocation " + version,
+		Short:         "cbuild: Build Invocation " + version + versionNotice,
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -88,7 +73,7 @@ func NewRootCmd() *cobra.Command {
 				return err
 			}
 
-			log.Info("Build Invocation " + version)
+			log.Info("Build Invocation " + version + versionNotice)
 
 			intDir, _ := cmd.Flags().GetString("intdir")
 			outDir, _ := cmd.Flags().GetString("outdir")
