@@ -9,6 +9,7 @@ package utils
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -58,18 +59,28 @@ func UpdateEnvVars(binPath string, etcPath string) (env EnvVars) {
 }
 
 func GetDefaultCmsisPackRoot() (root string) {
-	root = os.Getenv("LOCALAPPDATA")
-	if root == "" {
-		root = os.Getenv("XDG_CACHE_HOME")
-	}
-	if root == "" {
-		root = os.Getenv("HOME")
+	if runtime.GOOS == "windows" {
+		root = os.Getenv("LOCALAPPDATA")
+		if root == "" {
+			root = os.Getenv("USERPROFILE")
+			if root != "" {
+				root = root + "\\AppData\\Local"
+			}
+		}
 		if root != "" {
-			root = filepath.Clean(root + "/.cache")
+			root = root + "\\Arm\\Packs"
+		}
+	} else {
+		root = os.Getenv("XDG_CACHE_HOME")
+		if root == "" {
+			root = os.Getenv("HOME")
+			if root != "" {
+				root = root + "/.cache"
+			}
+		}
+		if root != "" {
+			root = root + "/arm/packs"
 		}
 	}
-	if root != "" {
-		root = filepath.Clean(root + "/Arm/Packs")
-	}
-	return root
+	return filepath.Clean(root)
 }
