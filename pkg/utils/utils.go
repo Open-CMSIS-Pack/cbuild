@@ -64,6 +64,9 @@ func GetDefaultCmsisPackRoot() (root string) {
 	}
 	if root == "" {
 		root = os.Getenv("HOME")
+		if root != "" {
+			root = filepath.Clean(root + "/.cache")
+		}
 	}
 	if root != "" {
 		root = filepath.Clean(root + "/Arm/Packs")
