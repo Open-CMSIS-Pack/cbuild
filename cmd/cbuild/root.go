@@ -23,7 +23,7 @@ var version string
 const versionNotice = " (C) 2022 Arm Ltd. and Contributors"
 
 func printVersion(file io.Writer) {
-	fmt.Fprintf(file, "cbuild %v %v\n", version, versionNotice)
+	fmt.Fprintf(file, "cbuild %v%v\n", version, versionNotice)
 }
 
 // UsageTemplate returns usage template for the command.
