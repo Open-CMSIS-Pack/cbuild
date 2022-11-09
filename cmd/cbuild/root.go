@@ -85,6 +85,7 @@ func NewRootCmd() *cobra.Command {
 			jobs, _ := cmd.Flags().GetInt("jobs")
 			quiet, _ := cmd.Flags().GetBool("quiet")
 			debug, _ := cmd.Flags().GetBool("debug")
+			verbose, _ := cmd.Flags().GetBool("verbose")
 			clean, _ := cmd.Flags().GetBool("clean")
 			schema, _ := cmd.Flags().GetBool("schema")
 			packs, _ := cmd.Flags().GetBool("packs")
@@ -103,6 +104,7 @@ func NewRootCmd() *cobra.Command {
 					Jobs:      jobs,
 					Quiet:     quiet,
 					Debug:     debug,
+					Verbose:   verbose,
 					Clean:     clean,
 					Schema:    schema,
 					Packs:     packs,
@@ -120,6 +122,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.Flags().BoolP("help", "h", false, "Print usage")
 	rootCmd.Flags().BoolP("quiet", "q", false, "Suppress output messages except build invocations")
 	rootCmd.Flags().BoolP("debug", "d", false, "Enable debug messages")
+	rootCmd.Flags().BoolP("verbose", "v", false, "Enable verbose messages from toolchain builds")
 	rootCmd.Flags().BoolP("clean", "c", false, "Remove intermediate and output directories")
 	rootCmd.Flags().BoolP("schema", "s", false, "Check *.cprj file against CPRJ.xsd schema")
 	rootCmd.Flags().BoolP("packs", "p", false, "Download missing software packs with cpackget")

@@ -41,6 +41,7 @@ type Options struct {
 	Jobs      int
 	Quiet     bool
 	Debug     bool
+	Verbose   bool
 	Clean     bool
 	Schema    bool
 	Packs     bool
@@ -348,6 +349,9 @@ func (b Builder) Build() error {
 	args = []string{"--build", dirs.intDir, "-j", fmt.Sprintf("%d", b.getJobs())}
 	if b.Options.Target != "" {
 		args = append(args, "--target", b.Options.Target)
+	}
+	if b.Options.Debug || b.Options.Verbose {
+		args = append(args, "--verbose")
 	}
 	err = b.Runner.ExecuteCommand(vars.cmakeBin, false, args...)
 	if err != nil {

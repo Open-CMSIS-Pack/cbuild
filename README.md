@@ -9,7 +9,7 @@ This utility allows embedded developers to orchestrate the build of CPRJ project
 ## Usage
 
 ```bash
-cbuild: Build Invocation 0.11.0-dev0 (C) 2022 ARM
+cbuild: Build Invocation 1.3.0 (C) 2022 ARM
 
 Usage:
   cbuild <project.cprj> [flags]
@@ -29,5 +29,6 @@ Flags:
   -s, --schema             Check *.cprj file against CPRJ.xsd schema
   -t, --target string      Optional CMake target name
   -u, --update string      Generate *.cprj file for reproducing current build
-  -v, --version            Print version
+  -v, --verbose            Enable verbose messages from toolchain builds
+  -V, --version            Print version
 ```
