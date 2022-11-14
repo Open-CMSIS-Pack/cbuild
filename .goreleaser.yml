@@ -9,6 +9,11 @@ builds:
       - amd64
       - arm64
     main: ./cmd/cbuild
+    ignore:
+      - goos: darwin
+        goarch: arm64
+      - goos: windows
+        goarch: arm64
 
 archives:
   - files:
