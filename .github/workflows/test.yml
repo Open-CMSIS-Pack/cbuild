@@ -58,8 +58,6 @@ jobs:
       - name: Run vulnerability check
         run: |
           echo "$(govulncheck ./... 2>&1 | tee vulnerability_report.out)"          
-      - name: Detect vulnerability
-        run: |
           test -n "$(grep 'No vulnerabilities found.' vulnerability_report.out)"
 
   test:
