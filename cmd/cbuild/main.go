@@ -26,7 +26,6 @@ func main() {
 
 type LogFormatter struct{}
 
-
 func (s *LogFormatter) Format(entry *log.Entry) ([]byte, error) {
 	msg := fmt.Sprintf("%s cbuild: %s\n", entry.Level.String(), entry.Message)
 	return []byte(msg), nil
