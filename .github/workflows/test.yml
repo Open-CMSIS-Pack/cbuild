@@ -55,9 +55,10 @@ jobs:
           go-version: ${{ matrix.go }}
       - name: Install govulncheck
         run: go install golang.org/x/vuln/cmd/govulncheck@latest
-      - name: Detect vulnerability
+      - name: Run vulnerability check
         run: |
-          test -n "$(govulncheck ./... | grep 'No vulnerabilities found.')"
+          echo "$(govulncheck ./... 2>&1 | tee vulnerability_report.out)"          
+          test -n "$(grep 'No vulnerabilities found.' vulnerability_report.out)"
 
   test:
     strategy:
