@@ -325,6 +325,12 @@ func TestBuild(t *testing.T) {
 		assert.Nil(err)
 	})
 
+	t.Run("test build update rte", func(t *testing.T) {
+		b.Options.UpdateRte = true
+		err := b.Build()
+		assert.Nil(err)
+	})
+
 	t.Run("test build clean target", func(t *testing.T) {
 		b.Options.Target = "clean"
 		err := b.Build()

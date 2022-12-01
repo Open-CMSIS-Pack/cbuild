@@ -46,6 +46,7 @@ type Options struct {
 	Schema    bool
 	Packs     bool
 	Rebuild   bool
+	UpdateRte bool
 }
 
 type BuildDirs struct {
@@ -275,6 +276,9 @@ func (b Builder) Build() error {
 	args = []string{"packlist", b.CprjFile, "--outdir=" + dirs.outDir, "--intdir=" + dirs.intDir}
 	if b.Options.Quiet {
 		args = append(args, "--quiet")
+	}
+	if b.Options.UpdateRte {
+		args = append(args, "--update-rte")
 	}
 	err = b.Runner.ExecuteCommand(vars.cbuildgenBin, b.Options.Quiet, args...)
 	if err != nil {

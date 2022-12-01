@@ -90,6 +90,7 @@ func NewRootCmd() *cobra.Command {
 			schema, _ := cmd.Flags().GetBool("schema")
 			packs, _ := cmd.Flags().GetBool("packs")
 			rebuild, _ := cmd.Flags().GetBool("rebuild")
+			updateRte, _ := cmd.Flags().GetBool("update-rte")
 
 			b := builder.Builder{
 				Runner:   utils.Runner{},
@@ -109,6 +110,7 @@ func NewRootCmd() *cobra.Command {
 					Schema:    schema,
 					Packs:     packs,
 					Rebuild:   rebuild,
+					UpdateRte: updateRte,
 				},
 			}
 			err := b.Build()
@@ -127,6 +129,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.Flags().BoolP("schema", "s", false, "Check *.cprj file against CPRJ.xsd schema")
 	rootCmd.Flags().BoolP("packs", "p", false, "Download missing software packs with cpackget")
 	rootCmd.Flags().BoolP("rebuild", "r", false, "Remove intermediate and output directories and rebuild")
+	rootCmd.Flags().BoolP("update-rte", "", false, "Update the RTE directory and files")
 	rootCmd.Flags().StringP("intdir", "i", "", "Set directory for intermediate files")
 	rootCmd.Flags().StringP("outdir", "o", "", "Set directory for output files")
 	rootCmd.Flags().StringP("update", "u", "", "Generate *.cprj file for reproducing current build")
