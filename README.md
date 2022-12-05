@@ -29,6 +29,7 @@ Flags:
   -s, --schema             Check *.cprj file against CPRJ.xsd schema
   -t, --target string      Optional CMake target name
   -u, --update string      Generate *.cprj file for reproducing current build
+      --update-rte         Update the RTE directory and files
   -v, --verbose            Enable verbose messages from toolchain builds
   -V, --version            Print version
 ```
