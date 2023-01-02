@@ -10,6 +10,8 @@ import (
 	"fmt"
 	"os"
 
+	"cbuild/cmd/cbuild/commands"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -17,7 +19,7 @@ func main() {
 	log.SetFormatter(new(LogFormatter))
 	log.SetOutput(os.Stdout)
 
-	cmd := NewRootCmd()
+	cmd := commands.NewRootCmd()
 	err := cmd.Execute()
 	if err != nil {
 		os.Exit(-1)

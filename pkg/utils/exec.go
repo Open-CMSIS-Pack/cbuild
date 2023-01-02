@@ -13,14 +13,23 @@ import (
 )
 
 type RunnerInterface interface {
-	ExecuteCommand(program string, quiet bool, args ...string) error
+	ExecuteCommand(program string, quiet bool, args ...string) (output string, err error)
 }
 
-type Runner struct{}
+type Runner struct {
+	outBytes []byte
+}
 
-func (r Runner) ExecuteCommand(program string, quiet bool, args ...string) error {
+func (r *Runner) Write(bytes []byte) (n int, err error) {
+	r.outBytes = append(r.outBytes, bytes...)
+	return log.StandardLogger().Out.Write(bytes)
+}
+
+func (r Runner) ExecuteCommand(program string, quiet bool, args ...string) (string, error) {
+	r.outBytes = nil
 	cmd := exec.Command(program, args...)
-	cmd.Stdout = log.StandardLogger().Out
+	cmd.Stdout = &r
 	cmd.Stderr = log.StandardLogger().Out
-	return cmd.Run()
+	err := cmd.Run()
+	return string(r.outBytes), err
 }

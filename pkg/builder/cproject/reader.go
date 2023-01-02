@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package builder
+package cproject
 
 import (
 	"encoding/xml"
