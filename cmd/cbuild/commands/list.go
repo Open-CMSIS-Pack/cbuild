@@ -1,6 +1,8 @@
-/* SPDX-License-Identifier: Apache-2.0 */
-/* Copyright Contributors to the cpackget project. */
-
+/*
+ * Copyright (c) 2022 Arm Limited. All rights reserved.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package commands
 
 import (

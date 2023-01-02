@@ -8,6 +8,7 @@ package utils
 
 import (
 	"os"
+	"runtime"
 	"testing"
 	"time"
 
@@ -31,7 +32,11 @@ func TestGetInstallConfigs(t *testing.T) {
 		assert.Nil(err)
 		assert.NotEmpty(configs.BinPath)
 		assert.NotEmpty(configs.ETCPath)
-		assert.NotEmpty(configs.BinExtn)
+		if runtime.GOOS == "windows" {
+			assert.NotEmpty(configs.BinExtn)
+		} else {
+			assert.Empty(configs.BinExtn)
+		}
 	})
 
 	t.Run("test get install configurations without CMSIS_BUILD_ROOT", func(t *testing.T) {

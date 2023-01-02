@@ -41,31 +41,3 @@ type Options struct {
 type IBuilderInterface interface {
 	Build() error
 }
-
-// func NewBuilder(runner utils.RunnerInterface, options Options,
-// 	inputFile string) (bldr IBuilderInterface, err error) {
-
-// 	configs, err := utils.GetInstallConfigs()
-// 	if err != nil {
-// 		return bldr, err
-// 	}
-
-// 	params := BuilderParams{
-// 		Runner:         utils.Runner{},
-// 		Options:        options,
-// 		InputFile:      inputFile,
-// 		InstallConfigs: configs,
-// 	}
-
-// 	fileExtension := filepath.Ext(inputFile)
-
-// 	if fileExtension == ".cprj" {
-// 		bldr = cproject.CPRJBuilder{BuilderParams: params}
-// 	} else if fileExtension == ".yml" {
-// 		bldr = csolution.CSolutionBuilder{BuilderParams: params}
-// 	} else {
-// 		err = errors.New("invalid file argument")
-// 	}
-
-// 	return bldr, err
-// }
