@@ -18,12 +18,6 @@ import (
 
 const testRoot = "../../../test"
 
-type RunnerMock struct{}
-
-func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) ([]byte, error) {
-	return nil, nil
-}
-
 func init() {
 	// Prepare test data
 	_ = os.RemoveAll(testRoot + "/run")
@@ -57,7 +51,7 @@ func TestCommands(t *testing.T) {
 	assert := assert.New(t)
 	os.Setenv("CMSIS_BUILD_ROOT", testRoot+"/run/bin")
 	cprjFile := testRoot + "/run/minimal.cprj"
-	csolutionFile := testRoot + "/run/TestSolution/test.csolution.yml"
+	csolutionFile := testRoot + "/run/test.csolution.yml"
 
 	t.Run("test version", func(t *testing.T) {
 		cmd := NewRootCmd()

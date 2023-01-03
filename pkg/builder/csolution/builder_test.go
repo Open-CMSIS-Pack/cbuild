@@ -27,10 +27,14 @@ type RunnerMock struct{}
 
 func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) (string, error) {
 	if strings.Contains(program, "csolution") {
-		if args[0] == "list" && args[1] == "contexts" {
-			return "test.Debug+CM0\r\ntest.Release+CM0", nil
-		} else if args[0] == "list" && args[1] == "packs" {
-			return "ARM::test:0.0.1\r\nARM::test2:0.0.2", nil
+		if args[0] == "list" {
+			if args[1] == "contexts" {
+				return "test.Debug+CM0\r\ntest.Release+CM0", nil
+			} else if args[1] == "toolchains" {
+				return "AC5@5.6.7\nAC6@6.18.0\nGCC@11.2.1\nIAR@8.50.6\n", nil
+			} else if args[1] == "packs" {
+				return "ARM::test:0.0.1\r\nARM::test2:0.0.2", nil
+			}
 		} else if args[0] == "convert" {
 			return "", nil
 		}
@@ -48,7 +52,7 @@ func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) (
 func init() {
 	// Prepare test data
 	_ = os.RemoveAll(testRoot + "/run")
-	time.Sleep(time.Second)
+	time.Sleep(2 * time.Second)
 	_ = cp.Copy(testRoot+"/data", testRoot+"/run")
 
 	_ = os.MkdirAll(testRoot+"/run/bin", 0755)
@@ -83,26 +87,35 @@ func TestListContexts(t *testing.T) {
 	b := CSolutionBuilder{
 		BuilderParams: builder.BuilderParams{
 			Runner:         RunnerMock{},
-			InputFile:      testRoot + "/run/TestSolution/test.csolution.yml",
+			InputFile:      testRoot + "/run/test.csolution.yml",
 			InstallConfigs: configs,
 		},
 	}
 
 	t.Run("test list contexts", func(t *testing.T) {
-		err := b.ListContexts()
+		contexts, err := b.listContexts(true)
 		assert.Nil(err)
+		assert.Equal(len(contexts), 2)
+		assert.Equal("test.Debug+CM0", contexts[0])
+		assert.Equal("test.Release+CM0", contexts[1])
 	})
 
 	t.Run("test list contexts with filter", func(t *testing.T) {
 		b.Options.Filter = "test"
-		err := b.ListContexts()
+		contexts, err := b.listContexts(true)
 		assert.Nil(err)
+		assert.Equal(len(contexts), 2)
+		assert.Equal("test.Debug+CM0", contexts[0])
+		assert.Equal("test.Release+CM0", contexts[1])
 	})
 
 	t.Run("test list contexts with schema check", func(t *testing.T) {
 		b.Options.Schema = true
-		err := b.ListContexts()
+		contexts, err := b.listContexts(true)
 		assert.Nil(err)
+		assert.Equal(len(contexts), 2)
+		assert.Equal("test.Debug+CM0", contexts[0])
+		assert.Equal("test.Release+CM0", contexts[1])
 	})
 }
 
@@ -114,26 +127,41 @@ func TestListToolchians(t *testing.T) {
 	b := CSolutionBuilder{
 		BuilderParams: builder.BuilderParams{
 			Runner:         RunnerMock{},
-			InputFile:      testRoot + "/run/TestSolution/test.csolution.yml",
+			InputFile:      testRoot + "/run/test.csolution.yml",
 			InstallConfigs: configs,
 		},
 	}
 
 	t.Run("test list toochains", func(t *testing.T) {
-		err := b.ListToolchains()
+		toolchains, err := b.listToolchains(true)
 		assert.Nil(err)
+		assert.Equal(len(toolchains), 4)
+		assert.Equal("AC5@5.6.7", toolchains[0])
+		assert.Equal("AC6@6.18.0", toolchains[1])
+		assert.Equal("GCC@11.2.1", toolchains[2])
+		assert.Equal("IAR@8.50.6", toolchains[3])
 	})
 
 	t.Run("test list toochains with filter", func(t *testing.T) {
 		b.Options.Filter = "test"
-		err := b.ListToolchains()
+		toolchains, err := b.listToolchains(true)
 		assert.Nil(err)
+		assert.Equal(len(toolchains), 4)
+		assert.Equal("AC5@5.6.7", toolchains[0])
+		assert.Equal("AC6@6.18.0", toolchains[1])
+		assert.Equal("GCC@11.2.1", toolchains[2])
+		assert.Equal("IAR@8.50.6", toolchains[3])
 	})
 
 	t.Run("test list toochains with schema check", func(t *testing.T) {
 		b.Options.Schema = true
-		err := b.ListToolchains()
+		toolchains, err := b.listToolchains(true)
 		assert.Nil(err)
+		assert.Equal(len(toolchains), 4)
+		assert.Equal("AC5@5.6.7", toolchains[0])
+		assert.Equal("AC6@6.18.0", toolchains[1])
+		assert.Equal("GCC@11.2.1", toolchains[2])
+		assert.Equal("IAR@8.50.6", toolchains[3])
 	})
 }
 
@@ -147,18 +175,23 @@ func TestBuild(t *testing.T) {
 	b := CSolutionBuilder{
 		BuilderParams: builder.BuilderParams{
 			Runner:    RunnerMock{},
-			InputFile: testRoot + "/run/TestSolution/test.csolution.yml",
+			InputFile: testRoot + "/run/test.csolution.yml",
 			Options: builder.Options{
-				Context: "test.Debug+CM0",
-				IntDir:  testRoot + "/run/IntDir",
-				OutDir:  testRoot + "/run/OutDir",
-				Packs:   true,
+				IntDir: testRoot + "/run/IntDir",
+				OutDir: testRoot + "/run/OutDir",
+				Packs:  true,
 			},
 			InstallConfigs: configs,
 		},
 	}
 
-	t.Run("test build cprj schema check", func(t *testing.T) {
+	t.Run("test build csolution without context", func(t *testing.T) {
+		err := b.Build()
+		assert.Error(err)
+	})
+
+	t.Run("test build csolution with context", func(t *testing.T) {
+		b.Options.Context = "test.Debug+CM0"
 		err := b.Build()
 		assert.Nil(err)
 	})

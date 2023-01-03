@@ -22,6 +22,7 @@ func main() {
 	cmd := commands.NewRootCmd()
 	err := cmd.Execute()
 	if err != nil {
+		log.Error(err)
 		os.Exit(-1)
 	}
 }

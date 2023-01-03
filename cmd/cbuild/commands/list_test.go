@@ -48,7 +48,7 @@ func init() {
 func TestListContextsCommand(t *testing.T) {
 	assert := assert.New(t)
 	os.Setenv("CMSIS_BUILD_ROOT", testRoot+"/run/bin")
-	csolutionFile := testRoot + "/run/TestSolution/test.csolution.yml"
+	csolutionFile := testRoot + "/run/test.csolution.yml"
 
 	t.Run("No arguments", func(t *testing.T) {
 		cmd := NewRootCmd()
@@ -89,7 +89,7 @@ func TestListContextsCommand(t *testing.T) {
 func TestListToolchainsCommand(t *testing.T) {
 	assert := assert.New(t)
 	os.Setenv("CMSIS_BUILD_ROOT", testRoot+"/run/bin")
-	csolutionFile := testRoot + "/run/TestSolution/test.csolution.yml"
+	csolutionFile := testRoot + "/run/test.csolution.yml"
 
 	t.Run("invalid flag", func(t *testing.T) {
 		cmd := NewRootCmd()

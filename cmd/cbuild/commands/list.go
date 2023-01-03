@@ -9,6 +9,8 @@ import (
 	"cbuild/pkg/builder"
 	"cbuild/pkg/builder/csolution"
 	"cbuild/pkg/utils"
+	"errors"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
@@ -20,6 +22,11 @@ var ListContextsCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		schameCheck, _ := cmd.Flags().GetBool("schema")
 		filter, _ := cmd.Flags().GetString("filter")
+
+		fileExtension := filepath.Ext(args[0])
+		if fileExtension != ".yml" {
+			return errors.New("invalid file argument")
+		}
 
 		configs, err := utils.GetInstallConfigs()
 		if err != nil {
@@ -46,6 +53,11 @@ var ListToolchainsCmd = &cobra.Command{
 	Short: "Print list of installed toolchains",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		fileExtension := filepath.Ext(args[0])
+		if fileExtension != ".yml" {
+			return errors.New("invalid file argument")
+		}
+
 		configs, err := utils.GetInstallConfigs()
 		if err != nil {
 			return err
