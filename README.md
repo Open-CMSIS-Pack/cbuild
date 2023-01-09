@@ -4,7 +4,13 @@
 
 # cbuild: Open-CMSIS-Pack Build Invocation Utility
 
-This utility allows embedded developers to orchestrate the build of CPRJ and CSolution projects using `cbuildgen`, `csolution`, `cpackget`, `cmake` and `ninja.`
+This utility allows embedded developers to build **CPRJ** and **csolution** projects by orchestrating the following tools:
+
+- `cbuildgen`
+- `csolution`
+- `cpackget`
+- `cmake`
+- `ninja`
 
 ## Usage
 
@@ -33,7 +39,7 @@ Flags:
   -p, --packs              Download missing software packs with cpackget
   -q, --quiet              Suppress output messages except build invocations
   -r, --rebuild            Remove intermediate and output directories and rebuild
-  -s, --schema             Check input file schema
+  -s, --schema             Validate project input file against schema
   -t, --target string      Optional CMake target name
   -u, --update string      Generate *.cprj file for reproducing current build
       --update-rte         Update the RTE directory and files

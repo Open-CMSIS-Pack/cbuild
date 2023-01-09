@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Arm Limited. All rights reserved.
+ * Copyright (c) 2023 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -16,7 +16,7 @@ import (
 
 type Configurations struct {
 	BinPath string
-	ETCPath string
+	EtcPath string
 	BinExtn string
 }
 
@@ -45,6 +45,6 @@ func GetInstallConfigs() (configs Configurations, err error) {
 	if etcPath != "" {
 		etcPath, _ = filepath.Abs(etcPath)
 	}
-	configs.ETCPath = etcPath
+	configs.EtcPath = etcPath
 	return configs, nil
 }

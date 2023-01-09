@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Arm Limited. All rights reserved.
+ * Copyright (c) 2022-2023 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -142,7 +142,7 @@ func (b CPRJBuilder) getInternalVars() (vars InternalVars, err error) {
 	vars.cprjFilename = strings.TrimSuffix(vars.cprjFilename, filepath.Ext(vars.cprjFilename))
 
 	vars.binPath = b.InstallConfigs.BinPath
-	vars.etcPath = b.InstallConfigs.ETCPath
+	vars.etcPath = b.InstallConfigs.EtcPath
 
 	vars.cbuildgenBin = filepath.Join(vars.binPath, "cbuildgen"+b.InstallConfigs.BinExtn)
 	if _, err := os.Stat(vars.cbuildgenBin); os.IsNotExist(err) {

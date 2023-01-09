@@ -127,7 +127,7 @@ func (b CSolutionBuilder) ListToolchains() error {
 }
 
 func (b CSolutionBuilder) Build() (err error) {
-	_ = utils.UpdateEnvVars(b.InstallConfigs.BinPath, b.InstallConfigs.ETCPath)
+	_ = utils.UpdateEnvVars(b.InstallConfigs.BinPath, b.InstallConfigs.EtcPath)
 
 	if b.Options.Context == "" {
 		contexts, err := b.listContexts(true)

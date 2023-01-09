@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Arm Limited. All rights reserved.
+ * Copyright (c) 2023 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -31,7 +31,7 @@ func TestGetInstallConfigs(t *testing.T) {
 		configs, err := GetInstallConfigs()
 		assert.Nil(err)
 		assert.NotEmpty(configs.BinPath)
-		assert.NotEmpty(configs.ETCPath)
+		assert.NotEmpty(configs.EtcPath)
 		if runtime.GOOS == "windows" {
 			assert.NotEmpty(configs.BinExtn)
 		} else {
