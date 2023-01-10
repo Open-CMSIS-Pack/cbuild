@@ -7,6 +7,7 @@
 package commands
 
 import (
+	"cbuild/cmd/cbuild/commands/list"
 	"cbuild/pkg/builder"
 	"cbuild/pkg/builder/cproject"
 	"cbuild/pkg/builder/csolution"
@@ -52,12 +53,6 @@ Additional help topics:{{range .Commands}}{{if .IsAdditionalHelpTopicCommand}}
 
 Use "{{.CommandPath}} [command] --help" for more information about a command.{{end}}
 `
-
-// AllCommands contains all available commands for cbuild
-var AllCommands = []*cobra.Command{
-	ListContextsCmd,
-	ListToolchainsCmd,
-}
 
 func NewRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
@@ -155,7 +150,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.Flags().BoolP("debug", "d", false, "Enable debug messages")
 	rootCmd.Flags().BoolP("verbose", "v", false, "Enable verbose messages from toolchain builds")
 	rootCmd.Flags().BoolP("clean", "c", false, "Remove intermediate and output directories")
-	rootCmd.PersistentFlags().BoolP("schema", "s", false, "Check input file schema")
+	rootCmd.PersistentFlags().BoolP("schema", "s", false, "Validate project input file(s) against schema")
 	rootCmd.Flags().BoolP("packs", "p", false, "Download missing software packs with cpackget")
 	rootCmd.Flags().BoolP("rebuild", "r", false, "Remove intermediate and output directories and rebuild")
 	rootCmd.Flags().BoolP("update-rte", "", false, "Update the RTE directory and files")
@@ -170,11 +165,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.Flags().StringP("target", "t", "", "Optional CMake target name")
 
 	rootCmd.SetFlagErrorFunc(FlagErrorFunc)
-
-	for _, cmd := range AllCommands {
-		rootCmd.AddCommand(cmd)
-	}
-
+	rootCmd.AddCommand(list.ListCmd)
 	return rootCmd
 }
 

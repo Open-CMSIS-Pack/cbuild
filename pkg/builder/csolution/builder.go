@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Arm Limited. All rights reserved.
+ * Copyright (c) 2023 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -158,10 +158,18 @@ func (b CSolutionBuilder) Build() (err error) {
 	}
 
 	args := []string{
-		"convert", "--solution=" + b.InputFile, "--context=" + b.Options.Context,
-		"--output=" + outDir, "--load=" + b.Options.Load}
+		"convert", "--solution=" + b.InputFile,
+		"--context=" + b.Options.Context,
+		"--output=" + outDir,
+	}
+	if b.Options.Load != "" {
+		args = append(args, "--load="+b.Options.Load)
+	}
 	if !b.Options.Schema {
-		args = append(args, "-n")
+		args = append(args, "--no-check-schema")
+	}
+	if !b.Options.UpdateRte {
+		args = append(args, "--no-update-rte")
 	}
 
 	csolutionBin := filepath.Join(b.InstallConfigs.BinPath, "csolution"+b.InstallConfigs.BinExtn)

@@ -1,12 +1,13 @@
 /*
- * Copyright (c) 2022-23 Arm Limited. All rights reserved.
+ * Copyright (c) 2022-2023 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package commands
+package commands_test
 
 import (
+	"cbuild/cmd/cbuild/commands"
 	"os"
 	"runtime"
 	"testing"
@@ -21,7 +22,7 @@ const testRoot = "../../../test"
 func init() {
 	// Prepare test data
 	_ = os.RemoveAll(testRoot + "/run")
-	time.Sleep(time.Second)
+	time.Sleep(2 * time.Second)
 	_ = cp.Copy(testRoot+"/data", testRoot+"/run")
 
 	_ = os.MkdirAll(testRoot+"/run/bin", 0755)
@@ -54,42 +55,42 @@ func TestCommands(t *testing.T) {
 	csolutionFile := testRoot + "/run/test.csolution.yml"
 
 	t.Run("test version", func(t *testing.T) {
-		cmd := NewRootCmd()
+		cmd := commands.NewRootCmd()
 		cmd.SetArgs([]string{"--version"})
 		err := cmd.Execute()
 		assert.Nil(err)
 	})
 
 	t.Run("test help", func(t *testing.T) {
-		cmd := NewRootCmd()
+		cmd := commands.NewRootCmd()
 		cmd.SetArgs([]string{"--help"})
 		err := cmd.Execute()
 		assert.Nil(err)
 	})
 
 	t.Run("invalid flag", func(t *testing.T) {
-		cmd := NewRootCmd()
+		cmd := commands.NewRootCmd()
 		cmd.SetArgs([]string{"--invalid"})
 		err := cmd.Execute()
 		assert.Error(err)
 	})
 
 	t.Run("multiple arguments", func(t *testing.T) {
-		cmd := NewRootCmd()
+		cmd := commands.NewRootCmd()
 		cmd.SetArgs([]string{cprjFile, cprjFile})
 		err := cmd.Execute()
 		assert.Error(err)
 	})
 
 	t.Run("test CPRJ build", func(t *testing.T) {
-		cmd := NewRootCmd()
+		cmd := commands.NewRootCmd()
 		cmd.SetArgs([]string{cprjFile})
 		err := cmd.Execute()
 		assert.Error(err)
 	})
 
 	t.Run("test CSolution build", func(t *testing.T) {
-		cmd := NewRootCmd()
+		cmd := commands.NewRootCmd()
 		cmd.SetArgs([]string{csolutionFile})
 		err := cmd.Execute()
 		assert.Error(err)

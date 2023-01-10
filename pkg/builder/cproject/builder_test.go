@@ -46,7 +46,7 @@ func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) (
 func init() {
 	// Prepare test data
 	_ = os.RemoveAll(testRoot + "/run")
-	time.Sleep(time.Second)
+	time.Sleep(2 * time.Second)
 	_ = cp.Copy(testRoot+"/data", testRoot+"/run")
 
 	_ = os.MkdirAll(testRoot+"/run/bin", 0755)

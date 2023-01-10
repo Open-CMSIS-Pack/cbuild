@@ -7,10 +7,9 @@
 package main
 
 import (
+	"cbuild/cmd/cbuild/commands"
 	"fmt"
 	"os"
-
-	"cbuild/cmd/cbuild/commands"
 
 	log "github.com/sirupsen/logrus"
 )

@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package commands
+package list
 
 import (
 	"cbuild/pkg/builder"
@@ -16,13 +16,10 @@ import (
 )
 
 var ListContextsCmd = &cobra.Command{
-	Use:   "list-contexts <csolution.yml>",
+	Use:   "contexts <csolution.yml>",
 	Short: "Print list of contexts in a csolution.yml",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		schameCheck, _ := cmd.Flags().GetBool("schema")
-		filter, _ := cmd.Flags().GetString("filter")
-
 		fileExtension := filepath.Ext(args[0])
 		if fileExtension != ".yml" {
 			return errors.New("invalid file argument")
@@ -33,6 +30,8 @@ var ListContextsCmd = &cobra.Command{
 			return err
 		}
 
+		schameCheck, _ := cmd.Flags().GetBool("schema")
+		filter, _ := cmd.Flags().GetString("filter")
 		p := csolution.CSolutionBuilder{
 			BuilderParams: builder.BuilderParams{
 				Runner: utils.Runner{},
@@ -45,32 +44,6 @@ var ListContextsCmd = &cobra.Command{
 			},
 		}
 		return p.ListContexts()
-	},
-}
-
-var ListToolchainsCmd = &cobra.Command{
-	Use:   "list-toolchains <csolution.yml>",
-	Short: "Print list of installed toolchains",
-	Args:  cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		fileExtension := filepath.Ext(args[0])
-		if fileExtension != ".yml" {
-			return errors.New("invalid file argument")
-		}
-
-		configs, err := utils.GetInstallConfigs()
-		if err != nil {
-			return err
-		}
-
-		p := csolution.CSolutionBuilder{
-			BuilderParams: builder.BuilderParams{
-				Runner:         utils.Runner{},
-				InputFile:      args[0],
-				InstallConfigs: configs,
-			},
-		}
-		return p.ListToolchains()
 	},
 }
 

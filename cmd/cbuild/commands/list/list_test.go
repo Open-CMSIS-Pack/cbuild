@@ -4,9 +4,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package commands
+package list_test
 
 import (
+	"cbuild/cmd/cbuild/commands"
 	"os"
 	"runtime"
 	"testing"
@@ -16,10 +17,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const testRoot = "../../../../test"
+
 func init() {
 	// Prepare test data
 	_ = os.RemoveAll(testRoot + "/run")
-	time.Sleep(time.Second)
+	time.Sleep(2 * time.Second)
 	_ = cp.Copy(testRoot+"/data", testRoot+"/run")
 
 	_ = os.MkdirAll(testRoot+"/run/bin", 0755)
@@ -45,76 +48,34 @@ func init() {
 	_ = cp.Copy(testRoot+"/run/test.Debug+CM0.cprj", testRoot+"/run/OutDir/test.Debug+CM0.cprj")
 }
 
-func TestListContextsCommand(t *testing.T) {
+func TestListCommand(t *testing.T) {
 	assert := assert.New(t)
 	os.Setenv("CMSIS_BUILD_ROOT", testRoot+"/run/bin")
-	csolutionFile := testRoot + "/run/test.csolution.yml"
 
 	t.Run("No arguments", func(t *testing.T) {
-		cmd := NewRootCmd()
-		cmd.SetArgs([]string{"list-contexts"})
+		cmd := commands.NewRootCmd()
+		cmd.SetArgs([]string{"list"})
 		err := cmd.Execute()
 		assert.Error(err)
 	})
 
 	t.Run("invalid flag", func(t *testing.T) {
-		cmd := NewRootCmd()
-		cmd.SetArgs([]string{"list-contexts", "--invalid"})
+		cmd := commands.NewRootCmd()
+		cmd.SetArgs([]string{"list", "--invalid"})
 		err := cmd.Execute()
 		assert.Error(err)
 	})
 
 	t.Run("multiple arguments", func(t *testing.T) {
-		cmd := NewRootCmd()
-		cmd.SetArgs([]string{"list-contexts", csolutionFile, csolutionFile})
-		err := cmd.Execute()
-		assert.Error(err)
-	})
-
-	t.Run("test list", func(t *testing.T) {
-		cmd := NewRootCmd()
-		cmd.SetArgs([]string{"list-contexts", csolutionFile})
+		cmd := commands.NewRootCmd()
+		cmd.SetArgs([]string{"list", "test1", "test2"})
 		err := cmd.Execute()
 		assert.Error(err)
 	})
 
 	t.Run("test help", func(t *testing.T) {
-		cmd := NewRootCmd()
-		cmd.SetArgs([]string{"list-contexts", "-h"})
-		err := cmd.Execute()
-		assert.Nil(err)
-	})
-}
-
-func TestListToolchainsCommand(t *testing.T) {
-	assert := assert.New(t)
-	os.Setenv("CMSIS_BUILD_ROOT", testRoot+"/run/bin")
-	csolutionFile := testRoot + "/run/test.csolution.yml"
-
-	t.Run("invalid flag", func(t *testing.T) {
-		cmd := NewRootCmd()
-		cmd.SetArgs([]string{"list-toolchains", "--invalid"})
-		err := cmd.Execute()
-		assert.Error(err)
-	})
-
-	t.Run("multiple arguments", func(t *testing.T) {
-		cmd := NewRootCmd()
-		cmd.SetArgs([]string{"list-toolchains", csolutionFile, csolutionFile})
-		err := cmd.Execute()
-		assert.Error(err)
-	})
-
-	t.Run("test list", func(t *testing.T) {
-		cmd := NewRootCmd()
-		cmd.SetArgs([]string{"list-toolchains", csolutionFile})
-		err := cmd.Execute()
-		assert.Error(err)
-	})
-
-	t.Run("test help", func(t *testing.T) {
-		cmd := NewRootCmd()
-		cmd.SetArgs([]string{"list-toolchains", "-h"})
+		cmd := commands.NewRootCmd()
+		cmd.SetArgs([]string{"list", "-h"})
 		err := cmd.Execute()
 		assert.Nil(err)
 	})

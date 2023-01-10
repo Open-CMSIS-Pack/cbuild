@@ -39,7 +39,7 @@ Flags:
   -p, --packs              Download missing software packs with cpackget
   -q, --quiet              Suppress output messages except build invocations
   -r, --rebuild            Remove intermediate and output directories and rebuild
-  -s, --schema             Validate project input file against schema
+  -s, --schema             Validate project input file(s) against schema
   -t, --target string      Optional CMake target name
   -u, --update string      Generate *.cprj file for reproducing current build
       --update-rte         Update the RTE directory and files
