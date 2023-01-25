@@ -41,7 +41,7 @@ func (b CSolutionBuilder) listContexts(quite bool) (contexts []string, err error
 
 	output, err := b.Runner.ExecuteCommand(csolutionBin, quite, args...)
 	if err != nil {
-		log.Error("error executing 'cbuild list-contexts'")
+		log.Error("error executing 'cbuild list contexts'")
 		return nil, err
 	}
 	output = strings.ReplaceAll(output, " ", "")
@@ -58,11 +58,14 @@ func (b CSolutionBuilder) listToolchains(quite bool) (toolchains []string, err e
 		return toolchains, err
 	}
 
-	args := []string{"list", "toolchains", "--solution=" + b.InputFile}
+	args := []string{"list", "toolchains"}
+	if b.InputFile != "" {
+		args = append(args, "--solution="+b.InputFile)
+	}
 
 	output, err := b.Runner.ExecuteCommand(csolutionBin, quite, args...)
 	if err != nil {
-		log.Error("error executing 'cbuild list-toolchains'")
+		log.Error("error executing 'cbuild list toolchains'")
 		return toolchains, err
 	}
 	output = strings.ReplaceAll(output, " ", "")
@@ -126,9 +129,36 @@ func (b CSolutionBuilder) ListToolchains() error {
 	return err
 }
 
+func (b CSolutionBuilder) getCPRJFilePath(idxFile string) (string, error) {
+	var cprjPath string
+	data, err := utils.ParseCbuildIndexFile(idxFile)
+	if err == nil {
+		var path string
+		for _, cbuild := range data.BuildIdx.Cbuilds {
+			if strings.Contains(cbuild.Cbuild, b.Options.Context) {
+				path = cbuild.Cbuild
+				break
+			}
+		}
+		if path == "" {
+			err = errors.New("cprj file path not found")
+		} else {
+			cprjPath = filepath.Dir(idxFile) + "/" + filepath.Dir(path) + "/" + b.Options.Context + ".cprj"
+		}
+	}
+	return cprjPath, err
+}
+
 func (b CSolutionBuilder) Build() (err error) {
 	_ = utils.UpdateEnvVars(b.InstallConfigs.BinPath, b.InstallConfigs.EtcPath)
 
+	csolutionBin := filepath.Join(b.InstallConfigs.BinPath, "csolution"+b.InstallConfigs.BinExtn)
+	if _, err := os.Stat(csolutionBin); os.IsNotExist(err) {
+		log.Error("csolution was not found")
+		return err
+	}
+
+	// validate context is empty
 	if b.Options.Context == "" {
 		contexts, err := b.listContexts(true)
 		if err != nil {
@@ -143,24 +173,25 @@ func (b CSolutionBuilder) Build() (err error) {
 		}
 	}
 
+	// install missing packs when --pack option is specified
 	if b.Options.Packs {
 		if err = b.installMissingPacks(); err != nil {
 			return err
 		}
 	}
 
-	outDir := b.Options.OutDir
-	if outDir == "" {
-		outDir, err = os.Getwd()
-		if err != nil {
-			return err
-		}
+	nameTokens := strings.Split(filepath.Base(b.InputFile), ".")
+	if len(nameTokens) != 3 {
+		return errors.New("invalid csolution file name")
 	}
 
+	// formulate csolution arguments
 	args := []string{
 		"convert", "--solution=" + b.InputFile,
 		"--context=" + b.Options.Context,
-		"--output=" + outDir,
+	}
+	if b.Options.Output != "" {
+		args = append(args, "--output="+b.Options.Output)
 	}
 	if b.Options.Load != "" {
 		args = append(args, "--load="+b.Options.Load)
@@ -172,24 +203,40 @@ func (b CSolutionBuilder) Build() (err error) {
 		args = append(args, "--no-update-rte")
 	}
 
-	csolutionBin := filepath.Join(b.InstallConfigs.BinPath, "csolution"+b.InstallConfigs.BinExtn)
-	if _, err := os.Stat(csolutionBin); os.IsNotExist(err) {
-		log.Error("csolution was not found")
-		return err
-	}
-
+	// generate cprj files
 	_, err = b.Runner.ExecuteCommand(csolutionBin, false, args...)
 	if err != nil {
 		log.Error("error building '" + b.InputFile + "'")
 		return err
 	}
 
+	context, err := utils.ParseContext(b.Options.Context)
+	if err != nil {
+		return err
+	}
+
+	outputDir := b.Options.Output
+	if outputDir == "" {
+		outputDir = filepath.Dir(b.InputFile)
+	}
+
+	// get generated CPRJ file path from index yml
+	cprjFile, err := b.getCPRJFilePath(outputDir + "/" + nameTokens[0] + ".cbuild-idx.yml")
+	if err != nil {
+		return err
+	}
+
+	b.Options.OutDir = filepath.Dir(cprjFile) + "/out/" + context.ProjectName + "/" +
+		context.BuildType + "/" + context.TargetType
+	b.Options.IntDir = filepath.Dir(cprjFile) + "/tmp/" + context.ProjectName + "/" +
+		context.BuildType + "/" + context.TargetType
+
 	// build generated CPRJ project
-	cprjBuilder := cproject.CPRJBuilder{
+	cprjBuilder := cproject.CprjBuilder{
 		BuilderParams: builder.BuilderParams{
 			Runner:         b.Runner,
 			Options:        b.Options,
-			InputFile:      outDir + "/" + b.Options.Context + ".cprj",
+			InputFile:      cprjFile,
 			InstallConfigs: b.InstallConfigs,
 		},
 	}

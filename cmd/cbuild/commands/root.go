@@ -21,12 +21,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var version string
+var Version string
 
-const copyrightNotice = " (C) 2022 Arm Ltd. and Contributors"
+var CopyrightNotice string
 
 func printVersion(file io.Writer) {
-	fmt.Fprintf(file, "cbuild version %v%v\n", version, copyrightNotice)
+	fmt.Fprintf(file, "cbuild version %v%v\n", Version, CopyrightNotice)
 }
 
 // UsageTemplate returns usage template for the command.
@@ -56,8 +56,8 @@ Use "{{.CommandPath}} [command] --help" for more information about a command.{{e
 
 func NewRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use:           "cbuild [command] <project.cprj|csolution.yml> [flags]",
-		Short:         "cbuild: Build Invocation " + version + copyrightNotice,
+		Use:           "cbuild [command] <project.cprj | csolution.yml> [flags]",
+		Short:         "cbuild: Build Invocation " + Version + CopyrightNotice,
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		Args:          cobra.MinimumNArgs(0),
@@ -84,6 +84,7 @@ func NewRootCmd() *cobra.Command {
 			target, _ := cmd.Flags().GetString("target")
 			context, _ := cmd.Flags().GetString("context")
 			load, _ := cmd.Flags().GetString("load")
+			output, _ := cmd.Flags().GetString("output")
 			jobs, _ := cmd.Flags().GetInt("jobs")
 			quiet, _ := cmd.Flags().GetBool("quiet")
 			debug, _ := cmd.Flags().GetBool("debug")
@@ -112,6 +113,7 @@ func NewRootCmd() *cobra.Command {
 				UpdateRte: updateRte,
 				Context:   context,
 				Load:      load,
+				Output:    output,
 			}
 
 			configs, err := utils.GetInstallConfigs()
@@ -129,14 +131,14 @@ func NewRootCmd() *cobra.Command {
 			fileExtension := filepath.Ext(inputFile)
 			var b builder.IBuilderInterface
 			if fileExtension == ".cprj" {
-				b = cproject.CPRJBuilder{BuilderParams: params}
+				b = cproject.CprjBuilder{BuilderParams: params}
 			} else if fileExtension == ".yml" {
 				b = csolution.CSolutionBuilder{BuilderParams: params}
 			} else {
 				return errors.New("invalid file argument")
 			}
 
-			log.Info("Build Invocation " + version + copyrightNotice)
+			log.Info("Build Invocation " + Version + CopyrightNotice)
 			return b.Build()
 		},
 	}
@@ -155,7 +157,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.Flags().BoolP("rebuild", "r", false, "Remove intermediate and output directories and rebuild")
 	rootCmd.Flags().BoolP("update-rte", "", false, "Update the RTE directory and files")
 	rootCmd.Flags().StringP("intdir", "i", "", "Set directory for intermediate files")
-	rootCmd.Flags().StringP("outdir", "o", "", "Set directory for output files")
+	rootCmd.Flags().StringP("outdir", "o", "", "Set directory for output binary files")
 	rootCmd.Flags().StringP("update", "u", "", "Generate *.cprj file for reproducing current build")
 	rootCmd.Flags().StringP("log", "l", "", "Save output messages in a log file")
 	rootCmd.Flags().StringP("generator", "g", "Ninja", "Select build system generator")
@@ -163,6 +165,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.Flags().StringP("load", "", "", "Set policy for packs loading [latest|all|required]")
 	rootCmd.Flags().IntP("jobs", "j", 0, "Number of job slots for parallel execution")
 	rootCmd.Flags().StringP("target", "t", "", "Optional CMake target name")
+	rootCmd.Flags().StringP("output", "O", "", "Set directory for all output files")
 
 	rootCmd.SetFlagErrorFunc(FlagErrorFunc)
 	rootCmd.AddCommand(list.ListCmd)

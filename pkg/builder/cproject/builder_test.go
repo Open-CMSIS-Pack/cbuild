@@ -71,7 +71,7 @@ func TestConfigLog(t *testing.T) {
 	configs, err := utils.GetInstallConfigs()
 	assert.Nil(err)
 
-	b := CPRJBuilder{
+	b := CprjBuilder{
 		builder.BuilderParams{
 			Runner:         RunnerMock{},
 			InstallConfigs: configs,
@@ -120,7 +120,7 @@ func TestConfigLog(t *testing.T) {
 func TestCheckCprj(t *testing.T) {
 	assert := assert.New(t)
 
-	b := CPRJBuilder{
+	b := CprjBuilder{
 		builder.BuilderParams{
 			Runner: RunnerMock{},
 		},
@@ -148,7 +148,7 @@ func TestCheckCprj(t *testing.T) {
 func TestGetDirs(t *testing.T) {
 	assert := assert.New(t)
 
-	b := CPRJBuilder{
+	b := CprjBuilder{
 		builder.BuilderParams{
 			Runner: RunnerMock{},
 		},
@@ -196,7 +196,7 @@ func TestGetDirs(t *testing.T) {
 func TestClean(t *testing.T) {
 	assert := assert.New(t)
 
-	b := CPRJBuilder{
+	b := CprjBuilder{
 		builder.BuilderParams{
 			Runner: RunnerMock{},
 		},
@@ -238,7 +238,7 @@ func TestClean(t *testing.T) {
 
 func TestGetInternalVars(t *testing.T) {
 	assert := assert.New(t)
-	b := CPRJBuilder{
+	b := CprjBuilder{
 		builder.BuilderParams{
 			Runner:    RunnerMock{},
 			InputFile: testRoot + "/run/minimal.cprj",
@@ -269,7 +269,7 @@ func TestGetInternalVars(t *testing.T) {
 
 func TestGetJobs(t *testing.T) {
 	assert := assert.New(t)
-	b := CPRJBuilder{
+	b := CprjBuilder{
 		builder.BuilderParams{
 			Runner: RunnerMock{},
 		},
@@ -300,7 +300,7 @@ func TestBuild(t *testing.T) {
 	configs, err := utils.GetInstallConfigs()
 	assert.Nil(err)
 
-	b := CPRJBuilder{
+	b := CprjBuilder{
 		builder.BuilderParams{
 			Runner:    RunnerMock{},
 			InputFile: testRoot + "/run/minimal.cprj",
@@ -397,7 +397,7 @@ func TestBuild(t *testing.T) {
 
 func TestBuildFail(t *testing.T) {
 	assert := assert.New(t)
-	b := CPRJBuilder{
+	b := CprjBuilder{
 		builder.BuilderParams{
 			Runner:    RunnerMock{},
 			InputFile: testRoot + "/run/minimal.cprj",

@@ -18,6 +18,9 @@ func main() {
 	log.SetFormatter(new(LogFormatter))
 	log.SetOutput(os.Stdout)
 
+	commands.Version = version
+	commands.CopyrightNotice = copyrightNotice
+
 	cmd := commands.NewRootCmd()
 	err := cmd.Execute()
 	if err != nil {

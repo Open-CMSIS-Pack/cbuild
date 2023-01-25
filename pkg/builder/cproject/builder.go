@@ -22,7 +22,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type CPRJBuilder struct {
+type CprjBuilder struct {
 	builder.BuilderParams
 }
 
@@ -44,7 +44,7 @@ type InternalVars struct {
 	ninjaBin     string
 }
 
-func (b CPRJBuilder) configLog() {
+func (b CprjBuilder) configLog() {
 	log.SetLevel(log.InfoLevel)
 	if b.Options.Debug {
 		log.SetLevel(log.DebugLevel)
@@ -62,7 +62,7 @@ func (b CPRJBuilder) configLog() {
 	}
 }
 
-func (b CPRJBuilder) checkCprj() error {
+func (b CprjBuilder) checkCprj() error {
 	if filepath.Ext(b.InputFile) != ".cprj" {
 		err := errors.New("missing required argument <project>.cprj")
 		log.Error(err)
@@ -76,13 +76,24 @@ func (b CPRJBuilder) checkCprj() error {
 	return nil
 }
 
-func (b CPRJBuilder) getDirs() (dirs BuildDirs, err error) {
+func (b CprjBuilder) getDirs() (dirs BuildDirs, err error) {
 	if b.Options.IntDir != "" {
 		dirs.intDir = b.Options.IntDir
 	}
 	if b.Options.OutDir != "" {
 		dirs.outDir = b.Options.OutDir
 	}
+
+	// if --output is used, ignore provided --outdir and --intdir
+	if b.Options.Output != "" && (b.Options.OutDir != "" || b.Options.IntDir != "") {
+		log.Warn("output files are generated under: \"" + b.Options.Output + "\". Options --outdir and --intdir are ignored.")
+	}
+
+	if b.Options.Output != "" {
+		dirs.intDir = ""
+		dirs.outDir = ""
+	}
+
 	intDir, outDir, err := GetCprjDirs(b.InputFile)
 	if err != nil {
 		log.Error("error parsing file: " + b.InputFile)
@@ -116,7 +127,7 @@ func (b CPRJBuilder) getDirs() (dirs BuildDirs, err error) {
 	return dirs, err
 }
 
-func (b CPRJBuilder) clean(dirs BuildDirs, vars InternalVars) (err error) {
+func (b CprjBuilder) clean(dirs BuildDirs, vars InternalVars) (err error) {
 	if _, err := os.Stat(dirs.intDir); !os.IsNotExist(err) {
 		_, err = b.Runner.ExecuteCommand(vars.cbuildgenBin, false, "rmdir", dirs.intDir)
 		if err != nil {
@@ -135,7 +146,7 @@ func (b CPRJBuilder) clean(dirs BuildDirs, vars InternalVars) (err error) {
 	return nil
 }
 
-func (b CPRJBuilder) getInternalVars() (vars InternalVars, err error) {
+func (b CprjBuilder) getInternalVars() (vars InternalVars, err error) {
 
 	vars.cprjPath = filepath.Dir(b.InputFile)
 	vars.cprjFilename = filepath.Base(b.InputFile)
@@ -170,7 +181,7 @@ func (b CPRJBuilder) getInternalVars() (vars InternalVars, err error) {
 	return vars, err
 }
 
-func (b CPRJBuilder) getJobs() (jobs int) {
+func (b CprjBuilder) getJobs() (jobs int) {
 	jobs = runtime.NumCPU()
 	if b.Options.Jobs > 0 {
 		jobs = b.Options.Jobs
@@ -178,7 +189,7 @@ func (b CPRJBuilder) getJobs() (jobs int) {
 	return jobs
 }
 
-func (b CPRJBuilder) Build() error {
+func (b CprjBuilder) Build() error {
 
 	b.configLog()
 

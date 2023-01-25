@@ -1,0 +1,15 @@
+build-idx:
+  generated-by: csolution 1.4.0
+  cdefault: HelloWorld.cdefault.yml
+  csolution: HelloWorld.csolution.yml
+  cprojects:
+    - cproject: cm0plus/HelloWorld_cm0plus.cproject.yml
+    - cproject: cm4/HelloWorld_cm4.cproject.yml
+
+  licenses: test123
+
+  cbuilds:
+    - cbuild: cm0plus/HelloWorld_cm0plus.Debug+FRDM-K32L3A6.cbuild.yml
+    - cbuild: cm0plus/HelloWorld_cm0plus.Release+FRDM-K32L3A6.cbuild.yml
+    - cbuild: cm4/HelloWorld_cm4.Debug+FRDM-K32L3A6.cbuild.yml
+    - cbuild: cm4/HelloWorld_cm4.Release+FRDM-K32L3A6.cbuild.yml

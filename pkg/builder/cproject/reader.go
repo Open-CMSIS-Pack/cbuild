@@ -8,7 +8,6 @@ package cproject
 
 import (
 	"encoding/xml"
-	"io/ioutil"
 	"os"
 )
 
@@ -24,13 +23,10 @@ type TargetOutput struct {
 }
 
 func GetCprjDirs(file string) (string, string, error) {
-	xmlFile, err := os.Open(file)
+	byteValue, err := os.ReadFile(file)
 	if err != nil {
 		return "", "", err
 	}
-	defer xmlFile.Close()
-
-	byteValue, _ := ioutil.ReadAll(xmlFile)
 
 	var cprj Cprj
 	err = xml.Unmarshal(byteValue, &cprj)

@@ -73,9 +73,16 @@ func TestListCommand(t *testing.T) {
 		assert.Error(err)
 	})
 
-	t.Run("test help", func(t *testing.T) {
+	t.Run("test list help", func(t *testing.T) {
 		cmd := commands.NewRootCmd()
 		cmd.SetArgs([]string{"list", "-h"})
+		err := cmd.Execute()
+		assert.Nil(err)
+	})
+
+	t.Run("test list invalid command", func(t *testing.T) {
+		cmd := commands.NewRootCmd()
+		cmd.SetArgs([]string{"list", "test"})
 		err := cmd.Execute()
 		assert.Nil(err)
 	})

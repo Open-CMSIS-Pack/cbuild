@@ -9,20 +9,18 @@ import (
 	"cbuild/pkg/builder"
 	"cbuild/pkg/builder/csolution"
 	"cbuild/pkg/utils"
-	"errors"
-	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
 
 var ListToolchainsCmd = &cobra.Command{
-	Use:   "toolchains <csolution.yml>",
+	Use:   "toolchains [csolution.yml]",
 	Short: "Print list of installed toolchains",
-	Args:  cobra.ExactArgs(1),
+	Args:  cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fileExtension := filepath.Ext(args[0])
-		if fileExtension != ".yml" {
-			return errors.New("invalid file argument")
+		var inputFile string
+		if len(args) == 1 {
+			inputFile = args[0]
 		}
 
 		configs, err := utils.GetInstallConfigs()
@@ -33,7 +31,7 @@ var ListToolchainsCmd = &cobra.Command{
 		p := csolution.CSolutionBuilder{
 			BuilderParams: builder.BuilderParams{
 				Runner:         utils.Runner{},
-				InputFile:      args[0],
+				InputFile:      inputFile,
 				InstallConfigs: configs,
 			},
 		}

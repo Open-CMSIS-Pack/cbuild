@@ -6,10 +6,6 @@ solution:
       device: ARMCM3
       misc:
         - compiler: GCC
-    - type: CM0
-      device: ARMCM0
-      misc:
-        - compiler: GCC
 
   build-types:
     - type: Debug
@@ -35,9 +31,7 @@ solution:
 
   packs:
     - pack: ARM::CMSIS
+    - pack: ARM::RteTest_DFP@0.2.0
 
   projects:
-    - project: ./TestProject1/test1.cproject.yml
-      for-type: +CM3
-    - project: ./TestProject2/test2.cproject.yml
-      for-type: +CM0
+    - project: ./TestProject/test.cproject.yml

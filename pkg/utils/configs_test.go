@@ -12,6 +12,8 @@ import (
 	"testing"
 	"time"
 
+	cp "github.com/otiai10/copy"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -21,6 +23,7 @@ func init() {
 	time.Sleep(time.Second)
 	_ = os.MkdirAll(testRoot+"/run/bin", 0755)
 	_ = os.MkdirAll(testRoot+"/run/etc", 0755)
+	_ = cp.Copy(testRoot+"/data/Test.cbuild-idx.yml", testRoot+"/run/Test.cbuild-idx.yml")
 }
 
 func TestGetInstallConfigs(t *testing.T) {

@@ -21,9 +21,8 @@ Usage:
   cbuild [command] <project.cprj|csolution.yml> [flags]
 
 Available Commands:
-  help            Help about any command
-  list-contexts   Print list of contexts in a csolution.yml
-  list-toolchains Print list of installed toolchains
+  help        Help about any command
+  list        List information
 
 Flags:
   -c, --clean              Remove intermediate and output directories
@@ -35,7 +34,8 @@ Flags:
   -j, --jobs int           Number of job slots for parallel execution
       --load string        Set policy for packs loading [latest|all|required]
   -l, --log string         Save output messages in a log file
-  -o, --outdir string      Set directory for output files
+  -o, --outdir string      Set directory for output binary files
+  -O, --output string      Set directory for all output files
   -p, --packs              Download missing software packs with cpackget
   -q, --quiet              Suppress output messages except build invocations
   -r, --rebuild            Remove intermediate and output directories and rebuild

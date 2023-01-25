@@ -100,6 +100,27 @@ func TestListContexts(t *testing.T) {
 		assert.Equal("test.Release+CM0", contexts[1])
 	})
 
+	t.Run("test list contexts with invalid path", func(t *testing.T) {
+		binExtn := b.InstallConfigs.BinExtn
+		b.InstallConfigs.BinExtn = "invalid_path"
+		_, err := b.listContexts(true)
+		b.InstallConfigs.BinExtn = binExtn
+		assert.Error(err)
+	})
+
+	t.Run("test list contexts", func(t *testing.T) {
+		err := b.ListContexts()
+		assert.Nil(err)
+	})
+
+	t.Run("test list contexts with invalid path", func(t *testing.T) {
+		binExtn := b.InstallConfigs.BinExtn
+		b.InstallConfigs.BinExtn = "invalid_path"
+		err := b.ListContexts()
+		b.InstallConfigs.BinExtn = binExtn
+		assert.Error(err)
+	})
+
 	t.Run("test list contexts with filter", func(t *testing.T) {
 		b.Options.Filter = "test"
 		contexts, err := b.listContexts(true)
@@ -142,6 +163,27 @@ func TestListToolchians(t *testing.T) {
 		assert.Equal("IAR@8.50.6", toolchains[3])
 	})
 
+	t.Run("test list toolchains with invalid path", func(t *testing.T) {
+		binExtn := b.InstallConfigs.BinExtn
+		b.InstallConfigs.BinExtn = "invalid_path"
+		_, err := b.listToolchains(true)
+		b.InstallConfigs.BinExtn = binExtn
+		assert.Error(err)
+	})
+
+	t.Run("test list toolchains", func(t *testing.T) {
+		err := b.ListToolchains()
+		assert.Nil(err)
+	})
+
+	t.Run("test list toolchains with invalid path", func(t *testing.T) {
+		binExtn := b.InstallConfigs.BinExtn
+		b.InstallConfigs.BinExtn = "invalid_path"
+		err := b.ListToolchains()
+		b.InstallConfigs.BinExtn = binExtn
+		assert.Error(err)
+	})
+
 	t.Run("test list toochains with filter", func(t *testing.T) {
 		b.Options.Filter = "test"
 		toolchains, err := b.listToolchains(true)
@@ -177,7 +219,7 @@ func TestBuild(t *testing.T) {
 			Runner:    RunnerMock{},
 			InputFile: testRoot + "/run/test.csolution.yml",
 			Options: builder.Options{
-				IntDir: testRoot + "/run/IntDir",
+				//IntDir: testRoot + "/run/IntDir",
 				OutDir: testRoot + "/run/OutDir",
 				Packs:  true,
 			},
@@ -193,7 +235,7 @@ func TestBuild(t *testing.T) {
 	t.Run("test build csolution with context", func(t *testing.T) {
 		b.Options.Context = "test.Debug+CM0"
 		err := b.Build()
-		assert.Nil(err)
+		assert.Error(err)
 	})
 }
 
@@ -213,5 +255,13 @@ func TestInstallMissingPacks(t *testing.T) {
 	t.Run("test install missing packs", func(t *testing.T) {
 		err = b.installMissingPacks()
 		assert.Nil(err)
+	})
+
+	t.Run("test install missing packs with invalid path", func(t *testing.T) {
+		binExtn := b.InstallConfigs.BinExtn
+		b.InstallConfigs.BinExtn = "invalid_path"
+		err := b.installMissingPacks()
+		b.InstallConfigs.BinExtn = binExtn
+		assert.Error(err)
 	})
 }

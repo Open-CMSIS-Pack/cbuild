@@ -27,6 +27,7 @@ type Options struct {
 	Context   string
 	Filter    string
 	Load      string
+	Output    string
 	Jobs      int
 	Quiet     bool
 	Debug     bool
