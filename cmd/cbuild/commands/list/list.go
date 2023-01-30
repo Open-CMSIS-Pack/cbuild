@@ -12,7 +12,6 @@ import (
 var ListCmd = &cobra.Command{
 	Use:   "list <command> [csolution.yml] [flags]",
 	Short: "List information",
-	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return cmd.Help()
 	},

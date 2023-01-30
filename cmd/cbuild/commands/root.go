@@ -15,6 +15,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"path/filepath"
 
 	log "github.com/sirupsen/logrus"
@@ -54,13 +55,38 @@ Additional help topics:{{range .Commands}}{{if .IsAdditionalHelpTopicCommand}}
 Use "{{.CommandPath}} [command] --help" for more information about a command.{{end}}
 `
 
+func preConfiguration(cmd *cobra.Command, args []string) (err error) {
+	log.SetLevel(log.InfoLevel)
+	debug, _ := cmd.Flags().GetBool("debug")
+	quiet, _ := cmd.Flags().GetBool("quiet")
+	logFile, _ := cmd.Flags().GetString("log")
+
+	if debug {
+		log.SetLevel(log.DebugLevel)
+	} else if quiet {
+		log.SetLevel(log.ErrorLevel)
+	}
+	if logFile != "" {
+		logFile, err := os.Create(logFile)
+		if err != nil {
+			log.Warn("error creating log file")
+			fmt.Println(err.Error())
+		} else {
+			multiWriter := io.MultiWriter(os.Stdout, logFile)
+			log.SetOutput(multiWriter)
+		}
+	}
+	return
+}
+
 func NewRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use:           "cbuild [command] <project.cprj | csolution.yml> [flags]",
-		Short:         "cbuild: Build Invocation " + Version + CopyrightNotice,
-		SilenceUsage:  true,
-		SilenceErrors: true,
-		Args:          cobra.MinimumNArgs(0),
+		Use:               "cbuild [command] <project.cprj | csolution.yml> [flags]",
+		Short:             "cbuild: Build Invocation " + Version + CopyrightNotice,
+		SilenceUsage:      true,
+		SilenceErrors:     true,
+		PersistentPreRunE: preConfiguration,
+		Args:              cobra.MinimumNArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			versionFlag, _ := cmd.Flags().GetBool("version")
 			if versionFlag {
@@ -152,20 +178,20 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.Flags().BoolP("debug", "d", false, "Enable debug messages")
 	rootCmd.Flags().BoolP("verbose", "v", false, "Enable verbose messages from toolchain builds")
 	rootCmd.Flags().BoolP("clean", "c", false, "Remove intermediate and output directories")
-	rootCmd.PersistentFlags().BoolP("schema", "s", false, "Validate project input file(s) against schema")
 	rootCmd.Flags().BoolP("packs", "p", false, "Download missing software packs with cpackget")
 	rootCmd.Flags().BoolP("rebuild", "r", false, "Remove intermediate and output directories and rebuild")
 	rootCmd.Flags().BoolP("update-rte", "", false, "Update the RTE directory and files")
 	rootCmd.Flags().StringP("intdir", "i", "", "Set directory for intermediate files")
 	rootCmd.Flags().StringP("outdir", "o", "", "Set directory for output binary files")
 	rootCmd.Flags().StringP("update", "u", "", "Generate *.cprj file for reproducing current build")
-	rootCmd.Flags().StringP("log", "l", "", "Save output messages in a log file")
 	rootCmd.Flags().StringP("generator", "g", "Ninja", "Select build system generator")
 	rootCmd.Flags().StringP("context", "", "", "Input context name e.g. project.buildType+targetType")
 	rootCmd.Flags().StringP("load", "", "", "Set policy for packs loading [latest|all|required]")
 	rootCmd.Flags().IntP("jobs", "j", 0, "Number of job slots for parallel execution")
 	rootCmd.Flags().StringP("target", "t", "", "Optional CMake target name")
 	rootCmd.Flags().StringP("output", "O", "", "Set directory for all output files")
+	rootCmd.PersistentFlags().BoolP("schema", "s", false, "Validate project input file(s) against schema")
+	rootCmd.PersistentFlags().StringP("log", "l", "", "Save output messages in a log file")
 
 	rootCmd.SetFlagErrorFunc(FlagErrorFunc)
 	rootCmd.AddCommand(list.ListCmd)

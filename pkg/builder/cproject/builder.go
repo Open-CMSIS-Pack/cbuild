@@ -9,7 +9,6 @@ package cproject
 import (
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -42,24 +41,6 @@ type InternalVars struct {
 	cpackgetBin  string
 	cmakeBin     string
 	ninjaBin     string
-}
-
-func (b CprjBuilder) configLog() {
-	log.SetLevel(log.InfoLevel)
-	if b.Options.Debug {
-		log.SetLevel(log.DebugLevel)
-	} else if b.Options.Quiet {
-		log.SetLevel(log.ErrorLevel)
-	}
-	if b.Options.LogFile != "" {
-		logFile, err := os.Create(b.Options.LogFile)
-		if err != nil {
-			log.Warn("error creating log file")
-		} else {
-			multiWriter := io.MultiWriter(os.Stdout, logFile)
-			log.SetOutput(multiWriter)
-		}
-	}
 }
 
 func (b CprjBuilder) checkCprj() error {
@@ -190,8 +171,6 @@ func (b CprjBuilder) getJobs() (jobs int) {
 }
 
 func (b CprjBuilder) Build() error {
-
-	b.configLog()
 
 	b.InputFile, _ = filepath.Abs(b.InputFile)
 	err := b.checkCprj()
