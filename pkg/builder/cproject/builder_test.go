@@ -64,58 +64,6 @@ func init() {
 	defer file.Close()
 }
 
-// func TestConfigLog(t *testing.T) {
-// 	assert := assert.New(t)
-// 	os.Setenv("CMSIS_BUILD_ROOT", testRoot+"/run/bin")
-// 	configs, err := utils.GetInstallConfigs()
-// 	assert.Nil(err)
-
-// 	b := CprjBuilder{
-// 		builder.BuilderParams{
-// 			Runner:         RunnerMock{},
-// 			InstallConfigs: configs,
-// 		},
-// 	}
-
-// 	t.Run("test normal verbosity level", func(t *testing.T) {
-// 		b.Options.Quiet = false
-// 		b.Options.Debug = false
-// 		//b.configLog()
-// 		assert.Equal(log.InfoLevel, log.GetLevel())
-// 	})
-
-// 	t.Run("test quiet verbosity level", func(t *testing.T) {
-// 		b.Options.Quiet = true
-// 		b.Options.Debug = false
-// 		//b.configLog()
-// 		assert.Equal(log.ErrorLevel, log.GetLevel())
-// 	})
-
-// 	t.Run("test debug debug level", func(t *testing.T) {
-// 		b.Options.Quiet = false
-// 		b.Options.Debug = true
-// 		//b.configLog()
-// 		assert.Equal(log.DebugLevel, log.GetLevel())
-// 	})
-
-// 	logDir := testRoot + "/run/log"
-// 	b.Options.LogFile = logDir + "/test.log"
-
-// 	t.Run("test invalid path to log file", func(t *testing.T) {
-// 		os.RemoveAll(logDir)
-// 		//b.configLog()
-// 		_, err := os.Stat(b.Options.LogFile)
-// 		assert.True(os.IsNotExist(err))
-// 	})
-
-// 	t.Run("test valid path to log file", func(t *testing.T) {
-// 		_ = os.MkdirAll(logDir, 0755)
-// 		//b.configLog()
-// 		_, err := os.Stat(b.Options.LogFile)
-// 		assert.False(os.IsNotExist(err))
-// 	})
-// }
-
 func TestCheckCprj(t *testing.T) {
 	assert := assert.New(t)
 

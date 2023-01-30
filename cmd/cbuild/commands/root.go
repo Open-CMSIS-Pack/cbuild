@@ -56,6 +56,7 @@ Use "{{.CommandPath}} [command] --help" for more information about a command.{{e
 `
 
 func preConfiguration(cmd *cobra.Command, args []string) (err error) {
+	// configure log level
 	log.SetLevel(log.InfoLevel)
 	debug, _ := cmd.Flags().GetBool("debug")
 	quiet, _ := cmd.Flags().GetBool("quiet")

@@ -14,6 +14,7 @@ import (
 	"time"
 
 	cp "github.com/otiai10/copy"
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -94,5 +95,61 @@ func TestCommands(t *testing.T) {
 		cmd.SetArgs([]string{csolutionFile})
 		err := cmd.Execute()
 		assert.Error(err)
+	})
+}
+
+func TestPreLogConfiguration(t *testing.T) {
+	assert := assert.New(t)
+	os.Setenv("CMSIS_BUILD_ROOT", testRoot+"/run/bin")
+	logDir := testRoot + "/run/log"
+	logFile := logDir + "/test.log"
+
+	t.Run("test normal verbosity level", func(t *testing.T) {
+		// No quiet, No debug
+		cmd := commands.NewRootCmd()
+		cmd.SetArgs([]string{"--version"})
+		err := cmd.Execute()
+		assert.Nil(err)
+		assert.Equal(log.InfoLevel, log.GetLevel())
+	})
+
+	t.Run("test quiet verbosity level", func(t *testing.T) {
+		cmd := commands.NewRootCmd()
+		cmd.SetArgs([]string{"--quiet", "--version"})
+		err := cmd.Execute()
+		assert.Nil(err)
+		assert.Equal(log.ErrorLevel, log.GetLevel())
+	})
+
+	t.Run("test debug debug level", func(t *testing.T) {
+		cmd := commands.NewRootCmd()
+		cmd.SetArgs([]string{"--debug", "--version"})
+		err := cmd.Execute()
+		assert.Nil(err)
+		assert.Equal(log.DebugLevel, log.GetLevel())
+	})
+
+	t.Run("test invalid path to log file", func(t *testing.T) {
+		os.RemoveAll(logDir)
+
+		cmd := commands.NewRootCmd()
+		cmd.SetArgs([]string{"--log", logFile, "--version"})
+		err := cmd.Execute()
+		assert.Nil(err)
+
+		_, err = os.Stat(logFile)
+		assert.True(os.IsNotExist(err))
+	})
+
+	t.Run("test valid path to log file", func(t *testing.T) {
+		_ = os.MkdirAll(logDir, 0755)
+
+		cmd := commands.NewRootCmd()
+		cmd.SetArgs([]string{"--log", logFile, "--version"})
+		err := cmd.Execute()
+		assert.Nil(err)
+
+		_, err = os.Stat(logFile)
+		assert.False(os.IsNotExist(err))
 	})
 }
