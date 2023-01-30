@@ -1,6 +1,10 @@
 name: Test
 
-on: [push, pull_request]
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -74,9 +78,12 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: ${{ matrix.go }}
+      - name: Install go-junit-report
+        run: go install github.com/jstemmer/go-junit-report/v2@latest
       - name: Unit testing
         run: |
-          make coverage-check
+          mkdir -p build
+          go test -v 2>&1 ./... | go-junit-report -set-exit-code > build/cbuildtests-${{ matrix.platform }}-amd64.xml
       - name: Install qemu (for Linux-Arm64)
         if: ${{ startsWith(runner.os, 'Linux') }}
         run: |
@@ -88,4 +95,70 @@ jobs:
       - name: Unit testing (for Linux-Arm64)
         if: ${{ startsWith(runner.os, 'Linux') }}
         run: |
-          make ARCH=arm64 coverage-check
+          GOOS=linux GOARCH=arm64 go test -v 2>&1 ./... | go-junit-report -set-exit-code > build/cbuildtests-${{ matrix.platform }}-arm64.xml
+      - name: Archive unit test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: unit-test-result-${{ matrix.platform }}
+          path: ./build/cbuildtests-*.xml
+          if-no-files-found: error
+
+  publish-test-results:
+    if: github.event_name != 'release'
+    name: "Publish Tests Results"
+    needs: [ test ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download unit test report windows
+        uses: actions/download-artifact@v3
+        with:
+          name: unit-test-result-windows-latest
+          path: testreports/
+
+      - name: Download unit test report linux
+        uses: actions/download-artifact@v3
+        with:
+          name: unit-test-result-ubuntu-latest
+          path: testreports/
+
+      - name: Download unit test report macos
+        uses: actions/download-artifact@v3
+        with:
+          name: unit-test-result-macos-latest
+          path: testreports/
+
+      - name: publish test results
+        uses: EnricoMi/publish-unit-test-result-action/composite@v2
+        with:
+          commit: ${{ github.event.workflow_run.head_sha }}
+          report_individual_runs: true
+          junit_files: "testreports/*.xml"
+
+  coverage:
+    if: github.event_name != 'release'
+    needs: [ test ]
+    strategy:
+      matrix:
+        platform: [ubuntu-latest]
+        go: [1.19.3]
+    name: 'Coverage check'
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Install go 1.19
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Check coverage
+        run: |
+          make coverage-check
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./build/cover.out
+          fail_ci_if_error: true
+          functionalities: fix
