@@ -21,7 +21,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Install go 1.19
         uses: actions/setup-go@v3
         with:
