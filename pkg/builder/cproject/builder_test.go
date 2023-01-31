@@ -1,12 +1,14 @@
 /*
- * Copyright (c) 2022 Arm Limited. All rights reserved.
+ * Copyright (c) 2022-2023 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package builder
+package cproject
 
 import (
+	"cbuild/pkg/builder"
+	utils "cbuild/pkg/utils"
 	"errors"
 	"os"
 	"path/filepath"
@@ -16,15 +18,14 @@ import (
 	"time"
 
 	cp "github.com/otiai10/copy"
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
-const testRoot = "../../test"
+const testRoot = "../../../test"
 
 type RunnerMock struct{}
 
-func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) error {
+func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) (string, error) {
 	if strings.Contains(program, "cbuildgen") {
 		if args[0] == "packlist" {
 			packlistFile := testRoot + "/run/IntDir/minimal.cpinstall"
@@ -36,15 +37,15 @@ func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) e
 	} else if strings.Contains(program, "ninja") {
 	} else if strings.Contains(program, "xmllint") {
 	} else {
-		return errors.New("invalid command")
+		return "", errors.New("invalid command")
 	}
-	return nil
+	return "", nil
 }
 
 func init() {
 	// Prepare test data
 	_ = os.RemoveAll(testRoot + "/run")
-	time.Sleep(time.Second)
+	time.Sleep(2 * time.Second)
 	_ = cp.Copy(testRoot+"/data", testRoot+"/run")
 
 	_ = os.MkdirAll(testRoot+"/run/bin", 0755)
@@ -54,6 +55,7 @@ func init() {
 	if runtime.GOOS == "windows" {
 		binExtension = ".exe"
 	}
+
 	cbuildgenBin := testRoot + "/run/bin/cbuildgen" + binExtension
 	file, _ := os.Create(cbuildgenBin)
 	defer file.Close()
@@ -62,67 +64,29 @@ func init() {
 	defer file.Close()
 }
 
-func TestConfigLog(t *testing.T) {
-	assert := assert.New(t)
-	b := Builder{Runner: RunnerMock{}}
-
-	t.Run("test normal verbosity level", func(t *testing.T) {
-		b.Options.Quiet = false
-		b.Options.Debug = false
-		b.configLog()
-		assert.Equal(log.InfoLevel, log.GetLevel())
-	})
-
-	t.Run("test quiet verbosity level", func(t *testing.T) {
-		b.Options.Quiet = true
-		b.Options.Debug = false
-		b.configLog()
-		assert.Equal(log.ErrorLevel, log.GetLevel())
-	})
-
-	t.Run("test debug debug level", func(t *testing.T) {
-		b.Options.Quiet = false
-		b.Options.Debug = true
-		b.configLog()
-		assert.Equal(log.DebugLevel, log.GetLevel())
-	})
-
-	logDir := testRoot + "/run/log"
-	b.Options.LogFile = logDir + "/test.log"
-
-	t.Run("test invalid path to log file", func(t *testing.T) {
-		os.RemoveAll(logDir)
-		b.configLog()
-		_, err := os.Stat(b.Options.LogFile)
-		assert.True(os.IsNotExist(err))
-	})
-
-	t.Run("test valid path to log file", func(t *testing.T) {
-		_ = os.MkdirAll(logDir, 0755)
-		b.configLog()
-		_, err := os.Stat(b.Options.LogFile)
-		assert.False(os.IsNotExist(err))
-	})
-}
-
 func TestCheckCprj(t *testing.T) {
 	assert := assert.New(t)
-	b := Builder{Runner: RunnerMock{}}
+
+	b := CprjBuilder{
+		builder.BuilderParams{
+			Runner: RunnerMock{},
+		},
+	}
 
 	t.Run("test valid cprj", func(t *testing.T) {
-		b.CprjFile = testRoot + "/run/minimal.cprj"
+		b.InputFile = testRoot + "/run/minimal.cprj"
 		err := b.checkCprj()
 		assert.Nil(err)
 	})
 
 	t.Run("test existent file, invalid extension", func(t *testing.T) {
-		b.CprjFile = testRoot + "/run/main.c"
+		b.InputFile = testRoot + "/run/main.c"
 		err := b.checkCprj()
 		assert.Error(err)
 	})
 
 	t.Run("test invalid file", func(t *testing.T) {
-		b.CprjFile = testRoot + "/run/invalid-file.cprj"
+		b.InputFile = testRoot + "/run/invalid-file.cprj"
 		err := b.checkCprj()
 		assert.Error(err)
 	})
@@ -130,10 +94,15 @@ func TestCheckCprj(t *testing.T) {
 
 func TestGetDirs(t *testing.T) {
 	assert := assert.New(t)
-	b := Builder{Runner: RunnerMock{}}
+
+	b := CprjBuilder{
+		builder.BuilderParams{
+			Runner: RunnerMock{},
+		},
+	}
 
 	t.Run("test default directories", func(t *testing.T) {
-		b.CprjFile = testRoot + "/run/minimal.cprj"
+		b.InputFile = testRoot + "/run/minimal.cprj"
 		dirs, err := b.getDirs()
 		assert.Nil(err)
 		intDir, _ := filepath.Abs(testRoot + "/run/IntDir")
@@ -143,7 +112,7 @@ func TestGetDirs(t *testing.T) {
 	})
 
 	t.Run("test valid directories in cprj", func(t *testing.T) {
-		b.CprjFile = testRoot + "/run/minimal-dirs.cprj"
+		b.InputFile = testRoot + "/run/minimal-dirs.cprj"
 		dirs, err := b.getDirs()
 		assert.Nil(err)
 		intDir, _ := filepath.Abs(testRoot + "/run/Intermediate")
@@ -153,7 +122,7 @@ func TestGetDirs(t *testing.T) {
 	})
 
 	t.Run("test valid directories as arguments", func(t *testing.T) {
-		b.CprjFile = testRoot + "/run/minimal.cprj"
+		b.InputFile = testRoot + "/run/minimal.cprj"
 		b.Options.IntDir = "cmdOptionsIntDir"
 		b.Options.OutDir = "cmdOptionsOutDir"
 		dirs, err := b.getDirs()
@@ -165,7 +134,7 @@ func TestGetDirs(t *testing.T) {
 	})
 
 	t.Run("test invalid cprj", func(t *testing.T) {
-		b.CprjFile = testRoot + "/run/invalid-file.cprj"
+		b.InputFile = testRoot + "/run/invalid-file.cprj"
 		_, err := b.getDirs()
 		assert.Error(err)
 	})
@@ -173,7 +142,12 @@ func TestGetDirs(t *testing.T) {
 
 func TestClean(t *testing.T) {
 	assert := assert.New(t)
-	b := Builder{Runner: RunnerMock{}}
+
+	b := CprjBuilder{
+		builder.BuilderParams{
+			Runner: RunnerMock{},
+		},
+	}
 	var dirs BuildDirs
 	var vars InternalVars
 
@@ -211,11 +185,24 @@ func TestClean(t *testing.T) {
 
 func TestGetInternalVars(t *testing.T) {
 	assert := assert.New(t)
-	b := Builder{Runner: RunnerMock{}}
+	b := CprjBuilder{
+		builder.BuilderParams{
+			Runner:    RunnerMock{},
+			InputFile: testRoot + "/run/minimal.cprj",
+		},
+	}
+	t.Run("test get internal vars, without CMSIS_BUILD_ROOT", func(t *testing.T) {
+
+		_, err := b.getInternalVars()
+		assert.Error(err)
+	})
 
 	t.Run("test get internal vars, with CMSIS_BUILD_ROOT", func(t *testing.T) {
-		b.CprjFile = testRoot + "/run/minimal.cprj"
 		os.Setenv("CMSIS_BUILD_ROOT", testRoot+"/run/bin")
+		configs, err := utils.GetInstallConfigs()
+		assert.Nil(err)
+		b.InstallConfigs = configs
+
 		vars, err := b.getInternalVars()
 		assert.Nil(err)
 		assert.NotEmpty(vars.cprjPath)
@@ -225,18 +212,15 @@ func TestGetInternalVars(t *testing.T) {
 		assert.NotEmpty(vars.cbuildgenBin)
 		assert.NotEmpty(vars.cpackgetBin)
 	})
-
-	t.Run("test get internal vars, without CMSIS_BUILD_ROOT", func(t *testing.T) {
-		b.CprjFile = testRoot + "/run/minimal.cprj"
-		os.Unsetenv("CMSIS_BUILD_ROOT")
-		_, err := b.getInternalVars()
-		assert.Error(err)
-	})
 }
 
 func TestGetJobs(t *testing.T) {
 	assert := assert.New(t)
-	b := Builder{Runner: RunnerMock{}}
+	b := CprjBuilder{
+		builder.BuilderParams{
+			Runner: RunnerMock{},
+		},
+	}
 
 	t.Run("test get jobs = 0", func(t *testing.T) {
 		b.Options.Jobs = 0
@@ -259,16 +243,22 @@ func TestGetJobs(t *testing.T) {
 
 func TestBuild(t *testing.T) {
 	assert := assert.New(t)
-	b := Builder{
-		Runner:   RunnerMock{},
-		CprjFile: testRoot + "/run/minimal.cprj",
-		Options: Options{
-			IntDir: testRoot + "/run/IntDir",
-			OutDir: testRoot + "/run/OutDir",
-			Packs:  true,
+	os.Setenv("CMSIS_BUILD_ROOT", testRoot+"/run/bin")
+	configs, err := utils.GetInstallConfigs()
+	assert.Nil(err)
+
+	b := CprjBuilder{
+		builder.BuilderParams{
+			Runner:    RunnerMock{},
+			InputFile: testRoot + "/run/minimal.cprj",
+			Options: builder.Options{
+				IntDir: testRoot + "/run/IntDir",
+				OutDir: testRoot + "/run/OutDir",
+				Packs:  true,
+			},
+			InstallConfigs: configs,
 		},
 	}
-	os.Setenv("CMSIS_BUILD_ROOT", testRoot+"/run/bin")
 
 	t.Run("test build cprj", func(t *testing.T) {
 
@@ -354,12 +344,14 @@ func TestBuild(t *testing.T) {
 
 func TestBuildFail(t *testing.T) {
 	assert := assert.New(t)
-	b := Builder{
-		Runner:   RunnerMock{},
-		CprjFile: testRoot + "/run/minimal.cprj",
-		Options: Options{
-			IntDir: testRoot + "/run/IntDir",
-			OutDir: testRoot + "/run/OutDir",
+	b := CprjBuilder{
+		builder.BuilderParams{
+			Runner:    RunnerMock{},
+			InputFile: testRoot + "/run/minimal.cprj",
+			Options: builder.Options{
+				IntDir: testRoot + "/run/IntDir",
+				OutDir: testRoot + "/run/OutDir",
+			},
 		},
 	}
 	os.Setenv("CMSIS_BUILD_ROOT", testRoot+"/run/bin")

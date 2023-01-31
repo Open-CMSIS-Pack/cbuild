@@ -7,17 +7,26 @@
 package utils
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v3"
 )
 
 type EnvVars struct {
 	PackRoot     string
 	CompilerRoot string
 	BuildRoot    string
+}
+
+type ContextItem struct {
+	ProjectName string
+	BuildType   string
+	TargetType  string
 }
 
 func GetExecutablePath() (string, error) {
@@ -83,4 +92,53 @@ func GetDefaultCmsisPackRoot() (root string) {
 		}
 	}
 	return filepath.Clean(root)
+}
+
+func ParseContext(context string) (item ContextItem, err error) {
+	if context == "" {
+		return ContextItem{}, errors.New("invalid context")
+	}
+
+	buildIdx := strings.Index(context, ".")
+	targetIdx := strings.Index(context, "+")
+
+	if buildIdx > targetIdx {
+		err = errors.New("invalid context")
+	} else {
+		projectName := context[:buildIdx]
+		buildType := context[buildIdx+1 : targetIdx]
+		targetType := context[targetIdx+1:]
+		if projectName == "" || buildType == "" || targetType == "" {
+			err = errors.New("invalid context")
+		} else {
+			item.ProjectName = projectName
+			item.BuildType = buildType
+			item.TargetType = targetType
+		}
+	}
+	return
+}
+
+type CbuildIndex struct {
+	BuildIdx struct {
+		GeneratedBy string `yaml:"generated-by"`
+		Cdefault    string `yaml:"cdefault"`
+		Csolution   string `yaml:"csolution"`
+		Cprojects   []struct {
+			Cproject string `yaml:"cproject"`
+		} `yaml:"cprojects"`
+		Licenses interface{} `yaml:"licenses"`
+		Cbuilds  []struct {
+			Cbuild string `yaml:"cbuild"`
+		} `yaml:"cbuilds"`
+	} `yaml:"build-idx"`
+}
+
+func ParseCbuildIndexFile(cbuildIndexFile string) (data CbuildIndex, err error) {
+	yfile, err := os.ReadFile(cbuildIndexFile)
+	if err != nil {
+		return
+	}
+	err = yaml.Unmarshal(yfile, &data)
+	return
 }
