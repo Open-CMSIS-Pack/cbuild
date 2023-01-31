@@ -159,7 +159,7 @@ func NewRootCmd() *cobra.Command {
 			var b builder.IBuilderInterface
 			if fileExtension == ".cprj" {
 				b = cproject.CprjBuilder{BuilderParams: params}
-			} else if fileExtension == ".yml" {
+			} else if fileExtension == ".yml" || fileExtension == ".yaml" {
 				b = csolution.CSolutionBuilder{BuilderParams: params}
 			} else {
 				return errors.New("invalid file argument")
