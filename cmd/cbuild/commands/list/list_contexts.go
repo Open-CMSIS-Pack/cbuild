@@ -21,7 +21,7 @@ var ListContextsCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fileExtension := filepath.Ext(args[0])
-		if fileExtension != ".yml" {
+		if !(fileExtension == ".yml" || fileExtension == ".yaml") {
 			return errors.New("invalid file argument")
 		}
 

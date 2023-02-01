@@ -95,28 +95,71 @@ func GetDefaultCmsisPackRoot() (root string) {
 }
 
 func ParseContext(context string) (item ContextItem, err error) {
+	var projectName, buildType, targetType string
 	if context == "" {
-		return ContextItem{}, errors.New("invalid context")
+		return ContextItem{}, errors.New("invalid context: \"" + context + "\"")
 	}
 
-	buildIdx := strings.Index(context, ".")
 	targetIdx := strings.Index(context, "+")
+	if targetIdx == -1 {
+		return ContextItem{}, errors.New("invalid context: \"" + context + "\"")
+	}
 
-	if buildIdx > targetIdx {
+	part := context[:targetIdx]
+	buildIdx := strings.Index(part, ".")
+
+	if buildIdx > -1 {
+		projectName = part[:buildIdx]
+		buildType = part[buildIdx+1:]
+	} else {
+		projectName = part
+	}
+
+	part = context[targetIdx+1:]
+	buildIdx = strings.Index(part, ".")
+
+	if buildIdx > -1 {
+		targetType = part[:buildIdx]
+		buildType = part[buildIdx+1:]
+	} else {
+		targetType = part
+	}
+
+	if projectName == "" || targetType == "" {
 		err = errors.New("invalid context")
 	} else {
-		projectName := context[:buildIdx]
-		buildType := context[buildIdx+1 : targetIdx]
-		targetType := context[targetIdx+1:]
-		if projectName == "" || buildType == "" || targetType == "" {
-			err = errors.New("invalid context")
-		} else {
-			item.ProjectName = projectName
-			item.BuildType = buildType
-			item.TargetType = targetType
-		}
+		item.ProjectName = projectName
+		item.BuildType = buildType
+		item.TargetType = targetType
 	}
 	return
+}
+
+func GetSelectedContexts(allContexts []string, context string) (selectedContexts []string, err error) {
+	//var contextMap map[string]ContextItem
+	searchContext, err := ParseContext(context)
+	if err != nil {
+		return selectedContexts, err
+	}
+
+	for _, cntxt := range allContexts {
+		contextItem, err := ParseContext(cntxt)
+		if err != nil {
+			return selectedContexts, err
+		}
+		if contextItem.ProjectName == searchContext.ProjectName &&
+			contextItem.TargetType == searchContext.TargetType {
+			if searchContext.BuildType != "" && searchContext.BuildType != contextItem.BuildType {
+				continue
+			}
+			selectedContexts = append(selectedContexts, cntxt)
+		}
+	}
+
+	if len(selectedContexts) == 0 {
+		err = errors.New("context\"" + context + "\" not found")
+	}
+	return selectedContexts, err
 }
 
 type CbuildIndex struct {

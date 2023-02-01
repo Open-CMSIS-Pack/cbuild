@@ -66,8 +66,8 @@ func (b CprjBuilder) getDirs() (dirs BuildDirs, err error) {
 	}
 
 	// if --output is used, ignore provided --outdir and --intdir
-	if b.Options.Output != "" && (b.Options.OutDir != "" || b.Options.IntDir != "") {
-		log.Warn("output files are generated under: \"" + b.Options.Output + "\". Options --outdir and --intdir are ignored.")
+	if b.Options.Output != "" {
+		log.Warn("output files are generated under: \"" + b.Options.Output + "\". Options --outdir and --intdir shall be ignored.")
 	}
 
 	if b.Options.Output != "" {
