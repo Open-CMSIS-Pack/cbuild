@@ -71,14 +71,15 @@ func TestParseContext(t *testing.T) {
 		ExpectedContext ContextItem
 	}{
 		{"", true, ContextItem{}},
-		{"Project", true, ContextItem{}},
 		{"+Target", true, ContextItem{}},
 		{".Build", true, ContextItem{}},
 		{".Build+Target", true, ContextItem{}},
 		{"+Target.Build", true, ContextItem{}},
-		{"Project+Target", false, ContextItem{"Project", "", "Target"}},
-		{"Project.Build+Target", false, ContextItem{"Project", "Build", "Target"}},
-		{"Project+Target.Build", false, ContextItem{"Project", "Build", "Target"}},
+		{"Project", false, ContextItem{ProjectName: "Project", BuildType: "", TargetType: ""}},
+		{"Project.Build", false, ContextItem{ProjectName: "Project", BuildType: "Build", TargetType: ""}},
+		{"Project+Target", false, ContextItem{ProjectName: "Project", BuildType: "", TargetType: "Target"}},
+		{"Project.Build+Target", false, ContextItem{ProjectName: "Project", BuildType: "Build", TargetType: "Target"}},
+		{"Project+Target.Build", false, ContextItem{ProjectName: "Project", BuildType: "Build", TargetType: "Target"}},
 	}
 	for _, test := range testCases {
 		contextItem, err := ParseContext(test.Input)
@@ -110,13 +111,17 @@ func TestGetSelectedContexts(t *testing.T) {
 		ExpectedSelectedContexts []string
 	}{
 		{"", true, empty},
-		{"Project", true, empty},
 		{"+Target1", true, empty},
 		{".Debug", true, empty},
 		{".Debug+Target1", true, empty},
 		{"+Target1.Build", true, empty},
 		{"TestProject+TestTarget.TestBuild", true, empty},
+		{"Project", false, []string{"Project.Debug+Target1", "Project.Debug+Target2", "Project.Release+Target1", "Project.Release+Target2"}},
+		{"Project.", false, []string{"Project.Debug+Target1", "Project.Debug+Target2", "Project.Release+Target1", "Project.Release+Target2"}},
+		{"Project+", false, []string{"Project.Debug+Target1", "Project.Debug+Target2", "Project.Release+Target1", "Project.Release+Target2"}},
+		{"Project.+", false, []string{"Project.Debug+Target1", "Project.Debug+Target2", "Project.Release+Target1", "Project.Release+Target2"}},
 		{"Project+Target1", false, []string{"Project.Debug+Target1", "Project.Release+Target1"}},
+		{"Project.Release", false, []string{"Project.Release+Target1", "Project.Release+Target2"}},
 		{"Project.Debug+Target1", false, []string{"Project.Debug+Target1"}},
 		{"Project+Target1.Debug", false, []string{"Project.Debug+Target1"}},
 	}

@@ -101,31 +101,43 @@ func ParseContext(context string) (item ContextItem, err error) {
 	}
 
 	targetIdx := strings.Index(context, "+")
-	if targetIdx == -1 {
-		return ContextItem{}, errors.New("invalid context: \"" + context + "\"")
-	}
+	buildIdx := strings.Index(context, ".")
 
-	part := context[:targetIdx]
-	buildIdx := strings.Index(part, ".")
-
-	if buildIdx > -1 {
-		projectName = part[:buildIdx]
-		buildType = part[buildIdx+1:]
+	if targetIdx == -1 && buildIdx == -1 {
+		// context with only projectName
+		projectName = context
+	} else if targetIdx != -1 && buildIdx == -1 {
+		// context with only projectName+targetType
+		projectName = context[:targetIdx]
+		targetType = context[targetIdx+1:]
+	} else if targetIdx == -1 && buildIdx != -1 {
+		// context with only projectName.buildType
+		projectName = context[:buildIdx]
+		buildType = context[buildIdx+1:]
 	} else {
-		projectName = part
+		// fully specified contexts
+		part := context[:targetIdx]
+		buildIdx := strings.Index(part, ".")
+
+		if buildIdx > -1 {
+			projectName = part[:buildIdx]
+			buildType = part[buildIdx+1:]
+		} else {
+			projectName = part
+		}
+
+		part = context[targetIdx+1:]
+		buildIdx = strings.Index(part, ".")
+
+		if buildIdx > -1 {
+			targetType = part[:buildIdx]
+			buildType = part[buildIdx+1:]
+		} else {
+			targetType = part
+		}
 	}
 
-	part = context[targetIdx+1:]
-	buildIdx = strings.Index(part, ".")
-
-	if buildIdx > -1 {
-		targetType = part[:buildIdx]
-		buildType = part[buildIdx+1:]
-	} else {
-		targetType = part
-	}
-
-	if projectName == "" || targetType == "" {
+	if projectName == "" {
 		err = errors.New("invalid context")
 	} else {
 		item.ProjectName = projectName
@@ -136,7 +148,6 @@ func ParseContext(context string) (item ContextItem, err error) {
 }
 
 func GetSelectedContexts(allContexts []string, context string) (selectedContexts []string, err error) {
-	//var contextMap map[string]ContextItem
 	searchContext, err := ParseContext(context)
 	if err != nil {
 		return selectedContexts, err
@@ -147,8 +158,10 @@ func GetSelectedContexts(allContexts []string, context string) (selectedContexts
 		if err != nil {
 			return selectedContexts, err
 		}
-		if contextItem.ProjectName == searchContext.ProjectName &&
-			contextItem.TargetType == searchContext.TargetType {
+		if contextItem.ProjectName == searchContext.ProjectName {
+			if searchContext.TargetType != "" && searchContext.TargetType != contextItem.TargetType {
+				continue
+			}
 			if searchContext.BuildType != "" && searchContext.BuildType != contextItem.BuildType {
 				continue
 			}
