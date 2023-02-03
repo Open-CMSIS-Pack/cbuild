@@ -26,7 +26,7 @@ Available Commands:
 
 Flags:
   -c, --clean              Remove intermediate and output directories
-      --context string     Input context name e.g. project.buildType+targetType
+      --context string     Input context name e.g. [project][.buildType][+targetType]
   -d, --debug              Enable debug messages
   -g, --generator string   Select build system generator (default "Ninja")
   -h, --help               Print usage

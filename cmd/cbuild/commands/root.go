@@ -186,7 +186,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.Flags().StringP("outdir", "o", "", "Set directory for output binary files")
 	rootCmd.Flags().StringP("update", "u", "", "Generate *.cprj file for reproducing current build")
 	rootCmd.Flags().StringP("generator", "g", "Ninja", "Select build system generator")
-	rootCmd.Flags().StringP("context", "", "", "Input context name e.g. project.buildType+targetType")
+	rootCmd.Flags().StringP("context", "", "", "Input context name e.g. [project][.buildType][+targetType]")
 	rootCmd.Flags().StringP("load", "", "", "Set policy for packs loading [latest|all|required]")
 	rootCmd.Flags().IntP("jobs", "j", 0, "Number of job slots for parallel execution")
 	rootCmd.Flags().StringP("target", "t", "", "Optional CMake target name")

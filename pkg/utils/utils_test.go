@@ -65,28 +65,79 @@ func TestGetDefaultCmsisPackRoot(t *testing.T) {
 func TestParseContext(t *testing.T) {
 	assert := assert.New(t)
 
-	t.Run("test empty context", func(t *testing.T) {
-		_, err := ParseContext("")
-		assert.Error(err)
-	})
+	testCases := []struct {
+		Input           string
+		ExpectError     bool
+		ExpectedContext ContextItem
+	}{
+		{"", true, ContextItem{}},
+		{".Build.Build2+Target", true, ContextItem{}},
+		{".Build+Target+Test", true, ContextItem{}},
+		{"+Target", false, ContextItem{ProjectName: "", BuildType: "", TargetType: "Target"}},
+		{".Build", false, ContextItem{ProjectName: "", BuildType: "Build", TargetType: ""}},
+		{".Build+Target", false, ContextItem{ProjectName: "", BuildType: "Build", TargetType: "Target"}},
+		{"+Target.Build", false, ContextItem{ProjectName: "", BuildType: "Build", TargetType: "Target"}},
+		{"Project", false, ContextItem{ProjectName: "Project", BuildType: "", TargetType: ""}},
+		{"Project.Build", false, ContextItem{ProjectName: "Project", BuildType: "Build", TargetType: ""}},
+		{"Project+Target", false, ContextItem{ProjectName: "Project", BuildType: "", TargetType: "Target"}},
+		{"Project.Build+Target", false, ContextItem{ProjectName: "Project", BuildType: "Build", TargetType: "Target"}},
+		{"Project+Target.Build", false, ContextItem{ProjectName: "Project", BuildType: "Build", TargetType: "Target"}},
+	}
+	for _, test := range testCases {
+		contextItem, err := ParseContext(test.Input)
+		if test.ExpectError {
+			assert.Error(err)
+		} else {
+			assert.Nil(err)
+		}
+		assert.Equal(contextItem.ProjectName, test.ExpectedContext.ProjectName)
+		assert.Equal(contextItem.BuildType, test.ExpectedContext.BuildType)
+		assert.Equal(contextItem.TargetType, test.ExpectedContext.TargetType)
+	}
+}
 
-	t.Run("test invalid context 1", func(t *testing.T) {
-		_, err := ParseContext("ProjName+Target.Build")
-		assert.Error(err)
-	})
+func TestGetSelectedContexts(t *testing.T) {
+	assert := assert.New(t)
+	var empty []string
 
-	t.Run("test invalid context 2", func(t *testing.T) {
-		_, err := ParseContext(".Build+Target")
-		assert.Error(err)
-	})
+	allContexts := []string{
+		"Project.Debug+Target1",
+		"Project.Debug+Target2",
+		"Project.Release+Target1",
+		"Project.Release+Target2",
+	}
 
-	t.Run("test valid context", func(t *testing.T) {
-		contextItem, err := ParseContext("ProjName.Build+Target")
-		assert.Nil(err)
-		assert.Equal(contextItem.ProjectName, "ProjName")
-		assert.Equal(contextItem.BuildType, "Build")
-		assert.Equal(contextItem.TargetType, "Target")
-	})
+	testCases := []struct {
+		InputContext             string
+		ExpectError              bool
+		ExpectedSelectedContexts []string
+	}{
+		{"", true, empty},
+		{"UnknowProject+TestTarget.TestBuild", true, empty},
+		{"Project+Target1.Build.Release", true, empty},
+		{"Project+Target1+Target2.Release", true, empty},
+		{"+Target1", false, []string{"Project.Debug+Target1", "Project.Release+Target1"}},
+		{".Debug", false, []string{"Project.Debug+Target1", "Project.Debug+Target2"}},
+		{".Debug+Target1", false, []string{"Project.Debug+Target1"}},
+		{"+Target1.Debug", false, []string{"Project.Debug+Target1"}},
+		{"Project", false, []string{"Project.Debug+Target1", "Project.Debug+Target2", "Project.Release+Target1", "Project.Release+Target2"}},
+		{"Project.", false, []string{"Project.Debug+Target1", "Project.Debug+Target2", "Project.Release+Target1", "Project.Release+Target2"}},
+		{"Project+", false, []string{"Project.Debug+Target1", "Project.Debug+Target2", "Project.Release+Target1", "Project.Release+Target2"}},
+		{"Project.+", false, []string{"Project.Debug+Target1", "Project.Debug+Target2", "Project.Release+Target1", "Project.Release+Target2"}},
+		{"Project+Target1", false, []string{"Project.Debug+Target1", "Project.Release+Target1"}},
+		{"Project.Release", false, []string{"Project.Release+Target1", "Project.Release+Target2"}},
+		{"Project.Debug+Target1", false, []string{"Project.Debug+Target1"}},
+		{"Project+Target1.Debug", false, []string{"Project.Debug+Target1"}},
+	}
+	for _, test := range testCases {
+		selectedContexts, err := GetSelectedContexts(allContexts, test.InputContext)
+		if test.ExpectError {
+			assert.Error(err)
+		} else {
+			assert.Nil(err)
+		}
+		assert.Equal(selectedContexts, test.ExpectedSelectedContexts)
+	}
 }
 
 func TestParseCbuildIndexFile(t *testing.T) {

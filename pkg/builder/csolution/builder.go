@@ -129,7 +129,7 @@ func (b CSolutionBuilder) ListToolchains() error {
 	return err
 }
 
-func (b CSolutionBuilder) getCPRJFilePath(idxFile string) (string, error) {
+func (b CSolutionBuilder) getCprjFilePath(idxFile string) (string, error) {
 	var cprjPath string
 	data, err := utils.ParseCbuildIndexFile(idxFile)
 	if err == nil {
@@ -154,21 +154,22 @@ func (b CSolutionBuilder) Build() (err error) {
 
 	csolutionBin := filepath.Join(b.InstallConfigs.BinPath, "csolution"+b.InstallConfigs.BinExtn)
 	if _, err := os.Stat(csolutionBin); os.IsNotExist(err) {
-		log.Error("csolution was not found")
+		log.Error("error csolution was not found: \"" + err.Error() + "\"")
 		return err
 	}
 
-	// validate context is empty
-	if b.Options.Context == "" {
-		contexts, err := b.listContexts(true)
-		if err != nil {
-			return err
-		}
+	allContexts, err := b.listContexts(true)
+	if err != nil {
+		log.Error("error getting list of contexts: \"" + err.Error() + "\"")
+		return err
+	}
 
-		if len(contexts) == 1 {
-			b.Options.Context = contexts[0]
+	// validate if context is empty
+	if b.Options.Context == "" {
+		if len(allContexts) == 1 {
+			b.Options.Context = allContexts[0]
 		} else {
-			errMsg := "No context specified. One of the following contexts must be specified:\n" + strings.Join(contexts, "\n")
+			errMsg := "No context specified.\nOne of the following contexts must be specified:\n" + strings.Join(allContexts, "\n")
 			return errors.New(errMsg)
 		}
 	}
@@ -176,6 +177,7 @@ func (b CSolutionBuilder) Build() (err error) {
 	// install missing packs when --pack option is specified
 	if b.Options.Packs {
 		if err = b.installMissingPacks(); err != nil {
+			log.Error("error installing missing packs: \"" + err.Error() + "\"")
 			return err
 		}
 	}
@@ -185,11 +187,24 @@ func (b CSolutionBuilder) Build() (err error) {
 		return errors.New("invalid csolution file name")
 	}
 
-	// formulate csolution arguments
-	args := []string{
-		"convert", "--solution=" + b.InputFile,
-		"--context=" + b.Options.Context,
+	// get filtered list of valid contexts from specified context
+	selectedContexts, err := utils.GetSelectedContexts(allContexts, b.Options.Context)
+	if err != nil {
+		log.Error(err.Error())
+		return err
 	}
+
+	var formulatePath = func(cprjFilePath string, dir string, context utils.ContextItem) string {
+		path := filepath.Join(filepath.Dir(cprjFilePath), dir, context.ProjectName)
+		if context.BuildType != "" {
+			path = filepath.Join(path, context.BuildType)
+		}
+		path = filepath.Join(path, context.TargetType)
+		return path
+	}
+
+	// formulate csolution arguments
+	args := []string{"convert", "--solution=" + b.InputFile}
 	if b.Options.Output != "" {
 		args = append(args, "--output="+b.Options.Output)
 	}
@@ -203,43 +218,52 @@ func (b CSolutionBuilder) Build() (err error) {
 		args = append(args, "--no-update-rte")
 	}
 
-	// generate cprj files
-	_, err = b.Runner.ExecuteCommand(csolutionBin, false, args...)
-	if err != nil {
-		log.Error("error building '" + b.InputFile + "'")
-		return err
+	// build each selected context
+	for _, context := range selectedContexts {
+		log.Info("Building context: \"" + context + "\"")
+		b.Options.Context = context
+		args = append(args, "--context="+b.Options.Context)
+
+		// step1: generate cprj files
+		_, err = b.Runner.ExecuteCommand(csolutionBin, false, args...)
+		if err != nil {
+			log.Error("error building '" + b.InputFile + "'")
+			return err
+		}
+
+		// step2: get generated CPRJ file path from index yml
+		outputDir := b.Options.Output
+		if outputDir == "" {
+			outputDir = filepath.Dir(b.InputFile)
+		}
+		cprjFile, err := b.getCprjFilePath(filepath.Join(outputDir, nameTokens[0]+".cbuild-idx.yml"))
+		if err != nil {
+			log.Error("error getting cprj file: " + err.Error())
+			return err
+		}
+
+		// step3: formulate outdir & intdir path
+		selectedContext, _ := utils.ParseContext(context)
+		b.Options.OutDir = formulatePath(cprjFile, "out", selectedContext)
+		b.Options.IntDir = formulatePath(cprjFile, "tmp", selectedContext)
+
+		log.Debug("outdir: " + b.Options.OutDir)
+		log.Debug("intdir: " + b.Options.IntDir)
+
+		// step4: build generated CPRJ project
+		cprjBuilder := cproject.CprjBuilder{
+			BuilderParams: builder.BuilderParams{
+				Runner:         b.Runner,
+				Options:        b.Options,
+				InputFile:      cprjFile,
+				InstallConfigs: b.InstallConfigs,
+			},
+		}
+
+		if err = cprjBuilder.Build(); err != nil {
+			log.Error("error building '" + cprjFile + "'")
+			break
+		}
 	}
-
-	context, err := utils.ParseContext(b.Options.Context)
-	if err != nil {
-		return err
-	}
-
-	outputDir := b.Options.Output
-	if outputDir == "" {
-		outputDir = filepath.Dir(b.InputFile)
-	}
-
-	// get generated CPRJ file path from index yml
-	cprjFile, err := b.getCPRJFilePath(outputDir + "/" + nameTokens[0] + ".cbuild-idx.yml")
-	if err != nil {
-		return err
-	}
-
-	b.Options.OutDir = filepath.Dir(cprjFile) + "/out/" + context.ProjectName + "/" +
-		context.BuildType + "/" + context.TargetType
-	b.Options.IntDir = filepath.Dir(cprjFile) + "/tmp/" + context.ProjectName + "/" +
-		context.BuildType + "/" + context.TargetType
-
-	// build generated CPRJ project
-	cprjBuilder := cproject.CprjBuilder{
-		BuilderParams: builder.BuilderParams{
-			Runner:         b.Runner,
-			Options:        b.Options,
-			InputFile:      cprjFile,
-			InstallConfigs: b.InstallConfigs,
-		},
-	}
-
-	return cprjBuilder.Build()
+	return err
 }
