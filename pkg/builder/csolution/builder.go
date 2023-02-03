@@ -169,7 +169,7 @@ func (b CSolutionBuilder) Build() (err error) {
 		if len(allContexts) == 1 {
 			b.Options.Context = allContexts[0]
 		} else {
-			errMsg := "No context specified. One of the following contexts must be specified:\n" + strings.Join(allContexts, "\n")
+			errMsg := "No context specified.\nOne of the following contexts must be specified:\n" + strings.Join(allContexts, "\n")
 			return errors.New(errMsg)
 		}
 	}
@@ -190,8 +190,8 @@ func (b CSolutionBuilder) Build() (err error) {
 	// get filtered list of valid contexts from specified context
 	selectedContexts, err := utils.GetSelectedContexts(allContexts, b.Options.Context)
 	if err != nil {
-		errMsg := err.Error() + ". One of the following contexts must be specified:\n" + strings.Join(allContexts, "\n")
-		return errors.New(errMsg)
+		log.Error(err.Error())
+		return err
 	}
 
 	var formulatePath = func(cprjFilePath string, dir string, context utils.ContextItem) string {

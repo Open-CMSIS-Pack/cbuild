@@ -95,10 +95,14 @@ func GetDefaultCmsisPackRoot() (root string) {
 }
 
 func ParseContext(context string) (item ContextItem, err error) {
-	var projectName, buildType, targetType string
-	if context == "" {
-		return ContextItem{}, errors.New("invalid context: \"" + context + "\"")
+	periodCount := strings.Count(context, ".")
+	plusCount := strings.Count(context, "+")
+	if context == "" || periodCount > 1 || plusCount > 1 {
+		err = errors.New("invalid context. Follow [project][.buildType][+targetType] symantic")
+		return
 	}
+
+	var projectName, buildType, targetType string
 
 	targetIdx := strings.Index(context, "+")
 	buildIdx := strings.Index(context, ".")
@@ -137,13 +141,9 @@ func ParseContext(context string) (item ContextItem, err error) {
 		}
 	}
 
-	if projectName == "" {
-		err = errors.New("invalid context")
-	} else {
-		item.ProjectName = projectName
-		item.BuildType = buildType
-		item.TargetType = targetType
-	}
+	item.ProjectName = projectName
+	item.BuildType = buildType
+	item.TargetType = targetType
 	return
 }
 
@@ -158,19 +158,21 @@ func GetSelectedContexts(allContexts []string, context string) (selectedContexts
 		if err != nil {
 			return selectedContexts, err
 		}
-		if contextItem.ProjectName == searchContext.ProjectName {
-			if searchContext.TargetType != "" && searchContext.TargetType != contextItem.TargetType {
-				continue
-			}
-			if searchContext.BuildType != "" && searchContext.BuildType != contextItem.BuildType {
-				continue
-			}
-			selectedContexts = append(selectedContexts, cntxt)
+
+		if searchContext.ProjectName != "" && searchContext.ProjectName != contextItem.ProjectName {
+			continue
 		}
+		if searchContext.TargetType != "" && searchContext.TargetType != contextItem.TargetType {
+			continue
+		}
+		if searchContext.BuildType != "" && searchContext.BuildType != contextItem.BuildType {
+			continue
+		}
+		selectedContexts = append(selectedContexts, cntxt)
 	}
 
 	if len(selectedContexts) == 0 {
-		err = errors.New("context\"" + context + "\" not found")
+		err = errors.New("context \"" + context + "\" not found")
 	}
 	return selectedContexts, err
 }
