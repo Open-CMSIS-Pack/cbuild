@@ -11,6 +11,7 @@ import (
 	"cbuild/pkg/builder/cproject"
 	utils "cbuild/pkg/utils"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -22,13 +23,13 @@ type CSolutionBuilder struct {
 	builder.BuilderParams
 }
 
-func (b CSolutionBuilder) listContexts(quite bool) (contexts []string, err error) {
-	args := []string{"list", "contexts", "--solution=" + b.InputFile}
+func (b CSolutionBuilder) listContexts(solutionContext bool, quite bool) (contexts []string, err error) {
+	var resultContexts []string
 
+	args := []string{"list", "contexts", "--solution=" + b.InputFile}
 	if b.Options.Filter != "" {
 		args = append(args, "--filter="+b.Options.Filter)
 	}
-
 	if !b.Options.Schema {
 		args = append(args, "--no-check-schema")
 	}
@@ -48,6 +49,25 @@ func (b CSolutionBuilder) listContexts(quite bool) (contexts []string, err error
 	if output != "" {
 		contexts = strings.Split(strings.ReplaceAll(strings.TrimSpace(output), "\r\n", "\n"), "\n")
 	}
+
+	// formulate solution contexts
+	if solutionContext {
+		for _, context := range contexts {
+			buildIdx := strings.Index(context, ".")
+			targetIdx := strings.Index(context, "+")
+			if buildIdx == -1 && targetIdx == -1 {
+				continue
+			}
+			if buildIdx != -1 {
+				resultContexts = utils.AppendUnique(resultContexts, context[buildIdx:])
+			} else {
+				resultContexts = utils.AppendUnique(resultContexts, context[targetIdx:])
+			}
+		}
+		fmt.Println(strings.Join(resultContexts, "\n"))
+		contexts = resultContexts
+	}
+
 	return contexts, nil
 }
 
@@ -119,8 +139,14 @@ func (b CSolutionBuilder) installMissingPacks() (err error) {
 	return nil
 }
 
-func (b CSolutionBuilder) ListContexts() error {
-	_, err := b.listContexts(false)
+func (b CSolutionBuilder) ListContexts(solutionContext bool) error {
+	var quite bool
+	if solutionContext {
+		quite = true
+	} else {
+		quite = false
+	}
+	_, err := b.listContexts(solutionContext, quite)
 	return err
 }
 
@@ -158,7 +184,7 @@ func (b CSolutionBuilder) Build() (err error) {
 		return err
 	}
 
-	allContexts, err := b.listContexts(true)
+	allContexts, err := b.listContexts(false, true)
 	if err != nil {
 		log.Error("error getting list of contexts: \"" + err.Error() + "\"")
 		return err

@@ -17,7 +17,7 @@ import (
 
 var ListContextsCmd = &cobra.Command{
 	Use:   "contexts <csolution.yml>",
-	Short: "Print list of contexts in a csolution.yml",
+	Short: "Print list of contexts in a csolution.yml [default: project contexts]",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fileExtension := filepath.Ext(args[0])
@@ -32,6 +32,8 @@ var ListContextsCmd = &cobra.Command{
 
 		schameCheck, _ := cmd.Flags().GetBool("schema")
 		filter, _ := cmd.Flags().GetString("filter")
+		slnContext, _ := cmd.Flags().GetBool("solution")
+
 		p := csolution.CSolutionBuilder{
 			BuilderParams: builder.BuilderParams{
 				Runner: utils.Runner{},
@@ -43,10 +45,11 @@ var ListContextsCmd = &cobra.Command{
 				InstallConfigs: configs,
 			},
 		}
-		return p.ListContexts()
+		return p.ListContexts(slnContext)
 	},
 }
 
 func init() {
 	ListContextsCmd.Flags().StringP("filter", "f", "", "filter results (case sensitive, accepts several expressions)")
+	ListContextsCmd.Flags().BoolP("solution", "", false, "list only solution contexts")
 }

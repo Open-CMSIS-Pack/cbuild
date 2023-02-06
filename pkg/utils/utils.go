@@ -200,3 +200,17 @@ func ParseCbuildIndexFile(cbuildIndexFile string) (data CbuildIndex, err error) 
 	err = yaml.Unmarshal(yfile, &data)
 	return
 }
+
+func AppendUnique[T comparable](slice []T, elems ...T) []T {
+	lookup := make(map[T]struct{})
+	all := append(slice, elems...)
+	var unique []T
+	for _, elem := range all {
+		_, isDuplicate := lookup[elem]
+		if !isDuplicate {
+			lookup[elem] = struct{}{}
+			unique = append(unique, elem)
+		}
+	}
+	return unique
+}
