@@ -15,7 +15,7 @@ This utility allows embedded developers to build **CPRJ** and **csolution** proj
 ## Usage
 
 ```bash
-cbuild: Build Invocation 1.3.0 (C) 2022 Arm Ltd. and Contributors
+cbuild: Build Invocation 1.3.0 (C) 2023 Arm Ltd. and Contributors
 
 Usage:
   cbuild [command] <project.cprj|csolution.yml> [flags]
