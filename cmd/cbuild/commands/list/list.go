@@ -22,5 +22,5 @@ func init() {
 		_ = command.Flags().MarkHidden("schema")
 		command.Parent().HelpFunc()(command, strings)
 	})
-	ListCmd.AddCommand(ListContextsCmd, ListToolchainsCmd)
+	ListCmd.AddCommand(ListConfigurationsCmd, ListContextsCmd, ListToolchainsCmd)
 }

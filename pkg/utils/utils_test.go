@@ -165,3 +165,22 @@ func TestParseCbuildIndexFile(t *testing.T) {
 		assert.Equal(data.BuildIdx.Cbuilds[3].Cbuild, "cm4/HelloWorld_cm4.Release+FRDM-K32L3A6.cbuild.yml")
 	})
 }
+
+func TestAppendUnique(t *testing.T) {
+	assert := assert.New(t)
+
+	testCases := []struct {
+		Input            []string
+		AddElement       string
+		ExpectedSliceLen int
+		ExpectedOutput   []string
+	}{
+		{[]string{"one", "two", "three"}, "four", 4, []string{"one", "two", "three", "four"}},
+		{[]string{"one", "two", "three"}, "one", 3, []string{"one", "two", "three"}},
+	}
+	for _, test := range testCases {
+		output := AppendUnique(test.Input, test.AddElement)
+		assert.Len(output, test.ExpectedSliceLen)
+		assert.Equal(output, test.ExpectedOutput)
+	}
+}
