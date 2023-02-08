@@ -11,6 +11,7 @@ import (
 	"cbuild/pkg/builder/cproject"
 	utils "cbuild/pkg/utils"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -20,6 +21,47 @@ import (
 
 type CSolutionBuilder struct {
 	builder.BuilderParams
+}
+
+func (b CSolutionBuilder) listConfigurations() (configurations []string, err error) {
+	filter := b.Options.Filter
+	b.Options.Filter = ""
+	contexts, err := b.listContexts(true)
+	if err != nil {
+		return configurations, errors.New("processing configurations list failed")
+	}
+
+	// formulate solution contexts
+	if len(contexts) != 0 {
+		for _, context := range contexts {
+			buildIdx := strings.Index(context, ".")
+			targetIdx := strings.Index(context, "+")
+			if buildIdx == -1 && targetIdx == -1 {
+				continue
+			}
+			var config string
+			if buildIdx != -1 {
+				config = context[buildIdx:]
+			} else {
+				config = context[targetIdx:]
+			}
+			if filter != "" {
+				if strings.Contains(config, filter) {
+					configurations = utils.AppendUnique(configurations, config)
+				}
+				continue
+			}
+			configurations = utils.AppendUnique(configurations, config)
+		}
+	}
+
+	if len(configurations) == 0 {
+		if filter != "" {
+			log.Error("no configuration was found with filter '" + filter + "'")
+		}
+		return configurations, errors.New("processing configurations list failed")
+	}
+	return configurations, nil
 }
 
 func (b CSolutionBuilder) listContexts(quite bool) (contexts []string, err error) {
@@ -119,6 +161,15 @@ func (b CSolutionBuilder) installMissingPacks() (err error) {
 	return nil
 }
 
+func (b CSolutionBuilder) ListConfigurations() error {
+	configurations, err := b.listConfigurations()
+	if err != nil {
+		return err
+	}
+	fmt.Println(strings.Join(configurations, "\n"))
+	return nil
+}
+
 func (b CSolutionBuilder) ListContexts() error {
 	_, err := b.listContexts(false)
 	return err
@@ -164,16 +215,6 @@ func (b CSolutionBuilder) Build() (err error) {
 		return err
 	}
 
-	// validate if context is empty
-	if b.Options.Context == "" {
-		if len(allContexts) == 1 {
-			b.Options.Context = allContexts[0]
-		} else {
-			errMsg := "No context specified.\nOne of the following contexts must be specified:\n" + strings.Join(allContexts, "\n")
-			return errors.New(errMsg)
-		}
-	}
-
 	// install missing packs when --pack option is specified
 	if b.Options.Packs {
 		if err = b.installMissingPacks(); err != nil {
@@ -187,11 +228,17 @@ func (b CSolutionBuilder) Build() (err error) {
 		return errors.New("invalid csolution file name")
 	}
 
-	// get filtered list of valid contexts from specified context
-	selectedContexts, err := utils.GetSelectedContexts(allContexts, b.Options.Context)
-	if err != nil {
-		log.Error(err.Error())
-		return err
+	var selectedContexts []string
+	if b.Options.Context == "" {
+		// build for all contexts
+		selectedContexts = allContexts
+	} else {
+		// get filtered list of valid contexts from specified context
+		selectedContexts, err = utils.GetSelectedContexts(allContexts, b.Options.Context)
+		if err != nil {
+			log.Error(err.Error())
+			return err
+		}
 	}
 
 	var formulatePath = func(cprjFilePath string, dir string, context utils.ContextItem) string {
