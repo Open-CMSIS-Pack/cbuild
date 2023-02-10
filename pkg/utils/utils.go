@@ -23,6 +23,11 @@ type EnvVars struct {
 	BuildRoot    string
 }
 
+type ConfigurationItem struct {
+	BuildType  string
+	TargetType string
+}
+
 type ContextItem struct {
 	ProjectName string
 	BuildType   string
@@ -147,34 +152,46 @@ func ParseContext(context string) (item ContextItem, err error) {
 	return
 }
 
-func GetSelectedContexts(allContexts []string, context string) (selectedContexts []string, err error) {
-	searchContext, err := ParseContext(context)
+func ParseConfiguration(configuration string) (item ConfigurationItem, err error) {
+	context, err := ParseContext(configuration)
 	if err != nil {
-		return selectedContexts, err
+		return
+	}
+
+	if context.ProjectName != "" {
+		return item, errors.New("invalid configuration")
+	}
+	item.BuildType = context.BuildType
+	item.TargetType = context.TargetType
+	return
+}
+
+func GetSelectedContexts(allContexts []string, configuration string) (selectedContexts []string, err error) {
+	config, err := ParseConfiguration(configuration)
+	if err != nil {
+		return
 	}
 
 	for _, cntxt := range allContexts {
-		contextItem, err := ParseContext(cntxt)
-		if err != nil {
-			return selectedContexts, err
+		contextItem, parseError := ParseContext(cntxt)
+		if parseError != nil {
+			err = parseError
+			return
 		}
 
-		if searchContext.ProjectName != "" && searchContext.ProjectName != contextItem.ProjectName {
+		if config.TargetType != "" && config.TargetType != contextItem.TargetType {
 			continue
 		}
-		if searchContext.TargetType != "" && searchContext.TargetType != contextItem.TargetType {
-			continue
-		}
-		if searchContext.BuildType != "" && searchContext.BuildType != contextItem.BuildType {
+		if config.BuildType != "" && config.BuildType != contextItem.BuildType {
 			continue
 		}
 		selectedContexts = append(selectedContexts, cntxt)
 	}
 
 	if len(selectedContexts) == 0 {
-		err = errors.New("context \"" + context + "\" not found")
+		err = errors.New("specified configuration '" + configuration + "' not found")
 	}
-	return selectedContexts, err
+	return
 }
 
 type CbuildIndex struct {
@@ -213,4 +230,13 @@ func AppendUnique[T comparable](slice []T, elems ...T) []T {
 		}
 	}
 	return unique
+}
+
+func Contains[T comparable](slice []T, elem T) bool {
+	for _, sliceElem := range slice {
+		if sliceElem == elem {
+			return true
+		}
+	}
+	return false
 }

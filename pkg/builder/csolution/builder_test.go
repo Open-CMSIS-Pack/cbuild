@@ -140,28 +140,6 @@ func TestListConfigurations(t *testing.T) {
 		assert.Equal(".Debug+CM0", configs[0])
 		assert.Equal(".Release+CM0", configs[1])
 	})
-
-	// t.Run("test list configurations with only build types", func(t *testing.T) {
-	// 	b.Options.Filter = ""
-	// 	b.Options.Schema = false
-	// 	b.InputFile = testRoot + "/run/TestSolution/test.csolution_only_build_types.yml"
-	// 	configs, err := b.listConfigurations()
-	// 	assert.Nil(err)
-	// 	assert.Equal(len(configs), 2)
-	// 	assert.Equal(".Debug+CM0", configs[0])
-	// 	assert.Equal(".Release+CM0", configs[1])
-	// })
-
-	// t.Run("test list configurations with only target types", func(t *testing.T) {
-	// 	b.Options.Filter = ""
-	// 	b.Options.Schema = false
-	// 	b.InputFile = testRoot + "/run/TestSolution/test.csolution_only_target_types.yml"
-	// 	configs, err := b.listConfigurations()
-	// 	assert.Nil(err)
-	// 	assert.Equal(len(configs), 2)
-	// 	assert.Equal(".Debug+CM0", configs[0])
-	// 	assert.Equal(".Release+CM0", configs[1])
-	// })
 }
 
 func TestListContexts(t *testing.T) {
