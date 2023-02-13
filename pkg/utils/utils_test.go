@@ -116,18 +116,18 @@ func TestGetSelectedContexts(t *testing.T) {
 		{"UnknowProject+TestTarget.TestBuild", true, empty},
 		{"Project+Target1.Build.Release", true, empty},
 		{"Project+Target1+Target2.Release", true, empty},
+		{"Project", true, empty},
+		{"Project.", true, empty},
+		{"Project+", true, empty},
+		{"Project.+", true, empty},
+		{"Project+Target1", true, empty},
+		{"Project.Release", true, empty},
+		{"Project.Debug+Target1", true, empty},
+		{"Project+Target1.Debug", true, empty},
 		{"+Target1", false, []string{"Project.Debug+Target1", "Project.Release+Target1"}},
 		{".Debug", false, []string{"Project.Debug+Target1", "Project.Debug+Target2"}},
 		{".Debug+Target1", false, []string{"Project.Debug+Target1"}},
 		{"+Target1.Debug", false, []string{"Project.Debug+Target1"}},
-		{"Project", false, []string{"Project.Debug+Target1", "Project.Debug+Target2", "Project.Release+Target1", "Project.Release+Target2"}},
-		{"Project.", false, []string{"Project.Debug+Target1", "Project.Debug+Target2", "Project.Release+Target1", "Project.Release+Target2"}},
-		{"Project+", false, []string{"Project.Debug+Target1", "Project.Debug+Target2", "Project.Release+Target1", "Project.Release+Target2"}},
-		{"Project.+", false, []string{"Project.Debug+Target1", "Project.Debug+Target2", "Project.Release+Target1", "Project.Release+Target2"}},
-		{"Project+Target1", false, []string{"Project.Debug+Target1", "Project.Release+Target1"}},
-		{"Project.Release", false, []string{"Project.Release+Target1", "Project.Release+Target2"}},
-		{"Project.Debug+Target1", false, []string{"Project.Debug+Target1"}},
-		{"Project+Target1.Debug", false, []string{"Project.Debug+Target1"}},
 	}
 	for _, test := range testCases {
 		selectedContexts, err := GetSelectedContexts(allContexts, test.InputContext)
@@ -164,4 +164,42 @@ func TestParseCbuildIndexFile(t *testing.T) {
 		assert.Equal(data.BuildIdx.Cbuilds[2].Cbuild, "cm4/HelloWorld_cm4.Debug+FRDM-K32L3A6.cbuild.yml")
 		assert.Equal(data.BuildIdx.Cbuilds[3].Cbuild, "cm4/HelloWorld_cm4.Release+FRDM-K32L3A6.cbuild.yml")
 	})
+}
+
+func TestAppendUnique(t *testing.T) {
+	assert := assert.New(t)
+
+	testCases := []struct {
+		input            []string
+		addElement       string
+		expectedSliceLen int
+		expectedOutput   []string
+	}{
+		{[]string{"one", "two", "three"}, "four", 4, []string{"one", "two", "three", "four"}},
+		{[]string{"one", "two", "three"}, "one", 3, []string{"one", "two", "three"}},
+	}
+	for _, test := range testCases {
+		output := AppendUnique(test.input, test.addElement)
+		assert.Len(output, test.expectedSliceLen)
+		assert.Equal(output, test.expectedOutput)
+	}
+}
+
+func TestContains(t *testing.T) {
+	assert := assert.New(t)
+
+	testCases := []struct {
+		slice          []string
+		element        string
+		expectedResult bool
+	}{
+		{[]string{"one", "two", "three"}, "four", false},
+		{[]string{""}, "one", false},
+		{[]string{"one", "two", "three"}, "one", true},
+	}
+
+	for _, test := range testCases {
+		output := Contains(test.slice, test.element)
+		assert.Equal(output, test.expectedResult)
+	}
 }

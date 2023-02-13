@@ -11,6 +11,7 @@ import (
 	"cbuild/pkg/builder/cproject"
 	utils "cbuild/pkg/utils"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -20,6 +21,48 @@ import (
 
 type CSolutionBuilder struct {
 	builder.BuilderParams
+}
+
+func (b CSolutionBuilder) listConfigurations() (configurations []string, err error) {
+	filter := b.Options.Filter
+	b.Options.Filter = ""
+	contexts, err := b.listContexts(true)
+	if err != nil {
+		return configurations, errors.New("processing configurations list failed")
+	}
+
+	// formulate solution contexts
+	if len(contexts) != 0 {
+		for _, context := range contexts {
+			buildIdx := strings.Index(context, ".")
+			targetIdx := strings.Index(context, "+")
+			if buildIdx == -1 && targetIdx == -1 {
+				continue
+			}
+			var config string
+			if buildIdx != -1 {
+				config = context[buildIdx:]
+			} else {
+				config = context[targetIdx:]
+			}
+			if filter != "" {
+				if strings.Contains(config, filter) {
+					configurations = utils.AppendUnique(configurations, config)
+				}
+				continue
+			}
+			configurations = utils.AppendUnique(configurations, config)
+		}
+	}
+
+	if len(configurations) == 0 {
+		if filter != "" {
+			log.Error("no configuration was found with filter '" + filter + "'")
+			return configurations, errors.New("processing configurations list failed")
+		}
+		log.Info("no configuration found")
+	}
+	return configurations, nil
 }
 
 func (b CSolutionBuilder) listContexts(quite bool) (contexts []string, err error) {
@@ -33,10 +76,9 @@ func (b CSolutionBuilder) listContexts(quite bool) (contexts []string, err error
 		args = append(args, "--no-check-schema")
 	}
 
-	csolutionBin := filepath.Join(b.InstallConfigs.BinPath, "csolution"+b.InstallConfigs.BinExtn)
-	if _, err := os.Stat(csolutionBin); os.IsNotExist(err) {
-		log.Error("csolution was not found")
-		return nil, err
+	csolutionBin, err := b.getCsolutionPath()
+	if err != nil {
+		return
 	}
 
 	output, err := b.Runner.ExecuteCommand(csolutionBin, quite, args...)
@@ -52,10 +94,9 @@ func (b CSolutionBuilder) listContexts(quite bool) (contexts []string, err error
 }
 
 func (b CSolutionBuilder) listToolchains(quite bool) (toolchains []string, err error) {
-	csolutionBin := filepath.Join(b.InstallConfigs.BinPath, "csolution"+b.InstallConfigs.BinExtn)
-	if _, err := os.Stat(csolutionBin); os.IsNotExist(err) {
-		log.Error("csolution was not found")
-		return toolchains, err
+	csolutionBin, err := b.getCsolutionPath()
+	if err != nil {
+		return
 	}
 
 	args := []string{"list", "toolchains"}
@@ -83,13 +124,12 @@ func (b CSolutionBuilder) installMissingPacks() (err error) {
 		args = append(args, "--no-check-schema")
 	}
 
-	// Get list of missing packs
-	csolutionBin := filepath.Join(b.InstallConfigs.BinPath, "csolution"+b.InstallConfigs.BinExtn)
-	if _, err := os.Stat(csolutionBin); os.IsNotExist(err) {
-		log.Error("csolution was not found")
-		return err
+	csolutionBin, err := b.getCsolutionPath()
+	if err != nil {
+		return
 	}
 
+	// Get list of missing packs
 	output, err := b.Runner.ExecuteCommand(csolutionBin, false, args...)
 	if err != nil {
 		log.Error("error in getting list of missing packs")
@@ -116,6 +156,15 @@ func (b CSolutionBuilder) installMissingPacks() (err error) {
 			return err
 		}
 	}
+	return nil
+}
+
+func (b CSolutionBuilder) ListConfigurations() error {
+	configurations, err := b.listConfigurations()
+	if err != nil {
+		return err
+	}
+	fmt.Println(strings.Join(configurations, "\n"))
 	return nil
 }
 
@@ -149,28 +198,52 @@ func (b CSolutionBuilder) getCprjFilePath(idxFile string) (string, error) {
 	return cprjPath, err
 }
 
+func (b CSolutionBuilder) getCsolutionPath() (path string, err error) {
+	path = filepath.Join(b.InstallConfigs.BinPath, "csolution"+b.InstallConfigs.BinExtn)
+	if _, err = os.Stat(path); os.IsNotExist(err) {
+		log.Error("error csolution was not found: \"" + err.Error() + "\"")
+	}
+	return
+}
+
 func (b CSolutionBuilder) Build() (err error) {
 	_ = utils.UpdateEnvVars(b.InstallConfigs.BinPath, b.InstallConfigs.EtcPath)
+	csolutionBin, err := b.getCsolutionPath()
+	if err != nil {
+		return
+	}
 
-	csolutionBin := filepath.Join(b.InstallConfigs.BinPath, "csolution"+b.InstallConfigs.BinExtn)
-	if _, err := os.Stat(csolutionBin); os.IsNotExist(err) {
-		log.Error("error csolution was not found: \"" + err.Error() + "\"")
-		return err
+	if b.Options.Context != "" && b.Options.Configuration != "" {
+		err = errors.New("options '--context' and '--configuration' cannot be used together")
+		return
 	}
 
 	allContexts, err := b.listContexts(true)
 	if err != nil {
 		log.Error("error getting list of contexts: \"" + err.Error() + "\"")
-		return err
+		return
 	}
 
-	// validate if context is empty
-	if b.Options.Context == "" {
-		if len(allContexts) == 1 {
-			b.Options.Context = allContexts[0]
+	var selectedContexts []string
+	if b.Options.Context != "" {
+		if !utils.Contains(allContexts, b.Options.Context) {
+			err = errors.New("specified context '" + b.Options.Context +
+				"' not found. One of the following contexts must be specified:\n" +
+				strings.Join(allContexts, "\n"))
+			return
+		}
+		selectedContexts = append(selectedContexts, b.Options.Context)
+	} else {
+		if b.Options.Configuration == "" {
+			// build all contexts when configuration is empty
+			selectedContexts = allContexts
 		} else {
-			errMsg := "No context specified.\nOne of the following contexts must be specified:\n" + strings.Join(allContexts, "\n")
-			return errors.New(errMsg)
+			// get list of valid contexts from specified configuration
+			selectedContexts, err = utils.GetSelectedContexts(allContexts, b.Options.Configuration)
+			if err != nil {
+				log.Error(err.Error())
+				return
+			}
 		}
 	}
 
@@ -185,13 +258,6 @@ func (b CSolutionBuilder) Build() (err error) {
 	nameTokens := strings.Split(filepath.Base(b.InputFile), ".")
 	if len(nameTokens) != 3 {
 		return errors.New("invalid csolution file name")
-	}
-
-	// get filtered list of valid contexts from specified context
-	selectedContexts, err := utils.GetSelectedContexts(allContexts, b.Options.Context)
-	if err != nil {
-		log.Error(err.Error())
-		return err
 	}
 
 	var formulatePath = func(cprjFilePath string, dir string, context utils.ContextItem) string {

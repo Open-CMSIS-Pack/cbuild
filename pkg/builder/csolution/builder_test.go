@@ -30,6 +30,8 @@ func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) (
 		if args[0] == "list" {
 			if args[1] == "contexts" {
 				return "test.Debug+CM0\r\ntest.Release+CM0", nil
+			} else if args[1] == "configurations" {
+				return ".Debug+CM0\r\n.Release+CM0", nil
 			} else if args[1] == "toolchains" {
 				return "AC5@5.6.7\nAC6@6.18.0\nGCC@11.2.1\nIAR@8.50.6\n", nil
 			} else if args[1] == "packs" {
@@ -76,6 +78,68 @@ func init() {
 	defer file.Close()
 
 	_ = cp.Copy(testRoot+"/run/test.Debug+CM0.cprj", testRoot+"/run/OutDir/test.Debug+CM0.cprj")
+}
+
+func TestListConfigurations(t *testing.T) {
+	assert := assert.New(t)
+	os.Setenv("CMSIS_BUILD_ROOT", testRoot+"/run/bin")
+	configs, err := utils.GetInstallConfigs()
+	assert.Nil(err)
+
+	b := CSolutionBuilder{
+		BuilderParams: builder.BuilderParams{
+			Runner:         RunnerMock{},
+			InputFile:      testRoot + "/run/TestSolution/test.csolution.yml",
+			InstallConfigs: configs,
+		},
+	}
+
+	t.Run("test list configurations", func(t *testing.T) {
+		configs, err := b.listConfigurations()
+		assert.Nil(err)
+		assert.Equal(len(configs), 2)
+		assert.Equal(".Debug+CM0", configs[0])
+		assert.Equal(".Release+CM0", configs[1])
+	})
+
+	t.Run("test list configurations with invalid path", func(t *testing.T) {
+		binExtn := b.InstallConfigs.BinExtn
+		b.InstallConfigs.BinExtn = "invalid_path"
+		_, err := b.listConfigurations()
+		b.InstallConfigs.BinExtn = binExtn
+		assert.Error(err)
+	})
+
+	t.Run("test list configurations", func(t *testing.T) {
+		err := b.ListConfigurations()
+		assert.Nil(err)
+	})
+
+	t.Run("test list configurations with invalid path", func(t *testing.T) {
+		binExtn := b.InstallConfigs.BinExtn
+		b.InstallConfigs.BinExtn = "invalid_path"
+		err := b.ListConfigurations()
+		b.InstallConfigs.BinExtn = binExtn
+		assert.Error(err)
+	})
+
+	t.Run("test list configurations with filter", func(t *testing.T) {
+		b.Options.Filter = "Debug"
+		configs, err := b.listConfigurations()
+		assert.Nil(err)
+		assert.Equal(len(configs), 1)
+		assert.Equal(".Debug+CM0", configs[0])
+	})
+
+	t.Run("test list configurations with schema check", func(t *testing.T) {
+		b.Options.Filter = ""
+		b.Options.Schema = true
+		configs, err := b.listConfigurations()
+		assert.Nil(err)
+		assert.Equal(len(configs), 2)
+		assert.Equal(".Debug+CM0", configs[0])
+		assert.Equal(".Release+CM0", configs[1])
+	})
 }
 
 func TestListContexts(t *testing.T) {

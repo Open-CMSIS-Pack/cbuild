@@ -110,6 +110,7 @@ func NewRootCmd() *cobra.Command {
 			generator, _ := cmd.Flags().GetString("generator")
 			target, _ := cmd.Flags().GetString("target")
 			context, _ := cmd.Flags().GetString("context")
+			configuration, _ := cmd.Flags().GetString("configuration")
 			load, _ := cmd.Flags().GetString("load")
 			output, _ := cmd.Flags().GetString("output")
 			jobs, _ := cmd.Flags().GetInt("jobs")
@@ -123,24 +124,25 @@ func NewRootCmd() *cobra.Command {
 			updateRte, _ := cmd.Flags().GetBool("update-rte")
 
 			options := builder.Options{
-				IntDir:    intDir,
-				OutDir:    outDir,
-				LockFile:  lockFile,
-				LogFile:   logFile,
-				Generator: generator,
-				Target:    target,
-				Jobs:      jobs,
-				Quiet:     quiet,
-				Debug:     debug,
-				Verbose:   verbose,
-				Clean:     clean,
-				Schema:    schema,
-				Packs:     packs,
-				Rebuild:   rebuild,
-				UpdateRte: updateRte,
-				Context:   context,
-				Load:      load,
-				Output:    output,
+				IntDir:        intDir,
+				OutDir:        outDir,
+				LockFile:      lockFile,
+				LogFile:       logFile,
+				Generator:     generator,
+				Target:        target,
+				Jobs:          jobs,
+				Quiet:         quiet,
+				Debug:         debug,
+				Verbose:       verbose,
+				Clean:         clean,
+				Schema:        schema,
+				Packs:         packs,
+				Rebuild:       rebuild,
+				UpdateRte:     updateRte,
+				Context:       context,
+				Configuration: configuration,
+				Load:          load,
+				Output:        output,
 			}
 
 			configs, err := utils.GetInstallConfigs()
@@ -186,7 +188,8 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.Flags().StringP("outdir", "o", "", "Set directory for output binary files")
 	rootCmd.Flags().StringP("update", "u", "", "Generate *.cprj file for reproducing current build")
 	rootCmd.Flags().StringP("generator", "g", "Ninja", "Select build system generator")
-	rootCmd.Flags().StringP("context", "", "", "Input context name e.g. [project][.buildType][+targetType]")
+	rootCmd.Flags().StringP("context", "", "", "Input context name e.g. project.buildType+targetType")
+	rootCmd.Flags().StringP("configuration", "", "", "Input configuration name e.g. [.buildType][+targetType]")
 	rootCmd.Flags().StringP("load", "", "", "Set policy for packs loading [latest|all|required]")
 	rootCmd.Flags().IntP("jobs", "j", 0, "Number of job slots for parallel execution")
 	rootCmd.Flags().StringP("target", "t", "", "Optional CMake target name")
