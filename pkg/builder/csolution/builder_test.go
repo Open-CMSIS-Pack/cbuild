@@ -173,14 +173,14 @@ func TestListContexts(t *testing.T) {
 	})
 
 	t.Run("test list contexts", func(t *testing.T) {
-		err := b.ListContexts(false)
+		err := b.ListContexts()
 		assert.Nil(err)
 	})
 
 	t.Run("test list contexts with invalid path", func(t *testing.T) {
 		binExtn := b.InstallConfigs.BinExtn
 		b.InstallConfigs.BinExtn = "invalid_path"
-		err := b.ListContexts(false)
+		err := b.ListContexts()
 		b.InstallConfigs.BinExtn = binExtn
 		assert.Error(err)
 	})

@@ -30,12 +30,12 @@ jobs:
     strategy:
       matrix:
         platform: [ubuntu-latest]
-        go: [1.19.3]
+        go: [1.20.1]
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
-      - name: Install go 1.19
+      - name: Install go
         uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go }}
@@ -48,12 +48,12 @@ jobs:
     strategy:
       matrix:
         platform: [ubuntu-latest]
-        go: [1.19.3]
+        go: [1.20.1]
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
-      - name: Install go 1.19
+      - name: Install go
         uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go }}
@@ -68,13 +68,13 @@ jobs:
     strategy:
       matrix:
         platform: [ubuntu-latest, windows-latest, macos-latest]
-        go: [1.19.3]
+        go: [1.20.1]
     name: '${{ matrix.platform }} | ${{ matrix.go }}'
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
-      - name: Install go 1.19
+      - name: Install go
         uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go }}
@@ -140,14 +140,14 @@ jobs:
     strategy:
       matrix:
         platform: [ubuntu-latest]
-        go: [1.19.3]
+        go: [1.20.1]
     name: 'Coverage check'
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
 
-      - name: Install go 1.19
+      - name: Install go
         uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go }}
