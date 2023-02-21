@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -26,7 +27,7 @@ type CSolutionBuilder struct {
 func (b CSolutionBuilder) listConfigurations() (configurations []string, err error) {
 	filter := b.Options.Filter
 	b.Options.Filter = ""
-	contexts, err := b.listContexts(true)
+	contexts, err := b.listContexts(true, false)
 	if err != nil {
 		return configurations, errors.New("processing configurations list failed")
 	}
@@ -65,7 +66,7 @@ func (b CSolutionBuilder) listConfigurations() (configurations []string, err err
 	return configurations, nil
 }
 
-func (b CSolutionBuilder) listContexts(quite bool) (contexts []string, err error) {
+func (b CSolutionBuilder) listContexts(quite bool, ymlOrder bool) (contexts []string, err error) {
 	args := []string{"list", "contexts", "--solution=" + b.InputFile}
 
 	if b.Options.Filter != "" {
@@ -74,6 +75,10 @@ func (b CSolutionBuilder) listContexts(quite bool) (contexts []string, err error
 
 	if !b.Options.Schema {
 		args = append(args, "--no-check-schema")
+	}
+
+	if ymlOrder {
+		args = append(args, "--yml-order")
 	}
 
 	csolutionBin, err := b.getCsolutionPath()
@@ -169,7 +174,7 @@ func (b CSolutionBuilder) ListConfigurations() error {
 }
 
 func (b CSolutionBuilder) ListContexts() error {
-	_, err := b.listContexts(false)
+	_, err := b.listContexts(false, false)
 	return err
 }
 
@@ -218,7 +223,8 @@ func (b CSolutionBuilder) Build() (err error) {
 		return
 	}
 
-	allContexts, err := b.listContexts(true)
+	// get list of all contexts
+	allContexts, err := b.listContexts(true, true)
 	if err != nil {
 		log.Error("error getting list of contexts: \"" + err.Error() + "\"")
 		return
@@ -227,6 +233,7 @@ func (b CSolutionBuilder) Build() (err error) {
 	var selectedContexts []string
 	if b.Options.Context != "" {
 		if !utils.Contains(allContexts, b.Options.Context) {
+			sort.Strings(allContexts)
 			err = errors.New("specified context '" + b.Options.Context +
 				"' not found. One of the following contexts must be specified:\n" +
 				strings.Join(allContexts, "\n"))
@@ -286,7 +293,10 @@ func (b CSolutionBuilder) Build() (err error) {
 
 	// build each selected context
 	for _, context := range selectedContexts {
-		log.Info("Building context: \"" + context + "\"")
+		infoMsg := "Building context: \"" + context + "\""
+		seperator := strings.Repeat("=", len(infoMsg)+13)
+		log.Info(infoMsg + "\n" + seperator)
+
 		b.Options.Context = context
 		args = append(args, "--context="+b.Options.Context)
 
