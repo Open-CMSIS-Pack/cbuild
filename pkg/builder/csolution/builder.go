@@ -211,6 +211,21 @@ func (b CSolutionBuilder) getCsolutionPath() (path string, err error) {
 	return
 }
 
+func (b CSolutionBuilder) validateContext(allContexts []string) (err error) {
+	_, err = utils.ParseContext(b.Options.Context)
+	if err != nil {
+		return
+	}
+
+	if !utils.Contains(allContexts, b.Options.Context) {
+		sort.Strings(allContexts)
+		err = errors.New("specified context '" + b.Options.Context +
+			"' not found. One of the following contexts must be specified:\n" +
+			strings.Join(allContexts, "\n"))
+	}
+	return
+}
+
 func (b CSolutionBuilder) Build() (err error) {
 	_ = utils.UpdateEnvVars(b.InstallConfigs.BinPath, b.InstallConfigs.EtcPath)
 	csolutionBin, err := b.getCsolutionPath()
@@ -232,12 +247,7 @@ func (b CSolutionBuilder) Build() (err error) {
 
 	var selectedContexts []string
 	if b.Options.Context != "" {
-		// validate context
-		if !utils.Contains(allContexts, b.Options.Context) {
-			sort.Strings(allContexts)
-			err = errors.New("specified context '" + b.Options.Context +
-				"' not found. One of the following contexts must be specified:\n" +
-				strings.Join(allContexts, "\n"))
+		if err = b.validateContext(allContexts); err != nil {
 			return
 		}
 		selectedContexts = append(selectedContexts, b.Options.Context)
@@ -291,8 +301,11 @@ func (b CSolutionBuilder) Build() (err error) {
 		args = append(args, "--no-update-rte")
 	}
 	if b.Options.Configuration != "" {
-		configurationItem, _ := utils.ParseConfiguration(b.Options.Configuration)
-		contextQuery := "*" + b.Options.Configuration
+		configurationItem, err := utils.ParseConfiguration(b.Options.Configuration)
+		if err != nil {
+			return err
+		}
+		contextQuery := "*" + utils.CreateConfiguration(configurationItem)
 		if configurationItem.TargetType == "" {
 			contextQuery += "*"
 		}
