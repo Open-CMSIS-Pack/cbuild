@@ -71,15 +71,18 @@ func TestParseContext(t *testing.T) {
 		ExpectedContext ContextItem
 	}{
 		{"", true, ContextItem{}},
+		{".+", true, ContextItem{}},
+		{".Build+", true, ContextItem{}},
+		{".+Target", true, ContextItem{}},
 		{".Build.Build2+Target", true, ContextItem{}},
 		{".Build+Target+Test", true, ContextItem{}},
-		{"+Target", false, ContextItem{ProjectName: "", BuildType: "", TargetType: "Target"}},
-		{".Build", false, ContextItem{ProjectName: "", BuildType: "Build", TargetType: ""}},
-		{".Build+Target", false, ContextItem{ProjectName: "", BuildType: "Build", TargetType: "Target"}},
-		{"+Target.Build", false, ContextItem{ProjectName: "", BuildType: "Build", TargetType: "Target"}},
-		{"Project", false, ContextItem{ProjectName: "Project", BuildType: "", TargetType: ""}},
-		{"Project.Build", false, ContextItem{ProjectName: "Project", BuildType: "Build", TargetType: ""}},
-		{"Project+Target", false, ContextItem{ProjectName: "Project", BuildType: "", TargetType: "Target"}},
+		{"+Target", true, ContextItem{}},
+		{".Build", true, ContextItem{}},
+		{".Build+Target", true, ContextItem{}},
+		{"+Target.Build", true, ContextItem{}},
+		{"Project", true, ContextItem{}},
+		{"Project.Build", true, ContextItem{}},
+		{"Project+Target", true, ContextItem{}},
 		{"Project.Build+Target", false, ContextItem{ProjectName: "Project", BuildType: "Build", TargetType: "Target"}},
 		{"Project+Target.Build", false, ContextItem{ProjectName: "Project", BuildType: "Build", TargetType: "Target"}},
 	}
@@ -93,6 +96,60 @@ func TestParseContext(t *testing.T) {
 		assert.Equal(contextItem.ProjectName, test.ExpectedContext.ProjectName)
 		assert.Equal(contextItem.BuildType, test.ExpectedContext.BuildType)
 		assert.Equal(contextItem.TargetType, test.ExpectedContext.TargetType)
+	}
+}
+
+func TestParseConfiguration(t *testing.T) {
+	assert := assert.New(t)
+
+	testCases := []struct {
+		Input           string
+		ExpectError     bool
+		ExpectedContext ConfigurationItem
+	}{
+		{"", true, ConfigurationItem{}},
+		{".+", true, ConfigurationItem{}},
+		{"Project", true, ConfigurationItem{}},
+		{".Build.Build2+Target", true, ConfigurationItem{}},
+		{".Build+Target+Test", true, ConfigurationItem{}},
+		{"Project.Build", true, ConfigurationItem{}},
+		{"Project+Target", true, ConfigurationItem{}},
+		{"Project.Build+Target", true, ConfigurationItem{}},
+		{"Project+Target.Build", true, ConfigurationItem{}},
+		{".+Target", false, ConfigurationItem{BuildType: "", TargetType: "Target"}},
+		{".Build+", false, ConfigurationItem{BuildType: "Build", TargetType: ""}},
+		{"+Target", false, ConfigurationItem{BuildType: "", TargetType: "Target"}},
+		{".Build", false, ConfigurationItem{BuildType: "Build", TargetType: ""}},
+		{".Build+Target", false, ConfigurationItem{BuildType: "Build", TargetType: "Target"}},
+		{"+Target.Build", false, ConfigurationItem{BuildType: "Build", TargetType: "Target"}},
+	}
+	for _, test := range testCases {
+		configItem, err := ParseConfiguration(test.Input)
+		if test.ExpectError {
+			assert.Error(err)
+		} else {
+			assert.Nil(err)
+		}
+		assert.Equal(configItem.BuildType, test.ExpectedContext.BuildType)
+		assert.Equal(configItem.TargetType, test.ExpectedContext.TargetType)
+	}
+}
+
+func TestCreateConfiguration(t *testing.T) {
+	assert := assert.New(t)
+
+	testCases := []struct {
+		Input          ConfigurationItem
+		ExpectedOutput string
+	}{
+		{ConfigurationItem{}, ""},
+		{ConfigurationItem{BuildType: "Build", TargetType: "Target"}, ".Build+Target"},
+		{ConfigurationItem{BuildType: "", TargetType: "Target"}, "+Target"},
+		{ConfigurationItem{BuildType: "Build", TargetType: ""}, ".Build"},
+	}
+	for _, test := range testCases {
+		config := CreateConfiguration(test.Input)
+		assert.Equal(config, test.ExpectedOutput)
 	}
 }
 
