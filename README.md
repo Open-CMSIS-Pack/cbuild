@@ -25,26 +25,27 @@ Available Commands:
   list        List information
 
 Flags:
-  -c, --clean              Remove intermediate and output directories
-      --context string     Input context name e.g. [project][.buildType][+targetType]
-  -d, --debug              Enable debug messages
-  -g, --generator string   Select build system generator (default "Ninja")
-  -h, --help               Print usage
-  -i, --intdir string      Set directory for intermediate files
-  -j, --jobs int           Number of job slots for parallel execution
-      --load string        Set policy for packs loading [latest|all|required]
-  -l, --log string         Save output messages in a log file
-  -o, --outdir string      Set directory for output binary files
-  -O, --output string      Set directory for all output files
-  -p, --packs              Download missing software packs with cpackget
-  -q, --quiet              Suppress output messages except build invocations
-  -r, --rebuild            Remove intermediate and output directories and rebuild
-  -s, --schema             Validate project input file(s) against schema
-  -t, --target string      Optional CMake target name
-  -u, --update string      Generate *.cprj file for reproducing current build
-      --update-rte         Update the RTE directory and files
-  -v, --verbose            Enable verbose messages from toolchain builds
-  -V, --version            Print version
+  -c, --clean                  Remove intermediate and output directories
+      --configuration string   Input configuration name e.g. [.buildType][+targetType]
+      --context string         Input context name e.g. project.buildType+targetType
+  -d, --debug                  Enable debug messages
+  -g, --generator string       Select build system generator (default "Ninja")
+  -h, --help                   Print usage
+  -i, --intdir string          Set directory for intermediate files
+  -j, --jobs int               Number of job slots for parallel execution
+      --load string            Set policy for packs loading [latest|all|required]
+  -l, --log string             Save output messages in a log file
+  -o, --outdir string          Set directory for output binary files
+  -O, --output string          Set directory for all output files
+  -p, --packs                  Download missing software packs with cpackget
+  -q, --quiet                  Suppress output messages except build invocations
+  -r, --rebuild                Remove intermediate and output directories and rebuild
+  -s, --schema                 Validate project input file(s) against schema
+  -t, --target string          Optional CMake target name
+  -u, --update string          Generate *.cprj file for reproducing current build
+      --update-rte             Update the RTE directory and files
+  -v, --verbose                Enable verbose messages from toolchain builds
+  -V, --version                Print version
 
 Use "cbuild [command] --help" for more information about a command.
 ```
