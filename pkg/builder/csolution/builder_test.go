@@ -157,7 +157,7 @@ func TestListContexts(t *testing.T) {
 	}
 
 	t.Run("test list contexts", func(t *testing.T) {
-		contexts, err := b.listContexts(true)
+		contexts, err := b.listContexts(true, false)
 		assert.Nil(err)
 		assert.Equal(len(contexts), 2)
 		assert.Equal("test.Debug+CM0", contexts[0])
@@ -167,7 +167,7 @@ func TestListContexts(t *testing.T) {
 	t.Run("test list contexts with invalid path", func(t *testing.T) {
 		binExtn := b.InstallConfigs.BinExtn
 		b.InstallConfigs.BinExtn = "invalid_path"
-		_, err := b.listContexts(true)
+		_, err := b.listContexts(true, false)
 		b.InstallConfigs.BinExtn = binExtn
 		assert.Error(err)
 	})
@@ -187,7 +187,7 @@ func TestListContexts(t *testing.T) {
 
 	t.Run("test list contexts with filter", func(t *testing.T) {
 		b.Options.Filter = "test"
-		contexts, err := b.listContexts(true)
+		contexts, err := b.listContexts(true, false)
 		assert.Nil(err)
 		assert.Equal(len(contexts), 2)
 		assert.Equal("test.Debug+CM0", contexts[0])
@@ -196,7 +196,7 @@ func TestListContexts(t *testing.T) {
 
 	t.Run("test list contexts with schema check", func(t *testing.T) {
 		b.Options.Schema = true
-		contexts, err := b.listContexts(true)
+		contexts, err := b.listContexts(true, false)
 		assert.Nil(err)
 		assert.Equal(len(contexts), 2)
 		assert.Equal("test.Debug+CM0", contexts[0])

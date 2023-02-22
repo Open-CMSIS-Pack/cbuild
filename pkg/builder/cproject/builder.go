@@ -65,11 +65,6 @@ func (b CprjBuilder) getDirs() (dirs BuildDirs, err error) {
 		dirs.outDir = b.Options.OutDir
 	}
 
-	// if --output is used, ignore provided --outdir and --intdir
-	if b.Options.Output != "" {
-		log.Warn("output files are generated under: \"" + b.Options.Output + "\". Options --outdir and --intdir shall be ignored.")
-	}
-
 	if b.Options.Output != "" {
 		dirs.intDir = ""
 		dirs.outDir = ""
