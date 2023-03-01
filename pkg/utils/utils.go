@@ -151,56 +151,6 @@ func ParseContext(context string) (item ContextItem, err error) {
 	return
 }
 
-func ParseConfiguration(configuration string) (item ConfigurationItem, err error) {
-	parseErr := errors.New("invalid context. Follow [.buildType][+targetType] symantic")
-	periodCount := strings.Count(configuration, ".")
-	plusCount := strings.Count(configuration, "+")
-	if configuration == "" || periodCount > 1 || plusCount > 1 {
-		err = parseErr
-		return
-	}
-
-	var buildType, targetType string
-	targetIdx := strings.Index(configuration, "+")
-	buildIdx := strings.Index(configuration, ".")
-
-	if targetIdx == -1 && buildIdx == -1 {
-		err = parseErr
-		return
-	}
-
-	if !(targetIdx == 0 || buildIdx == 0) {
-		err = parseErr
-		return
-	}
-
-	if targetIdx == -1 {
-		// configuration contains only buildType
-		buildType = configuration[buildIdx+1:]
-	} else if buildIdx == -1 {
-		// configuration contains only targetType
-		targetType = configuration[targetIdx+1:]
-	} else {
-		// fully specified configuration
-		if buildIdx == 0 {
-			buildType = configuration[buildIdx+1 : targetIdx]
-			targetType = configuration[targetIdx+1:]
-		} else {
-			targetType = configuration[targetIdx+1 : buildIdx]
-			buildType = configuration[buildIdx+1:]
-		}
-	}
-
-	if buildType == "" && targetType == "" {
-		err = parseErr
-		return
-	}
-
-	item.BuildType = buildType
-	item.TargetType = targetType
-	return
-}
-
 func CreateConfiguration(configItem ConfigurationItem) (configuration string) {
 	if configItem.BuildType != "" {
 		configuration += "." + configItem.BuildType
@@ -212,25 +162,20 @@ func CreateConfiguration(configItem ConfigurationItem) (configuration string) {
 }
 
 func GetSelectedContexts(allContexts []string, configuration string) (selectedContexts []string, err error) {
-	config, err := ParseConfiguration(configuration)
-	if err != nil {
-		return
+	if configuration == "" {
+		return selectedContexts, errors.New("configuration can not be empty")
 	}
 
-	for _, cntxt := range allContexts {
-		contextItem, parseError := ParseContext(cntxt)
-		if parseError != nil {
-			err = parseError
+	configPattern := "^*" + configuration + "$"
+	for _, context := range allContexts {
+		match, regexErr := MatchToPattern(context, configPattern)
+		if regexErr != nil {
+			err = regexErr
 			return
 		}
-
-		if config.TargetType != "" && config.TargetType != contextItem.TargetType {
-			continue
+		if match {
+			selectedContexts = append(selectedContexts, context)
 		}
-		if config.BuildType != "" && config.BuildType != contextItem.BuildType {
-			continue
-		}
-		selectedContexts = append(selectedContexts, cntxt)
 	}
 
 	if len(selectedContexts) == 0 {

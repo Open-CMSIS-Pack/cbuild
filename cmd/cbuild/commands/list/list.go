@@ -22,5 +22,13 @@ func init() {
 		_ = command.Flags().MarkHidden("schema")
 		command.Parent().HelpFunc()(command, strings)
 	})
+	ListContextsCmd.SetHelpFunc(func(command *cobra.Command, strings []string) {
+		_ = command.Flags().MarkHidden("toolchain")
+		command.Parent().HelpFunc()(command, strings)
+	})
+	ListConfigurationsCmd.SetHelpFunc(func(command *cobra.Command, strings []string) {
+		_ = command.Flags().MarkHidden("toolchain")
+		command.Parent().HelpFunc()(command, strings)
+	})
 	ListCmd.AddCommand(ListConfigurationsCmd, ListContextsCmd, ListToolchainsCmd)
 }
