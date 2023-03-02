@@ -80,9 +80,9 @@ func TestParseContext(t *testing.T) {
 		{".Build", true, ContextItem{}},
 		{".Build+Target", true, ContextItem{}},
 		{"+Target.Build", true, ContextItem{}},
-		{"Project", true, ContextItem{}},
-		{"Project.Build", true, ContextItem{}},
-		{"Project+Target", true, ContextItem{}},
+		{"Project", false, ContextItem{ProjectName: "Project", BuildType: "", TargetType: ""}},
+		{"Project.Build", false, ContextItem{ProjectName: "Project", BuildType: "Build", TargetType: ""}},
+		{"Project+Target", false, ContextItem{ProjectName: "Project", BuildType: "", TargetType: "Target"}},
 		{"Project.Build+Target", false, ContextItem{ProjectName: "Project", BuildType: "Build", TargetType: "Target"}},
 		{"Project+Target.Build", false, ContextItem{ProjectName: "Project", BuildType: "Build", TargetType: "Target"}},
 	}
