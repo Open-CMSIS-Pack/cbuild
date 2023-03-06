@@ -329,3 +329,52 @@ func TestInstallMissingPacks(t *testing.T) {
 		assert.Error(err)
 	})
 }
+
+func TestValidateContext(t *testing.T) {
+	assert := assert.New(t)
+
+	allContexts := []string{
+		"Project1.Build1+Target",
+		"Project1.Build2+Target",
+		"Project2.Build1+Target",
+		"Project2.Build2+Target",
+		"Project3+Target",
+	}
+	testCases := []struct {
+		Input         string
+		ExpectError   bool
+		OutputContext string
+	}{
+		// negative test cases
+		{"", true, ""},
+		{".+", true, ""},
+		{".Build1+", true, ""},
+		{".+Target", true, ""},
+		{".Build1.Build2+Target", true, ""},
+		{".Build1+Target+Test", true, ""},
+		{"+Target", true, ""},
+		{".Build2", true, ""},
+		{".Build2+Target", true, ""},
+		{"+Target.Build1", true, ""},
+		{"Project", true, ""},
+		{"Project.Build2", true, ""},
+		{"Project.Build1+", true, ""},
+		{"Project+Target.Build1", true, ""},
+		{"Project1.+Target", true, "Project1+Target"},
+
+		// positive test cases
+		{"Project1.Build2+Target", false, "Project1.Build2+Target"},
+		{"Project2.Build1+Target", false, "Project2.Build1+Target"},
+		{"Project3+Target", false, "Project3+Target"},
+	}
+	b := CSolutionBuilder{}
+	for _, test := range testCases {
+		context, err := b.validateContext(allContexts, test.Input)
+		if test.ExpectError {
+			assert.Error(err)
+		} else {
+			assert.Nil(err)
+		}
+		assert.Equal(context, test.OutputContext)
+	}
+}

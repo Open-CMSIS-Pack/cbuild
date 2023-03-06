@@ -114,17 +114,15 @@ func ParseContext(context string) (item ContextItem, err error) {
 	targetIdx := strings.Index(context, "+")
 	buildIdx := strings.Index(context, ".")
 
-	if targetIdx == -1 && buildIdx == -1 {
-		// context with only projectName
-		projectName = context
-	} else if targetIdx != -1 && buildIdx == -1 {
+	if targetIdx == -1 || targetIdx < buildIdx {
+		err = parseError
+		return
+	}
+
+	if buildIdx == -1 {
 		// context with only projectName+targetType
 		projectName = context[:targetIdx]
 		targetType = context[targetIdx+1:]
-	} else if targetIdx == -1 && buildIdx != -1 {
-		// context with only projectName.buildType
-		projectName = context[:buildIdx]
-		buildType = context[buildIdx+1:]
 	} else {
 		// fully specified contexts
 		part := context[:targetIdx]
@@ -148,13 +146,26 @@ func ParseContext(context string) (item ContextItem, err error) {
 		}
 	}
 
-	if projectName == "" {
+	if projectName == "" || targetType == "" {
 		err = parseError
 		return
 	}
 	item.ProjectName = projectName
 	item.BuildType = buildType
 	item.TargetType = targetType
+	return
+}
+
+func CreateContext(contextItem ContextItem) (context string, err error) {
+	if contextItem.ProjectName == "" || contextItem.TargetType == "" {
+		err = errors.New("invalid input context item")
+		return
+	}
+	context = contextItem.ProjectName
+	if contextItem.BuildType != "" {
+		context += "." + contextItem.BuildType
+	}
+	context += "+" + contextItem.TargetType
 	return
 }
 
