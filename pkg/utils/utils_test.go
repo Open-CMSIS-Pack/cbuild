@@ -70,6 +70,7 @@ func TestParseContext(t *testing.T) {
 		ExpectError     bool
 		ExpectedContext ContextItem
 	}{
+		// negative test cases
 		{"", true, ContextItem{}},
 		{".+", true, ContextItem{}},
 		{".Build+", true, ContextItem{}},
@@ -82,9 +83,13 @@ func TestParseContext(t *testing.T) {
 		{"+Target.Build", true, ContextItem{}},
 		{"Project", true, ContextItem{}},
 		{"Project.Build", true, ContextItem{}},
-		{"Project+Target", true, ContextItem{}},
+		{"Project.Build+", true, ContextItem{}},
+		{"Project+Target.Build", true, ContextItem{}},
+
+		// positive test cases
+		{"Project.+Target", false, ContextItem{ProjectName: "Project", BuildType: "", TargetType: "Target"}},
+		{"Project+Target", false, ContextItem{ProjectName: "Project", BuildType: "", TargetType: "Target"}},
 		{"Project.Build+Target", false, ContextItem{ProjectName: "Project", BuildType: "Build", TargetType: "Target"}},
-		{"Project+Target.Build", false, ContextItem{ProjectName: "Project", BuildType: "Build", TargetType: "Target"}},
 	}
 	for _, test := range testCases {
 		contextItem, err := ParseContext(test.Input)
@@ -96,6 +101,31 @@ func TestParseContext(t *testing.T) {
 		assert.Equal(contextItem.ProjectName, test.ExpectedContext.ProjectName)
 		assert.Equal(contextItem.BuildType, test.ExpectedContext.BuildType)
 		assert.Equal(contextItem.TargetType, test.ExpectedContext.TargetType)
+	}
+}
+
+func TestCreateContext(t *testing.T) {
+	assert := assert.New(t)
+
+	testCases := []struct {
+		Input          ContextItem
+		ExpectError    bool
+		ExpectedOutput string
+	}{
+		{ContextItem{ProjectName: "", BuildType: "", TargetType: ""}, true, ""},
+		{ContextItem{ProjectName: "", BuildType: "Build", TargetType: "Target"}, true, ""},
+		{ContextItem{ProjectName: "Project", BuildType: "Build", TargetType: ""}, true, ""},
+		{ContextItem{ProjectName: "Project", BuildType: "", TargetType: "Target"}, false, "Project+Target"},
+		{ContextItem{ProjectName: "Project", BuildType: "Build", TargetType: "Target"}, false, "Project.Build+Target"},
+	}
+	for _, test := range testCases {
+		context, err := CreateContext(test.Input)
+		if test.ExpectError {
+			assert.Error(err)
+		} else {
+			assert.Nil(err)
+		}
+		assert.Equal(context, test.ExpectedOutput)
 	}
 }
 

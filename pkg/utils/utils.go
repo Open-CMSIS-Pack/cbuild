@@ -100,7 +100,7 @@ func GetDefaultCmsisPackRoot() (root string) {
 }
 
 func ParseContext(context string) (item ContextItem, err error) {
-	parseError := errors.New("invalid context. Follow project.buildType+targetType symantic")
+	parseError := errors.New("invalid context. Follow project.buildType+targetType syntax")
 
 	periodCount := strings.Count(context, ".")
 	plusCount := strings.Count(context, "+")
@@ -114,45 +114,63 @@ func ParseContext(context string) (item ContextItem, err error) {
 	targetIdx := strings.Index(context, "+")
 	buildIdx := strings.Index(context, ".")
 
-	if targetIdx == -1 || buildIdx == -1 {
+	if targetIdx == -1 || targetIdx < buildIdx {
 		err = parseError
 		return
 	}
 
-	// fully specified contexts
-	part := context[:targetIdx]
-	buildIdx = strings.Index(part, ".")
-
-	if buildIdx > -1 {
-		projectName = part[:buildIdx]
-		buildType = part[buildIdx+1:]
+	if buildIdx == -1 {
+		// context with only projectName+targetType
+		projectName = context[:targetIdx]
+		targetType = context[targetIdx+1:]
 	} else {
-		projectName = part
+		// fully specified contexts
+		part := context[:targetIdx]
+		buildIdx := strings.Index(part, ".")
+
+		if buildIdx > -1 {
+			projectName = part[:buildIdx]
+			buildType = part[buildIdx+1:]
+		} else {
+			projectName = part
+		}
+
+		part = context[targetIdx+1:]
+		buildIdx = strings.Index(part, ".")
+
+		if buildIdx > -1 {
+			targetType = part[:buildIdx]
+			buildType = part[buildIdx+1:]
+		} else {
+			targetType = part
+		}
 	}
 
-	part = context[targetIdx+1:]
-	buildIdx = strings.Index(part, ".")
-
-	if buildIdx > -1 {
-		targetType = part[:buildIdx]
-		buildType = part[buildIdx+1:]
-	} else {
-		targetType = part
-	}
-
-	if projectName == "" || buildType == "" || targetType == "" {
+	if projectName == "" || targetType == "" {
 		err = parseError
 		return
 	}
-
 	item.ProjectName = projectName
 	item.BuildType = buildType
 	item.TargetType = targetType
 	return
 }
 
+func CreateContext(contextItem ContextItem) (context string, err error) {
+	if contextItem.ProjectName == "" || contextItem.TargetType == "" {
+		err = errors.New("invalid input context item")
+		return
+	}
+	context = contextItem.ProjectName
+	if contextItem.BuildType != "" {
+		context += "." + contextItem.BuildType
+	}
+	context += "+" + contextItem.TargetType
+	return
+}
+
 func ParseConfiguration(configuration string) (item ConfigurationItem, err error) {
-	parseErr := errors.New("invalid context. Follow [.buildType][+targetType] symantic")
+	parseErr := errors.New("invalid configuration. Follow [.buildType][+targetType] syntax")
 	periodCount := strings.Count(configuration, ".")
 	plusCount := strings.Count(configuration, "+")
 	if configuration == "" || periodCount > 1 || plusCount > 1 {
