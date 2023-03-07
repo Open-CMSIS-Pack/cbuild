@@ -29,6 +29,7 @@ type Options struct {
 	Load          string
 	Output        string
 	Configuration string
+	Toolchain     string
 	Jobs          int
 	Quiet         bool
 	Debug         bool

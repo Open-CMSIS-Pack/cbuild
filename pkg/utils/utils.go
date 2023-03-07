@@ -182,7 +182,7 @@ func ParseConfiguration(configuration string) (item ConfigurationItem, err error
 	targetIdx := strings.Index(configuration, "+")
 	buildIdx := strings.Index(configuration, ".")
 
-	if targetIdx == -1 && buildIdx == -1 {
+	if (targetIdx == -1 && buildIdx == -1) || (targetIdx != -1 && targetIdx < buildIdx) {
 		err = parseErr
 		return
 	}
@@ -230,25 +230,58 @@ func CreateConfiguration(configItem ConfigurationItem) (configuration string) {
 }
 
 func GetSelectedContexts(allContexts []string, configuration string) (selectedContexts []string, err error) {
-	config, err := ParseConfiguration(configuration)
-	if err != nil {
+	if configuration == "" {
+		selectedContexts = allContexts
 		return
 	}
 
-	for _, cntxt := range allContexts {
-		contextItem, parseError := ParseContext(cntxt)
-		if parseError != nil {
-			err = parseError
+	if IsWildcardPattern(configuration) {
+		configPattern := "*" + configuration
+		for _, context := range allContexts {
+
+			buildIdx := strings.Index(context, ".")
+			targetIdx := strings.Index(context, "+")
+			if buildIdx == -1 && targetIdx == -1 {
+				continue
+			}
+			var config string
+			if buildIdx != -1 {
+				config = context[buildIdx:]
+			} else {
+				config = context[targetIdx:]
+			}
+
+			match, regexErr := MatchString(config, configPattern)
+			if regexErr != nil {
+				err = regexErr
+				return
+			}
+			if match {
+				selectedContexts = append(selectedContexts, context)
+			}
+		}
+	} else {
+		config, parseErr := ParseConfiguration(configuration)
+		if parseErr != nil {
+			err = parseErr
 			return
 		}
 
-		if config.TargetType != "" && config.TargetType != contextItem.TargetType {
-			continue
+		for _, context := range allContexts {
+			contextItem, parseError := ParseContext(context)
+			if parseError != nil {
+				err = parseError
+				return
+			}
+
+			if config.TargetType != "" && config.TargetType != contextItem.TargetType {
+				continue
+			}
+			if config.BuildType != "" && config.BuildType != contextItem.BuildType {
+				continue
+			}
+			selectedContexts = append(selectedContexts, context)
 		}
-		if config.BuildType != "" && config.BuildType != contextItem.BuildType {
-			continue
-		}
-		selectedContexts = append(selectedContexts, cntxt)
 	}
 
 	if len(selectedContexts) == 0 {

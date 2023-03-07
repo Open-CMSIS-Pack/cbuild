@@ -28,13 +28,22 @@ var ListToolchainsCmd = &cobra.Command{
 			return err
 		}
 
+		verbose, _ := cmd.Flags().GetBool("verbose")
+
 		p := csolution.CSolutionBuilder{
 			BuilderParams: builder.BuilderParams{
-				Runner:         utils.Runner{},
+				Runner: utils.Runner{},
+				Options: builder.Options{
+					Verbose: verbose,
+				},
 				InputFile:      inputFile,
 				InstallConfigs: configs,
 			},
 		}
 		return p.ListToolchains()
 	},
+}
+
+func init() {
+	ListToolchainsCmd.Flags().BoolP("verbose", "v", false, "Enable verbose messages")
 }

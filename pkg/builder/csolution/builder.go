@@ -54,6 +54,9 @@ func (b CSolutionBuilder) formulateArgs(command []string) (args []string, err er
 	if b.Options.Context != "" {
 		args = append(args, "--context="+b.Options.Context)
 	}
+	if b.Options.Toolchain != "" {
+		args = append(args, "--toolchain="+b.Options.Toolchain)
+	}
 	if b.Options.Filter != "" {
 		args = append(args, "--filter="+b.Options.Filter)
 	}
@@ -165,11 +168,10 @@ func (b CSolutionBuilder) validateContext(allContexts []string, inputContext str
 
 func (b CSolutionBuilder) processContext(context string) (err error) {
 	var formulatePath = func(cprjFilePath string, dir string, context utils.ContextItem) string {
-		path := filepath.Join(filepath.Dir(cprjFilePath), dir, context.ProjectName)
+		path := filepath.Join(filepath.Dir(cprjFilePath), dir, context.ProjectName, context.TargetType)
 		if context.BuildType != "" {
 			path = filepath.Join(path, context.BuildType)
 		}
-		path = filepath.Join(path, context.TargetType)
 		return path
 	}
 
@@ -207,8 +209,8 @@ func (b CSolutionBuilder) processContext(context string) (err error) {
 	cprjBuildOptions.OutDir = formulatePath(cprjFile, "out", selectedContext)
 	cprjBuildOptions.IntDir = formulatePath(cprjFile, "tmp", selectedContext)
 
-	log.Debug("outdir: " + b.Options.OutDir)
-	log.Debug("intdir: " + b.Options.IntDir)
+	log.Debug("outdir: " + cprjBuildOptions.OutDir)
+	log.Debug("intdir: " + cprjBuildOptions.IntDir)
 
 	// process generated CPRJ project
 	cprjBuilder := cproject.CprjBuilder{
@@ -350,15 +352,10 @@ func (b CSolutionBuilder) Build() (err error) {
 		b.Options.Context = context
 		selectedContexts = append(selectedContexts, context)
 	} else {
-		if b.Options.Configuration == "" {
-			// build all contexts when configuration is empty
-			selectedContexts = allContexts
-		} else {
-			// get list of valid contexts from specified configuration
-			selectedContexts, err = utils.GetSelectedContexts(allContexts, b.Options.Configuration)
-			if err != nil {
-				return
-			}
+		// get list of valid contexts from specified configuration
+		selectedContexts, err = utils.GetSelectedContexts(allContexts, b.Options.Configuration)
+		if err != nil {
+			return
 		}
 	}
 
