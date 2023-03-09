@@ -46,7 +46,6 @@ type InternalVars struct {
 func (b CprjBuilder) checkCprj() error {
 	if filepath.Ext(b.InputFile) != ".cprj" {
 		err := errors.New("missing required argument <project>.cprj")
-		log.Error(err)
 		return err
 	} else {
 		if _, err := os.Stat(b.InputFile); os.IsNotExist(err) {
@@ -229,7 +228,6 @@ func (b CprjBuilder) Build() error {
 		if b.Options.Packs {
 			if vars.cpackgetBin == "" {
 				err := errors.New("cpackget was not found, missing packs cannot be downloaded")
-				log.Error(err)
 				return err
 			}
 			args = []string{"pack", "add", "--agree-embedded-license", "--packs-list-filename", vars.packlistFile}

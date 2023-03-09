@@ -75,9 +75,6 @@ func (b CSolutionBuilder) runCSolution(args []string, quite bool) (output string
 
 	// run csolution with args
 	output, err = b.Runner.ExecuteCommand(csolutionBin, quite, args...)
-	if err != nil {
-		log.Error(err)
-	}
 	return
 }
 
@@ -233,7 +230,8 @@ func (b CSolutionBuilder) listConfigurations() (configurations []string, err err
 	b.Options.Filter = ""
 	contexts, err := b.listContexts(true, false)
 	if err != nil {
-		return configurations, errors.New("processing configurations list failed")
+		err = errors.New("processing configurations list failed")
+		return
 	}
 
 	// formulate solution contexts
@@ -262,10 +260,11 @@ func (b CSolutionBuilder) listConfigurations() (configurations []string, err err
 
 	if len(configurations) == 0 {
 		if filter != "" {
-			log.Error("no configuration was found with filter '" + filter + "'")
-			return configurations, errors.New("processing configurations list failed")
+			err = errors.New("no configuration was found with filter '" + filter + "'")
+			return
 		}
-		log.Info("no configuration found")
+		err = errors.New("no configuration found")
+		return
 	}
 	return configurations, nil
 }
@@ -282,7 +281,6 @@ func (b CSolutionBuilder) listContexts(quite bool, ymlOrder bool) (contexts []st
 
 	output, err := b.runCSolution(args, quite)
 	if err != nil {
-		log.Error("error executing 'cbuild list contexts'")
 		return
 	}
 
@@ -301,7 +299,6 @@ func (b CSolutionBuilder) listToolchains(quite bool) (toolchains []string, err e
 
 	output, err := b.runCSolution(args, quite)
 	if err != nil {
-		log.Error("error executing 'cbuild list toolchains'")
 		return
 	}
 
@@ -375,7 +372,6 @@ func (b CSolutionBuilder) Build() (err error) {
 	// step1: generate cprj files
 	_, err = b.runCSolution(args, false)
 	if err != nil {
-		log.Error(err)
 		return err
 	}
 
@@ -383,7 +379,6 @@ func (b CSolutionBuilder) Build() (err error) {
 	for _, context := range selectedContexts {
 		err = b.processContext(context)
 		if err != nil {
-			log.Error(err)
 			break
 		}
 	}
