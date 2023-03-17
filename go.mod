@@ -1,6 +1,6 @@
 module cbuild
 
-go 1.18
+go 1.20
 
 require (
 	github.com/otiai10/copy v1.9.0
