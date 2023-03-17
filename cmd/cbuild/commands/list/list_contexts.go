@@ -9,8 +9,6 @@ import (
 	"cbuild/pkg/builder"
 	"cbuild/pkg/builder/csolution"
 	"cbuild/pkg/utils"
-	"errors"
-	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
@@ -20,23 +18,18 @@ var ListContextsCmd = &cobra.Command{
 	Short: "Print list of contexts in a csolution.yml",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fileExtension := filepath.Ext(args[0])
-		if !(fileExtension == ".yml" || fileExtension == ".yaml") {
-			return errors.New("invalid file argument")
-		}
-
 		configs, err := utils.GetInstallConfigs()
 		if err != nil {
 			return err
 		}
 
-		schameCheck, _ := cmd.Flags().GetBool("schema")
+		schemaCheck, _ := cmd.Flags().GetBool("schema")
 		filter, _ := cmd.Flags().GetString("filter")
 		p := csolution.CSolutionBuilder{
 			BuilderParams: builder.BuilderParams{
 				Runner: utils.Runner{},
 				Options: builder.Options{
-					Schema: schameCheck,
+					Schema: schemaCheck,
 					Filter: filter,
 				},
 				InputFile:      args[0],

@@ -54,6 +54,9 @@ func (b CSolutionBuilder) formulateArgs(command []string) (args []string, err er
 	if b.Options.Context != "" {
 		args = append(args, "--context="+b.Options.Context)
 	}
+	if b.Options.Toolchain != "" {
+		args = append(args, "--toolchain="+b.Options.Toolchain)
+	}
 	if b.Options.Filter != "" {
 		args = append(args, "--filter="+b.Options.Filter)
 	}
@@ -72,9 +75,6 @@ func (b CSolutionBuilder) runCSolution(args []string, quite bool) (output string
 
 	// run csolution with args
 	output, err = b.Runner.ExecuteCommand(csolutionBin, quite, args...)
-	if err != nil {
-		log.Error(err)
-	}
 	return
 }
 
@@ -165,11 +165,10 @@ func (b CSolutionBuilder) validateContext(allContexts []string, inputContext str
 
 func (b CSolutionBuilder) processContext(context string) (err error) {
 	var formulatePath = func(cprjFilePath string, dir string, context utils.ContextItem) string {
-		path := filepath.Join(filepath.Dir(cprjFilePath), dir, context.ProjectName)
+		path := filepath.Join(filepath.Dir(cprjFilePath), dir, context.ProjectName, context.TargetType)
 		if context.BuildType != "" {
 			path = filepath.Join(path, context.BuildType)
 		}
-		path = filepath.Join(path, context.TargetType)
 		return path
 	}
 
@@ -207,8 +206,8 @@ func (b CSolutionBuilder) processContext(context string) (err error) {
 	cprjBuildOptions.OutDir = formulatePath(cprjFile, "out", selectedContext)
 	cprjBuildOptions.IntDir = formulatePath(cprjFile, "tmp", selectedContext)
 
-	log.Debug("outdir: " + b.Options.OutDir)
-	log.Debug("intdir: " + b.Options.IntDir)
+	log.Debug("outdir: " + cprjBuildOptions.OutDir)
+	log.Debug("intdir: " + cprjBuildOptions.IntDir)
 
 	// process generated CPRJ project
 	cprjBuilder := cproject.CprjBuilder{
@@ -231,7 +230,8 @@ func (b CSolutionBuilder) listConfigurations() (configurations []string, err err
 	b.Options.Filter = ""
 	contexts, err := b.listContexts(true, false)
 	if err != nil {
-		return configurations, errors.New("processing configurations list failed")
+		err = errors.New("processing configurations list failed")
+		return
 	}
 
 	// formulate solution contexts
@@ -260,10 +260,11 @@ func (b CSolutionBuilder) listConfigurations() (configurations []string, err err
 
 	if len(configurations) == 0 {
 		if filter != "" {
-			log.Error("no configuration was found with filter '" + filter + "'")
-			return configurations, errors.New("processing configurations list failed")
+			err = errors.New("no configuration was found with filter '" + filter + "'")
+			return
 		}
-		log.Info("no configuration found")
+		err = errors.New("no configuration found")
+		return
 	}
 	return configurations, nil
 }
@@ -280,7 +281,6 @@ func (b CSolutionBuilder) listContexts(quite bool, ymlOrder bool) (contexts []st
 
 	output, err := b.runCSolution(args, quite)
 	if err != nil {
-		log.Error("error executing 'cbuild list contexts'")
 		return
 	}
 
@@ -299,7 +299,6 @@ func (b CSolutionBuilder) listToolchains(quite bool) (toolchains []string, err e
 
 	output, err := b.runCSolution(args, quite)
 	if err != nil {
-		log.Error("error executing 'cbuild list toolchains'")
 		return
 	}
 
@@ -350,15 +349,10 @@ func (b CSolutionBuilder) Build() (err error) {
 		b.Options.Context = context
 		selectedContexts = append(selectedContexts, context)
 	} else {
-		if b.Options.Configuration == "" {
-			// build all contexts when configuration is empty
-			selectedContexts = allContexts
-		} else {
-			// get list of valid contexts from specified configuration
-			selectedContexts, err = utils.GetSelectedContexts(allContexts, b.Options.Configuration)
-			if err != nil {
-				return
-			}
+		// get list of valid contexts from specified configuration
+		selectedContexts, err = utils.GetSelectedContexts(allContexts, b.Options.Configuration)
+		if err != nil {
+			return
 		}
 	}
 
@@ -378,7 +372,6 @@ func (b CSolutionBuilder) Build() (err error) {
 	// step1: generate cprj files
 	_, err = b.runCSolution(args, false)
 	if err != nil {
-		log.Error(err)
 		return err
 	}
 
@@ -386,7 +379,6 @@ func (b CSolutionBuilder) Build() (err error) {
 	for _, context := range selectedContexts {
 		err = b.processContext(context)
 		if err != nil {
-			log.Error(err)
 			break
 		}
 	}

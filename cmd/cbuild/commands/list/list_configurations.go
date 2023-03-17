@@ -9,8 +9,7 @@ import (
 	"cbuild/pkg/builder"
 	"cbuild/pkg/builder/csolution"
 	"cbuild/pkg/utils"
-	"errors"
-	"path/filepath"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -20,9 +19,8 @@ var ListConfigurationsCmd = &cobra.Command{
 	Short: "Print list of configurations in a csolution.yml",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fileExtension := filepath.Ext(args[0])
-		if !(fileExtension == ".yml" || fileExtension == ".yaml") {
-			return errors.New("invalid file argument")
+		if _, err := os.Stat(args[0]); os.IsNotExist(err) {
+			return err
 		}
 
 		configs, err := utils.GetInstallConfigs()
@@ -30,13 +28,13 @@ var ListConfigurationsCmd = &cobra.Command{
 			return err
 		}
 
-		schameCheck, _ := cmd.Flags().GetBool("schema")
+		schemaCheck, _ := cmd.Flags().GetBool("schema")
 		filter, _ := cmd.Flags().GetString("filter")
 		p := csolution.CSolutionBuilder{
 			BuilderParams: builder.BuilderParams{
 				Runner: utils.Runner{},
 				Options: builder.Options{
-					Schema: schameCheck,
+					Schema: schemaCheck,
 					Filter: filter,
 				},
 				InputFile:      args[0],

@@ -122,6 +122,7 @@ func NewRootCmd() *cobra.Command {
 			packs, _ := cmd.Flags().GetBool("packs")
 			rebuild, _ := cmd.Flags().GetBool("rebuild")
 			updateRte, _ := cmd.Flags().GetBool("update-rte")
+			toolchain, _ := cmd.Flags().GetString("toolchain")
 
 			options := builder.Options{
 				IntDir:        intDir,
@@ -143,6 +144,7 @@ func NewRootCmd() *cobra.Command {
 				Configuration: configuration,
 				Load:          load,
 				Output:        output,
+				Toolchain:     toolchain,
 			}
 
 			configs, err := utils.GetInstallConfigs()
@@ -196,6 +198,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.Flags().StringP("output", "O", "", "Set directory for all output files")
 	rootCmd.PersistentFlags().BoolP("schema", "s", false, "Validate project input file(s) against schema")
 	rootCmd.PersistentFlags().StringP("log", "l", "", "Save output messages in a log file")
+	rootCmd.PersistentFlags().StringP("toolchain", "", "", "Input toolchain to be used")
 
 	rootCmd.SetFlagErrorFunc(FlagErrorFunc)
 	rootCmd.AddCommand(list.ListCmd)
