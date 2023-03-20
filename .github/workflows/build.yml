@@ -34,7 +34,9 @@ jobs:
       - name: Build executables
         run: |
           GOOS=windows GOARCH=amd64 go build -o build/win-amd64/cbuild.exe ./cmd/cbuild
+          GOOS=windows GOARCH=arm64 go build -o build/win-arm64/cbuild.exe ./cmd/cbuild
           GOOS=darwin GOARCH=amd64 go build -o build/mac-amd64/cbuild ./cmd/cbuild
+          GOOS=darwin GOARCH=arm64 go build -o build/mac-arm64/cbuild ./cmd/cbuild
           GOOS=linux GOARCH=amd64 go build -o build/lin-amd64/cbuild ./cmd/cbuild
           GOOS=linux GOARCH=arm64 go build -o build/lin-arm64/cbuild ./cmd/cbuild        
 
@@ -46,11 +48,27 @@ jobs:
           retention-days: 1
           if-no-files-found: error
 
+      - name: Archive windows arm64 binaries
+        uses: actions/upload-artifact@v3
+        with:
+          name: cbuild-windows-arm64
+          path: ./build/win-arm64/cbuild.exe
+          retention-days: 1
+          if-no-files-found: error
+
       - name: Archive macos amd64 binaries
         uses: actions/upload-artifact@v3
         with:
           name: cbuild-mac-amd64
           path: ./build/mac-amd64/cbuild
+          retention-days: 1
+          if-no-files-found: error
+
+      - name: Archive macos arm64 binaries
+        uses: actions/upload-artifact@v3
+        with:
+          name: cbuild-mac-arm64
+          path: ./build/mac-arm64/cbuild
           retention-days: 1
           if-no-files-found: error
 
