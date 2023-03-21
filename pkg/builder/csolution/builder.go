@@ -15,6 +15,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -163,7 +164,7 @@ func (b CSolutionBuilder) validateContext(allContexts []string, inputContext str
 	return
 }
 
-func (b CSolutionBuilder) processContext(context string) (err error) {
+func (b CSolutionBuilder) processContext(context string, progress string) (err error) {
 	var formulatePath = func(cprjFilePath string, dir string, context utils.ContextItem) string {
 		path := filepath.Join(filepath.Dir(cprjFilePath), dir, context.ProjectName, context.TargetType)
 		if context.BuildType != "" {
@@ -172,7 +173,7 @@ func (b CSolutionBuilder) processContext(context string) (err error) {
 		return path
 	}
 
-	infoMsg := "Processing context: \"" + context + "\""
+	infoMsg := progress + " Processing context: \"" + context + "\""
 	fmt.Println(strings.Repeat("=", len(infoMsg)+13))
 	log.Info(infoMsg)
 
@@ -369,6 +370,9 @@ func (b CSolutionBuilder) Build() (err error) {
 		}
 	}
 
+	totalContexts := strconv.Itoa(len(selectedContexts))
+	log.Info("Processing " + totalContexts + " context(s)")
+
 	// step1: generate cprj files
 	_, err = b.runCSolution(args, false)
 	if err != nil {
@@ -376,8 +380,9 @@ func (b CSolutionBuilder) Build() (err error) {
 	}
 
 	// step2: process each selected context
-	for _, context := range selectedContexts {
-		err = b.processContext(context)
+	for index, context := range selectedContexts {
+		progress := fmt.Sprintf("(%s/%s)", strconv.Itoa(index+1), totalContexts)
+		err = b.processContext(context, progress)
 		if err != nil {
 			break
 		}
