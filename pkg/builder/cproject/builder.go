@@ -230,7 +230,7 @@ func (b CprjBuilder) Build() error {
 				err := errors.New("cpackget was not found, missing packs cannot be downloaded")
 				return err
 			}
-			args = []string{"pack", "add", "--agree-embedded-license", "--packs-list-filename", vars.packlistFile}
+			args = []string{"pack", "add", "--agree-embedded-license", "--no-dependencies", "--packs-list-filename", vars.packlistFile}
 			if b.Options.Debug {
 				args = append(args, "--verbose")
 			} else if b.Options.Quiet {
