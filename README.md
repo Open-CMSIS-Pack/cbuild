@@ -12,6 +12,8 @@ This utility allows embedded developers to build **CPRJ** and **csolution** proj
 - `cmake`
 - `ninja`
 
+By default, `cbuild` expects a fully configured solution (*.csolution.yml) or context (*.cprj). As such, it will not create, copy or update any files in the RTE directories. In case such modifications are required, use the command line option: `--update-rte`.
+
 ## Usage
 
 ```bash
