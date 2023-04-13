@@ -21,7 +21,7 @@ jobs:
       - uses: golangci/golangci-lint-action@v3
         with:
           # must be specified without patch version
-          version: v1.45
+          version: v1.51
 
   format:
     name: Format
