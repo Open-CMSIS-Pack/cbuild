@@ -165,14 +165,6 @@ func (b CSolutionBuilder) validateContext(allContexts []string, inputContext str
 }
 
 func (b CSolutionBuilder) processContext(context string, progress string) (err error) {
-	var formulatePath = func(cprjFilePath string, dir string, context utils.ContextItem) string {
-		path := filepath.Join(filepath.Dir(cprjFilePath), dir, context.ProjectName, context.TargetType)
-		if context.BuildType != "" {
-			path = filepath.Join(path, context.BuildType)
-		}
-		return path
-	}
-
 	infoMsg := progress + " Processing context: \"" + context + "\""
 	fmt.Println(strings.Repeat("=", len(infoMsg)+13))
 	log.Info(infoMsg)
@@ -201,20 +193,11 @@ func (b CSolutionBuilder) processContext(context string, progress string) (err e
 		return err
 	}
 
-	// formulate outdir & intdir path
-	selectedContext, _ := utils.ParseContext(context)
-	cprjBuildOptions := b.Options
-	cprjBuildOptions.OutDir = formulatePath(cprjFile, "out", selectedContext)
-	cprjBuildOptions.IntDir = formulatePath(cprjFile, "tmp", selectedContext)
-
-	log.Debug("outdir: " + cprjBuildOptions.OutDir)
-	log.Debug("intdir: " + cprjBuildOptions.IntDir)
-
 	// process generated CPRJ project
 	cprjBuilder := cproject.CprjBuilder{
 		BuilderParams: builder.BuilderParams{
 			Runner:         b.Runner,
-			Options:        cprjBuildOptions,
+			Options:        b.Options,
 			InputFile:      cprjFile,
 			InstallConfigs: b.InstallConfigs,
 		},
