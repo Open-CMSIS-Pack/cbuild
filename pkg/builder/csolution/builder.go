@@ -68,14 +68,14 @@ func (b CSolutionBuilder) formulateArgs(command []string) (args []string, err er
 	return
 }
 
-func (b CSolutionBuilder) runCSolution(args []string, quite bool) (output string, err error) {
+func (b CSolutionBuilder) runCSolution(args []string, quiet bool) (output string, err error) {
 	csolutionBin, err := b.getCSolutionPath()
 	if err != nil {
 		return
 	}
 
 	// run csolution with args
-	output, err = b.Runner.ExecuteCommand(csolutionBin, quite, args...)
+	output, err = b.Runner.ExecuteCommand(csolutionBin, quiet, args...)
 	return
 }
 
@@ -253,7 +253,7 @@ func (b CSolutionBuilder) listConfigurations() (configurations []string, err err
 	return configurations, nil
 }
 
-func (b CSolutionBuilder) listContexts(quite bool, ymlOrder bool) (contexts []string, err error) {
+func (b CSolutionBuilder) listContexts(quiet bool, ymlOrder bool) (contexts []string, err error) {
 	args, err := b.formulateArgs([]string{"list", "contexts"})
 	if err != nil {
 		return
@@ -263,7 +263,7 @@ func (b CSolutionBuilder) listContexts(quite bool, ymlOrder bool) (contexts []st
 		args = append(args, "--yml-order")
 	}
 
-	output, err := b.runCSolution(args, quite)
+	output, err := b.runCSolution(args, quiet)
 	if err != nil {
 		return
 	}
@@ -275,13 +275,13 @@ func (b CSolutionBuilder) listContexts(quite bool, ymlOrder bool) (contexts []st
 	return contexts, nil
 }
 
-func (b CSolutionBuilder) listToolchains(quite bool) (toolchains []string, err error) {
+func (b CSolutionBuilder) listToolchains(quiet bool) (toolchains []string, err error) {
 	args, err := b.formulateArgs([]string{"list", "toolchains"})
 	if err != nil {
 		return
 	}
 
-	output, err := b.runCSolution(args, quite)
+	output, err := b.runCSolution(args, quiet)
 	if err != nil {
 		return
 	}

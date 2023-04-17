@@ -218,7 +218,7 @@ func (b CprjBuilder) Build() error {
 	if b.Options.UpdateRte {
 		args = append(args, "--update-rte")
 	}
-	_, err = b.Runner.ExecuteCommand(vars.cbuildgenBin, b.Options.Quiet, args...)
+	_, err = b.Runner.ExecuteCommand(vars.cbuildgenBin, false, args...)
 	if err != nil {
 		log.Error("error executing 'cbuildgen packlist'")
 		return err
@@ -256,7 +256,7 @@ func (b CprjBuilder) Build() error {
 		lockFile, _ := filepath.Abs(b.Options.LockFile)
 		args = append(args, "--update="+lockFile)
 	}
-	_, err = b.Runner.ExecuteCommand(vars.cbuildgenBin, b.Options.Quiet, args...)
+	_, err = b.Runner.ExecuteCommand(vars.cbuildgenBin, false, args...)
 	if err != nil {
 		log.Error("error executing 'cbuildgen cmake'")
 		return err
