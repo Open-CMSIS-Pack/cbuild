@@ -123,7 +123,7 @@ func (b CSolutionBuilder) getCprjFilePath(idxFile string, context string) (strin
 	if err == nil {
 		var path string
 		for _, cbuild := range data.BuildIdx.Cbuilds {
-			if strings.Contains(cbuild.Cbuild, context) {
+			if strings.Contains(strings.ToLower(cbuild.Cbuild), strings.ToLower(context)) {
 				path = cbuild.Cbuild
 				break
 			}
