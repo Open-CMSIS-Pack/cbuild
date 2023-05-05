@@ -302,3 +302,12 @@ func TestContains(t *testing.T) {
 		assert.Equal(output, test.expectedResult)
 	}
 }
+
+func TestGetInstalledExePath(t *testing.T) {
+	assert := assert.New(t)
+	t.Run("test to get invalid executable path", func(t *testing.T) {
+		path, err := GetInstalledExePath("testunknown")
+		assert.Equal(path, "")
+		assert.Error(err)
+	})
+}
