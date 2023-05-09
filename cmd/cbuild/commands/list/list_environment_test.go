@@ -8,7 +8,6 @@ package list_test
 
 import (
 	"cbuild/cmd/cbuild/commands"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,7 +15,6 @@ import (
 
 func TestListEnvironmentCommand(t *testing.T) {
 	assert := assert.New(t)
-	os.Setenv("CMSIS_BUILD_ROOT", testRoot+"/run/bin")
 
 	t.Run("invalid args", func(t *testing.T) {
 		cmd := commands.NewRootCmd()
@@ -34,7 +32,7 @@ func TestListEnvironmentCommand(t *testing.T) {
 
 	t.Run("test help", func(t *testing.T) {
 		cmd := commands.NewRootCmd()
-		cmd.SetArgs([]string{"list", "toolchains", "-h"})
+		cmd.SetArgs([]string{"list", "environment", "-h"})
 		err := cmd.Execute()
 		assert.Nil(err)
 	})

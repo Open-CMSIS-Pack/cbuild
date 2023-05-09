@@ -303,7 +303,7 @@ func (b CSolutionBuilder) listEnvironment(quiet bool) (envConfigs []string, err 
 		}
 
 		// run "exe --version" command
-		versionStr, err := b.Runner.ExecuteCommand(path, false, "--version")
+		versionStr, err := b.Runner.ExecuteCommand(path, true, "--version")
 		if err != nil {
 			versionStr = ""
 		}
@@ -368,12 +368,13 @@ func (b CSolutionBuilder) ListToolchains() error {
 
 func (b CSolutionBuilder) ListEnvironment() error {
 	envConfigs, err := b.listEnvironment(true)
-	if err == nil {
-		for _, config := range envConfigs {
-			fmt.Println(config)
-		}
+	if err != nil {
+		return err
 	}
-	return err
+	for _, config := range envConfigs {
+		fmt.Println(config)
+	}
+	return nil
 }
 
 func (b CSolutionBuilder) Build() (err error) {
