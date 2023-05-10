@@ -295,8 +295,8 @@ func (b CSolutionBuilder) listToolchains(quiet bool) (toolchains []string, err e
 }
 
 func (b CSolutionBuilder) listEnvironment(quiet bool) (envConfigs []string, err error) {
-	// get installer path and version number
-	getInstallerInfo := func(name string) string {
+	// get installed exe path and version number
+	getInstalledExeInfo := func(name string) string {
 		path, err := utils.GetInstalledExePath(name)
 		if err != nil || path == "" {
 			return "<Not Found>"
@@ -341,8 +341,8 @@ func (b CSolutionBuilder) listEnvironment(quiet bool) (envConfigs []string, err 
 	}
 
 	// step2: add other environment info
-	envConfigs = append(envConfigs, "cmake="+getInstallerInfo("cmake"))
-	envConfigs = append(envConfigs, "ninja="+getInstallerInfo("ninja"))
+	envConfigs = append(envConfigs, "cmake="+getInstalledExeInfo("cmake"))
+	envConfigs = append(envConfigs, "ninja="+getInstalledExeInfo("ninja"))
 
 	return envConfigs, nil
 }
