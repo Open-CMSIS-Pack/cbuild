@@ -82,7 +82,8 @@ jobs:
       - name: Unit testing
         run: |
           mkdir -p build
-          go test -v 2>&1 ./... | go-junit-report -set-exit-code > build/cbuildtests-${{ matrix.platform }}-amd64.xml
+          go test -v ./... > build/cbuildtests-${{ matrix.platform }}-amd64.txt
+          go-junit-report -set-exit-code -in build/cbuildtests-${{ matrix.platform }}-amd64.txt -iocopy -out build/cbuildtests-${{ matrix.platform }}-amd64.xml
 
       - name: Install qemu (for Linux-Arm64)
         if: ${{ startsWith(runner.os, 'Linux') }}
@@ -96,7 +97,8 @@ jobs:
       - name: Unit testing (for Linux-Arm64)
         if: ${{ startsWith(runner.os, 'Linux') }}
         run: |
-          GOOS=linux GOARCH=arm64 go test -v 2>&1 ./... | go-junit-report -set-exit-code > build/cbuildtests-${{ matrix.platform }}-arm64.xml
+          GOOS=linux GOARCH=arm64 go test -v ./... > build/cbuildtests-${{ matrix.platform }}-arm64.txt
+          go-junit-report -set-exit-code -in build/cbuildtests-${{ matrix.platform }}-arm64.txt -iocopy -out build/cbuildtests-${{ matrix.platform }}-arm64.xml
 
       - name: Archive unit test results
         uses: actions/upload-artifact@v3
