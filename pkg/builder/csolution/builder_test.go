@@ -36,6 +36,8 @@ func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) (
 				return "AC5@5.6.7\nAC6@6.18.0\nGCC@11.2.1\nIAR@8.50.6\n", nil
 			} else if args[1] == "packs" {
 				return "ARM::test:0.0.1\r\nARM::test2:0.0.2", nil
+			} else if args[1] == "environment" {
+				return "CMSIS_PACK_ROOT=C:/Path/Packs\nCMSIS_COMPILER_ROOT=C:/Test/etc\n", nil
 			}
 		} else if args[0] == "convert" {
 			return "", nil
@@ -269,6 +271,45 @@ func TestListToolchians(t *testing.T) {
 		assert.Equal("GCC@11.2.1", toolchains[2])
 		assert.Equal("IAR@8.50.6", toolchains[3])
 	})
+}
+
+func TestListEnvironment(t *testing.T) {
+	assert := assert.New(t)
+	os.Setenv("CMSIS_BUILD_ROOT", testRoot+"/run/bin")
+	configs, err := utils.GetInstallConfigs()
+	assert.Nil(err)
+	b := CSolutionBuilder{
+		BuilderParams: builder.BuilderParams{
+			Runner:         RunnerMock{},
+			InstallConfigs: configs,
+		},
+	}
+
+	t.Run("test list environment", func(t *testing.T) {
+		envConfigs, err := b.listEnvironment(true)
+		assert.Nil(err)
+		assert.Equal(len(envConfigs), 4)
+		assert.Equal("CMSIS_PACK_ROOT=C:/Path/Packs", envConfigs[0])
+		assert.Equal("CMSIS_COMPILER_ROOT=C:/Test/etc", envConfigs[1])
+		assert.Regexp(`^cmake=([^\s]+)`, envConfigs[2])
+		assert.Regexp(`^ninja=([^\s]+)`, envConfigs[3])
+	})
+
+	t.Run("test list environment fails to detect", func(t *testing.T) {
+		// set empty install config, when cbuild is run standalone (without installation env)
+		b.InstallConfigs = utils.Configurations{}
+		envConfigs, err := b.listEnvironment(true)
+		assert.Error(err)
+		assert.Equal(len(envConfigs), 0)
+		// restore install config
+		b.InstallConfigs = configs
+	})
+
+	t.Run("test list environment", func(t *testing.T) {
+		err := b.ListEnvironment()
+		assert.Nil(err)
+	})
+
 }
 
 func TestBuild(t *testing.T) {
