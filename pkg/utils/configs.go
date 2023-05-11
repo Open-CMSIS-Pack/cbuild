@@ -7,11 +7,10 @@
 package utils
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"runtime"
-
-	log "github.com/sirupsen/logrus"
 )
 
 type Configurations struct {
@@ -28,8 +27,7 @@ func GetInstallConfigs() (configs Configurations, err error) {
 	if binPath == "" {
 		binPath, err = GetExecutablePath()
 		if err != nil {
-			log.Error("executable path was not found")
-			return configs, err
+			return Configurations{}, err
 		}
 	}
 	if binPath != "" {
@@ -38,9 +36,9 @@ func GetInstallConfigs() (configs Configurations, err error) {
 
 	configs.BinPath = binPath
 	etcPath := filepath.Clean(binPath + "/../etc")
-	if _, err := os.Stat(etcPath); os.IsNotExist(err) {
-		log.Error("etc directory was not found")
-		return configs, err
+	if _, err = os.Stat(etcPath); os.IsNotExist(err) {
+		err = errors.New(etcPath + " path was not found")
+		return Configurations{}, err
 	}
 	if etcPath != "" {
 		etcPath, _ = filepath.Abs(etcPath)

@@ -9,6 +9,7 @@ package utils
 import (
 	"errors"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -335,4 +336,12 @@ func Contains[T comparable](slice []T, elem T) bool {
 		}
 	}
 	return false
+}
+
+func GetInstalledExePath(exeName string) (path string, err error) {
+	path, err = exec.LookPath(exeName)
+	if strings.Contains(path, "\\") {
+		path = strings.ReplaceAll(path, "\\", "/")
+	}
+	return
 }

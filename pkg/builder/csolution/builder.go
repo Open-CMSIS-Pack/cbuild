@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -293,6 +294,59 @@ func (b CSolutionBuilder) listToolchains(quiet bool) (toolchains []string, err e
 	return toolchains, nil
 }
 
+func (b CSolutionBuilder) listEnvironment(quiet bool) (envConfigs []string, err error) {
+	// get installed exe path and version number
+	getInstalledExeInfo := func(name string) string {
+		path, err := utils.GetInstalledExePath(name)
+		if err != nil || path == "" {
+			return "<Not Found>"
+		}
+
+		// run "exe --version" command
+		versionStr, err := b.Runner.ExecuteCommand(path, true, "--version")
+		if err != nil {
+			versionStr = ""
+		}
+
+		// get version
+		var version string
+		if name == "cmake" {
+			regex := "version\\s(.*?)\\s"
+			re, err := regexp.Compile(regex)
+			if err == nil {
+				match := re.FindAllStringSubmatch(versionStr, 1)
+				for index := range match {
+					version = match[index][1]
+					break
+				}
+			}
+		} else {
+			version = versionStr
+		}
+		info := path
+		if version != "" {
+			info += ", version " + version
+		}
+		return info
+	}
+
+	// step1: call csolution list environment
+	args := []string{"list", "environment"}
+	output, err := b.runCSolution(args, quiet)
+	if err != nil {
+		return
+	}
+	if output != "" {
+		envConfigs = strings.Split(strings.ReplaceAll(strings.TrimSpace(output), "\r\n", "\n"), "\n")
+	}
+
+	// step2: add other environment info
+	envConfigs = append(envConfigs, "cmake="+getInstalledExeInfo("cmake"))
+	envConfigs = append(envConfigs, "ninja="+getInstalledExeInfo("ninja"))
+
+	return envConfigs, nil
+}
+
 func (b CSolutionBuilder) ListConfigurations() error {
 	configurations, err := b.listConfigurations()
 	if err != nil {
@@ -310,6 +364,17 @@ func (b CSolutionBuilder) ListContexts() error {
 func (b CSolutionBuilder) ListToolchains() error {
 	_, err := b.listToolchains(false)
 	return err
+}
+
+func (b CSolutionBuilder) ListEnvironment() error {
+	envConfigs, err := b.listEnvironment(true)
+	if err != nil {
+		return err
+	}
+	for _, config := range envConfigs {
+		fmt.Println(config)
+	}
+	return nil
 }
 
 func (b CSolutionBuilder) Build() (err error) {
