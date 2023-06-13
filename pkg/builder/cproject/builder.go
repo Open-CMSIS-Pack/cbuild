@@ -256,9 +256,18 @@ func (b CprjBuilder) Build() error {
 		lockFile, _ := filepath.Abs(b.Options.LockFile)
 		args = append(args, "--update="+lockFile)
 	}
+
+	if b.Options.Debug {
+		log.Debug("cbuildgen command: " + vars.cbuildgenBin + " " + strings.Join(args, " "))
+	}
+
 	_, err = b.Runner.ExecuteCommand(vars.cbuildgenBin, false, args...)
 	if err != nil {
 		log.Error("error executing 'cbuildgen cmake'")
+		return err
+	}
+
+	if _, err := os.Stat(dirs.intDir + "/CMakeLists.txt"); errors.Is(err, os.ErrNotExist) {
 		return err
 	}
 
@@ -281,6 +290,11 @@ func (b CprjBuilder) Build() error {
 	} else {
 		args = append(args, "-Wno-dev")
 	}
+
+	if b.Options.Debug {
+		log.Debug("cmake configuration command: " + vars.cmakeBin + " " + strings.Join(args, " "))
+	}
+
 	_, err = b.Runner.ExecuteCommand(vars.cmakeBin, b.Options.Quiet, args...)
 	if err != nil {
 		log.Error("error executing 'cmake' configuration")
@@ -294,6 +308,11 @@ func (b CprjBuilder) Build() error {
 	if b.Options.Debug || b.Options.Verbose {
 		args = append(args, "--verbose")
 	}
+
+	if b.Options.Debug {
+		log.Debug("cmake build command: " + vars.cmakeBin + " " + strings.Join(args, " "))
+	}
+
 	_, err = b.Runner.ExecuteCommand(vars.cmakeBin, false, args...)
 	if err != nil {
 		log.Error("error executing 'cmake' build")
