@@ -15,7 +15,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -27,11 +26,6 @@ type CSolutionBuilder struct {
 }
 
 func (b CSolutionBuilder) formulateArgs(command []string) (args []string, err error) {
-	if b.Options.Context != "" && b.Options.Configuration != "" {
-		err = errors.New("options '--context' and '--configuration' cannot be used together")
-		return
-	}
-
 	// formulate csolution arguments
 	args = append(args, command...)
 
@@ -49,9 +43,6 @@ func (b CSolutionBuilder) formulateArgs(command []string) (args []string, err er
 	}
 	if !b.Options.UpdateRte {
 		args = append(args, "--no-update-rte")
-	}
-	if b.Options.Configuration != "" {
-		args = append(args, "--context=*"+b.Options.Configuration)
 	}
 	if b.Options.Context != "" {
 		args = append(args, "--context="+b.Options.Context)
@@ -138,6 +129,17 @@ func (b CSolutionBuilder) getCprjFilePath(idxFile string, context string) (strin
 	return cprjPath, err
 }
 
+func (b CSolutionBuilder) getSelectedContexts(idxFile string) ([]string, error) {
+	var contexts []string
+	data, err := utils.ParseCbuildIndexFile(idxFile)
+	if err == nil {
+		for _, cbuild := range data.BuildIdx.Cbuilds {
+			contexts = append(contexts, cbuild.Project+cbuild.Configuration)
+		}
+	}
+	return contexts, err
+}
+
 func (b CSolutionBuilder) getCSolutionPath() (path string, err error) {
 	path = filepath.Join(b.InstallConfigs.BinPath, "csolution"+b.InstallConfigs.BinExtn)
 	if _, err = os.Stat(path); os.IsNotExist(err) {
@@ -146,23 +148,18 @@ func (b CSolutionBuilder) getCSolutionPath() (path string, err error) {
 	return
 }
 
-func (b CSolutionBuilder) validateContext(allContexts []string, inputContext string) (context string, err error) {
-	contextItem, err := utils.ParseContext(inputContext)
-	if err != nil {
-		return
+func (b CSolutionBuilder) getIdxFilePath() (string, error) {
+	// get project name from file name
+	nameTokens := strings.Split(filepath.Base(b.InputFile), ".")
+	if len(nameTokens) != 3 {
+		return "", errors.New("invalid csolution file name")
 	}
 
-	context, err = utils.CreateContext(contextItem)
-	if err != nil {
-		return
+	outputDir := b.Options.Output
+	if outputDir == "" {
+		outputDir = filepath.Dir(b.InputFile)
 	}
-	if !utils.Contains(allContexts, context) {
-		sort.Strings(allContexts)
-		err = errors.New("specified context '" + inputContext +
-			"' not found. One of the following contexts must be specified:\n" +
-			strings.Join(allContexts, "\n"))
-	}
-	return
+	return filepath.Join(outputDir, nameTokens[0]+".cbuild-idx.yml"), nil
 }
 
 func (b CSolutionBuilder) processContext(context string, progress string) (err error) {
@@ -176,19 +173,12 @@ func (b CSolutionBuilder) processContext(context string, progress string) (err e
 			b.Options.Output + "\". Options --outdir and --intdir shall be ignored.")
 	}
 
-	// get project name from file name
-	nameTokens := strings.Split(filepath.Base(b.InputFile), ".")
-	if len(nameTokens) != 3 {
-		return errors.New("invalid csolution file name")
+	idxFile, err := b.getIdxFilePath()
+	if err != nil {
+		return err
 	}
 
-	// get generated CPRJ file path from index yml
-	outputDir := b.Options.Output
-	if outputDir == "" {
-		outputDir = filepath.Dir(b.InputFile)
-	}
-	cprjFile, err := b.getCprjFilePath(
-		filepath.Join(outputDir, nameTokens[0]+".cbuild-idx.yml"), context)
+	cprjFile, err := b.getCprjFilePath(idxFile, context)
 	if err != nil {
 		log.Error("error getting cprj file: " + err.Error())
 		return err
@@ -208,50 +198,6 @@ func (b CSolutionBuilder) processContext(context string, progress string) (err e
 		log.Error("error processing '" + cprjFile + "'")
 	}
 	return
-}
-
-func (b CSolutionBuilder) listConfigurations() (configurations []string, err error) {
-	filter := b.Options.Filter
-	b.Options.Filter = ""
-	contexts, err := b.listContexts(true, false)
-	if err != nil {
-		err = errors.New("processing configurations list failed")
-		return
-	}
-
-	// formulate solution contexts
-	if len(contexts) != 0 {
-		for _, context := range contexts {
-			buildIdx := strings.Index(context, ".")
-			targetIdx := strings.Index(context, "+")
-			if buildIdx == -1 && targetIdx == -1 {
-				continue
-			}
-			var config string
-			if buildIdx != -1 {
-				config = context[buildIdx:]
-			} else {
-				config = context[targetIdx:]
-			}
-			if filter != "" {
-				if strings.Contains(config, filter) {
-					configurations = utils.AppendUnique(configurations, config)
-				}
-				continue
-			}
-			configurations = utils.AppendUnique(configurations, config)
-		}
-	}
-
-	if len(configurations) == 0 {
-		if filter != "" {
-			err = errors.New("no configuration was found with filter '" + filter + "'")
-			return
-		}
-		err = errors.New("no configuration found")
-		return
-	}
-	return configurations, nil
 }
 
 func (b CSolutionBuilder) listContexts(quiet bool, ymlOrder bool) (contexts []string, err error) {
@@ -347,15 +293,6 @@ func (b CSolutionBuilder) listEnvironment(quiet bool) (envConfigs []string, err 
 	return envConfigs, nil
 }
 
-func (b CSolutionBuilder) ListConfigurations() error {
-	configurations, err := b.listConfigurations()
-	if err != nil {
-		return err
-	}
-	fmt.Println(strings.Join(configurations, "\n"))
-	return nil
-}
-
 func (b CSolutionBuilder) ListContexts() error {
 	_, err := b.listContexts(false, false)
 	return err
@@ -380,31 +317,6 @@ func (b CSolutionBuilder) ListEnvironment() error {
 func (b CSolutionBuilder) Build() (err error) {
 	_ = utils.UpdateEnvVars(b.InstallConfigs.BinPath, b.InstallConfigs.EtcPath)
 
-	// get yml ordered list of all contexts
-	allContexts, err := b.listContexts(true, true)
-	if err != nil {
-		log.Error("error getting list of contexts: \"" + err.Error() + "\"")
-		return
-	}
-
-	// get list of contexts needs to be processed
-	var selectedContexts []string
-	if b.Options.Context != "" {
-		var context string
-		context, err = b.validateContext(allContexts, b.Options.Context)
-		if err != nil {
-			return
-		}
-		b.Options.Context = context
-		selectedContexts = append(selectedContexts, context)
-	} else {
-		// get list of valid contexts from specified configuration
-		selectedContexts, err = utils.GetSelectedContexts(allContexts, b.Options.Configuration)
-		if err != nil {
-			return
-		}
-	}
-
 	args, err := b.formulateArgs([]string{"convert"})
 	if err != nil {
 		return
@@ -418,14 +330,23 @@ func (b CSolutionBuilder) Build() (err error) {
 		}
 	}
 
-	totalContexts := strconv.Itoa(len(selectedContexts))
-	log.Info("Processing " + totalContexts + " context(s)")
-
 	// step1: generate cprj files
 	_, err = b.runCSolution(args, false)
 	if err != nil {
 		return err
 	}
+
+	// get list of selected contexts
+	idxFile, err := b.getIdxFilePath()
+	if err != nil {
+		return err
+	}
+	selectedContexts, err := b.getSelectedContexts(idxFile)
+	if err != nil {
+		return err
+	}
+	totalContexts := strconv.Itoa(len(selectedContexts))
+	log.Info("Processing " + totalContexts + " context(s)")
 
 	// step2: process each selected context
 	for index, context := range selectedContexts {

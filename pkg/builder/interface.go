@@ -18,27 +18,26 @@ type BuilderParams struct {
 }
 
 type Options struct {
-	IntDir        string
-	OutDir        string
-	LockFile      string
-	LogFile       string
-	Generator     string
-	Target        string
-	Context       string
-	Filter        string
-	Load          string
-	Output        string
-	Configuration string
-	Toolchain     string
-	Jobs          int
-	Quiet         bool
-	Debug         bool
-	Verbose       bool
-	Clean         bool
-	Schema        bool
-	Packs         bool
-	Rebuild       bool
-	UpdateRte     bool
+	IntDir    string
+	OutDir    string
+	LockFile  string
+	LogFile   string
+	Generator string
+	Target    string
+	Context   string
+	Filter    string
+	Load      string
+	Output    string
+	Toolchain string
+	Jobs      int
+	Quiet     bool
+	Debug     bool
+	Verbose   bool
+	Clean     bool
+	Schema    bool
+	Packs     bool
+	Rebuild   bool
+	UpdateRte bool
 }
 
 type IBuilderInterface interface {
