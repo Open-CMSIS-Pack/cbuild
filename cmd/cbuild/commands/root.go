@@ -7,9 +7,9 @@
 package commands
 
 import (
+	"cbuild/cmd/cbuild/commands/build"
 	"cbuild/cmd/cbuild/commands/list"
 	"cbuild/pkg/builder"
-	"cbuild/pkg/builder/cproject"
 	"cbuild/pkg/builder/csolution"
 	"cbuild/pkg/utils"
 	"errors"
@@ -82,7 +82,7 @@ func preConfiguration(cmd *cobra.Command, args []string) (err error) {
 
 func NewRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use:               "cbuild [command] <project.cprj | csolution.yml> [flags]",
+		Use:               "cbuild [command] <csolution.yml> [flags]",
 		Short:             "cbuild: Build Invocation " + Version + CopyrightNotice,
 		SilenceUsage:      true,
 		SilenceErrors:     true,
@@ -103,9 +103,6 @@ func NewRootCmd() *cobra.Command {
 				return errors.New("invalid arguments")
 			}
 
-			intDir, _ := cmd.Flags().GetString("intdir")
-			outDir, _ := cmd.Flags().GetString("outdir")
-			lockFile, _ := cmd.Flags().GetString("update")
 			logFile, _ := cmd.Flags().GetString("log")
 			generator, _ := cmd.Flags().GetString("generator")
 			target, _ := cmd.Flags().GetString("target")
@@ -124,9 +121,6 @@ func NewRootCmd() *cobra.Command {
 			toolchain, _ := cmd.Flags().GetString("toolchain")
 
 			options := builder.Options{
-				IntDir:    intDir,
-				OutDir:    outDir,
-				LockFile:  lockFile,
 				LogFile:   logFile,
 				Generator: generator,
 				Target:    target,
@@ -159,9 +153,7 @@ func NewRootCmd() *cobra.Command {
 
 			fileExtension := filepath.Ext(inputFile)
 			var b builder.IBuilderInterface
-			if fileExtension == ".cprj" {
-				b = cproject.CprjBuilder{BuilderParams: params}
-			} else if fileExtension == ".yml" || fileExtension == ".yaml" {
+			if fileExtension == ".yml" || fileExtension == ".yaml" {
 				b = csolution.CSolutionBuilder{BuilderParams: params}
 			} else {
 				return errors.New("invalid file argument")
@@ -184,9 +176,6 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.Flags().BoolP("packs", "p", false, "Download missing software packs with cpackget")
 	rootCmd.Flags().BoolP("rebuild", "r", false, "Remove intermediate and output directories and rebuild")
 	rootCmd.Flags().BoolP("update-rte", "", false, "Update the RTE directory and files")
-	rootCmd.Flags().StringP("intdir", "i", "", "Set directory for intermediate files")
-	rootCmd.Flags().StringP("outdir", "o", "", "Set directory for output binary files")
-	rootCmd.Flags().StringP("update", "u", "", "Generate *.cprj file for reproducing current build")
 	rootCmd.Flags().StringP("generator", "g", "Ninja", "Select build system generator")
 	rootCmd.Flags().StringP("context", "c", "", "Input context name e.g. project.buildType+targetType")
 	rootCmd.Flags().StringP("load", "l", "", "Set policy for packs loading [latest|all|required]")
@@ -198,7 +187,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.PersistentFlags().StringP("toolchain", "", "", "Input toolchain to be used")
 
 	rootCmd.SetFlagErrorFunc(FlagErrorFunc)
-	rootCmd.AddCommand(list.ListCmd)
+	rootCmd.AddCommand(build.BuildCPRJCmd, list.ListCmd)
 	return rootCmd
 }
 
