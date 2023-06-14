@@ -11,6 +11,7 @@ import (
 	"cbuild/pkg/utils"
 	"errors"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
@@ -307,51 +308,66 @@ func TestInstallMissingPacks(t *testing.T) {
 	})
 }
 
-// func TestValidateContext(t *testing.T) {
-// 	assert := assert.New(t)
+func TestGetCprjFilePath(t *testing.T) {
+	assert := assert.New(t)
 
-// 	allContexts := []string{
-// 		"Project1.Build1+Target",
-// 		"Project1.Build2+Target",
-// 		"Project2.Build1+Target",
-// 		"Project2.Build2+Target",
-// 		"Project3+Target",
-// 	}
-// 	testCases := []struct {
-// 		Input         string
-// 		ExpectError   bool
-// 		OutputContext string
-// 	}{
-// 		// negative test cases
-// 		{"", true, ""},
-// 		{".+", true, ""},
-// 		{".Build1+", true, ""},
-// 		{".+Target", true, ""},
-// 		{".Build1.Build2+Target", true, ""},
-// 		{".Build1+Target+Test", true, ""},
-// 		{"+Target", true, ""},
-// 		{".Build2", true, ""},
-// 		{".Build2+Target", true, ""},
-// 		{"+Target.Build1", true, ""},
-// 		{"Project", true, ""},
-// 		{"Project.Build2", true, ""},
-// 		{"Project.Build1+", true, ""},
-// 		{"Project+Target.Build1", true, ""},
-// 		{"Project1.+Target", true, "Project1+Target"},
+	testIdxFile := testRoot + "/run/Test.cbuild-idx.yml"
+	b := CSolutionBuilder{
+		BuilderParams: builder.BuilderParams{
+			Runner: RunnerMock{},
+		},
+	}
 
-// 		// positive test cases
-// 		{"Project1.Build2+Target", false, "Project1.Build2+Target"},
-// 		{"Project2.Build1+Target", false, "Project2.Build1+Target"},
-// 		{"Project3+Target", false, "Project3+Target"},
-// 	}
-// 	b := CSolutionBuilder{}
-// 	for _, test := range testCases {
-// 		context, err := b.validateContext(allContexts, test.Input)
-// 		if test.ExpectError {
-// 			assert.Error(err)
-// 		} else {
-// 			assert.Nil(err)
-// 		}
-// 		assert.Equal(context, test.OutputContext)
-// 	}
-// }
+	t.Run("test idx file missing", func(t *testing.T) {
+		path, err := b.getCprjFilePath(
+			"missingfile.cbuild-idx.yml",
+			"HelloWorld_cm0plus.Debug+FRDM-K32L3A6")
+		assert.Error(err)
+		assert.Equal(path, "")
+	})
+
+	t.Run("test get cprj file path with invalid input context", func(t *testing.T) {
+		path, err := b.getCprjFilePath(
+			testIdxFile,
+			"Unknown.Build+Target")
+		assert.Error(err)
+		assert.Equal(path, "")
+	})
+
+	t.Run("test get cprj file path", func(t *testing.T) {
+		path, err := b.getCprjFilePath(
+			testIdxFile,
+			"HelloWorld_cm0plus.Debug+FRDM-K32L3A6")
+		assert.Nil(err)
+		assert.Equal(path, filepath.Join(testRoot, "run", "cm0plus", "HelloWorld_cm0plus.Debug+FRDM-K32L3A6.cprj"))
+	})
+}
+
+func TestGetSelectedContexts(t *testing.T) {
+	assert := assert.New(t)
+
+	testIdxFile := testRoot + "/run/Test.cbuild-idx.yml"
+	b := CSolutionBuilder{
+		BuilderParams: builder.BuilderParams{
+			Runner: RunnerMock{},
+		},
+	}
+
+	t.Run("test idx file missing", func(t *testing.T) {
+		contexts, err := b.getSelectedContexts("missingfile.cbuild-idx.yml")
+		assert.Error(err)
+		assert.Len(contexts, 0)
+	})
+
+	t.Run("test get cprj file path", func(t *testing.T) {
+		expectedContexts := []string{
+			"HelloWorld_cm0plus.Debug+FRDM-K32L3A6",
+			"HelloWorld_cm0plus.Release+FRDM-K32L3A6",
+			"HelloWorld_cm4.Debug+FRDM-K32L3A6",
+			"HelloWorld_cm4.Release+FRDM-K32L3A6",
+		}
+		contexts, err := b.getSelectedContexts(testIdxFile)
+		assert.Nil(err)
+		assert.Equal(contexts, expectedContexts)
+	})
+}

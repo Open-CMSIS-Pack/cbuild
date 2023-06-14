@@ -123,7 +123,7 @@ func (b CSolutionBuilder) getCprjFilePath(idxFile string, context string) (strin
 		if path == "" {
 			err = errors.New("cprj file path not found")
 		} else {
-			cprjPath = filepath.Dir(idxFile) + "/" + filepath.Dir(path) + "/" + context + ".cprj"
+			cprjPath = filepath.Join(filepath.Dir(idxFile), filepath.Dir(path), context+".cprj")
 		}
 	}
 	return cprjPath, err
