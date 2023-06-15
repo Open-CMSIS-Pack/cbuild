@@ -24,7 +24,7 @@ type Options struct {
 	LogFile   string
 	Generator string
 	Target    string
-	Context   string
+	Context   []string
 	Filter    string
 	Load      string
 	Output    string

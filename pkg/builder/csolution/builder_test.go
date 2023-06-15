@@ -275,7 +275,7 @@ func TestBuild(t *testing.T) {
 	})
 
 	t.Run("test build csolution with context", func(t *testing.T) {
-		b.Options.Context = "test.Debug+CM0"
+		b.Options.Context = []string{"test.Debug+CM0"}
 		err := b.Build()
 		assert.Error(err)
 	})

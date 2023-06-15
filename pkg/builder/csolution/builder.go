@@ -44,8 +44,10 @@ func (b CSolutionBuilder) formulateArgs(command []string) (args []string, err er
 	if !b.Options.UpdateRte {
 		args = append(args, "--no-update-rte")
 	}
-	if b.Options.Context != "" {
-		args = append(args, "--context="+b.Options.Context)
+	if len(b.Options.Context) != 0 {
+		for _, context := range b.Options.Context {
+			args = append(args, "--context="+context)
+		}
 	}
 	if b.Options.Toolchain != "" {
 		args = append(args, "--toolchain="+b.Options.Toolchain)
