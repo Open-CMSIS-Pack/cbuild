@@ -31,6 +31,10 @@ func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) (
 			packlistFile := testRoot + "/run/IntDir/minimal.cpinstall"
 			file, _ := os.Create(packlistFile)
 			defer file.Close()
+		} else if args[0] == "cmake" {
+			cmakelistFile := testRoot + "/run/IntDir/CMakeLists.txt"
+			file, _ := os.Create(cmakelistFile)
+			defer file.Close()
 		}
 	} else if strings.Contains(program, "cpackget") {
 	} else if strings.Contains(program, "cmake") {
@@ -328,8 +332,9 @@ func TestBuild(t *testing.T) {
 	})
 
 	t.Run("test build makefile generator", func(t *testing.T) {
-		b.Options.IntDir = testRoot + "/run/makefiles/IntDir"
-		b.Options.OutDir = testRoot + "/run/makefiles/OutDir"
+		b.Options.IntDir = testRoot + "/run/IntDir"
+		b.Options.OutDir = testRoot + "/run/OutDir"
+		b.Options.Debug = true
 		b.Options.Generator = "Unix Makefiles"
 		err := b.Build()
 		assert.Nil(err)
