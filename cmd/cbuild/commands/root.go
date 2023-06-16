@@ -7,6 +7,7 @@
 package commands
 
 import (
+	"cbuild/cmd/cbuild/commands/build"
 	"cbuild/cmd/cbuild/commands/list"
 	"cbuild/pkg/builder"
 	"cbuild/pkg/builder/cproject"
@@ -82,7 +83,7 @@ func preConfiguration(cmd *cobra.Command, args []string) (err error) {
 
 func NewRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use:               "cbuild [command] <project.cprj | csolution.yml> [flags]",
+		Use:               "cbuild [command] <csolution.yml> [flags]",
 		Short:             "cbuild: Build Invocation " + Version + CopyrightNotice,
 		SilenceUsage:      true,
 		SilenceErrors:     true,
@@ -102,15 +103,13 @@ func NewRootCmd() *cobra.Command {
 				_ = cmd.Help()
 				return errors.New("invalid arguments")
 			}
-
 			intDir, _ := cmd.Flags().GetString("intdir")
 			outDir, _ := cmd.Flags().GetString("outdir")
 			lockFile, _ := cmd.Flags().GetString("update")
 			logFile, _ := cmd.Flags().GetString("log")
 			generator, _ := cmd.Flags().GetString("generator")
 			target, _ := cmd.Flags().GetString("target")
-			context, _ := cmd.Flags().GetString("context")
-			configuration, _ := cmd.Flags().GetString("configuration")
+			context, _ := cmd.Flags().GetStringSlice("context")
 			load, _ := cmd.Flags().GetString("load")
 			output, _ := cmd.Flags().GetString("output")
 			jobs, _ := cmd.Flags().GetInt("jobs")
@@ -125,26 +124,25 @@ func NewRootCmd() *cobra.Command {
 			toolchain, _ := cmd.Flags().GetString("toolchain")
 
 			options := builder.Options{
-				IntDir:        intDir,
-				OutDir:        outDir,
-				LockFile:      lockFile,
-				LogFile:       logFile,
-				Generator:     generator,
-				Target:        target,
-				Jobs:          jobs,
-				Quiet:         quiet,
-				Debug:         debug,
-				Verbose:       verbose,
-				Clean:         clean,
-				Schema:        schema,
-				Packs:         packs,
-				Rebuild:       rebuild,
-				UpdateRte:     updateRte,
-				Context:       context,
-				Configuration: configuration,
-				Load:          load,
-				Output:        output,
-				Toolchain:     toolchain,
+				IntDir:    intDir,
+				OutDir:    outDir,
+				LockFile:  lockFile,
+				LogFile:   logFile,
+				Generator: generator,
+				Target:    target,
+				Jobs:      jobs,
+				Quiet:     quiet,
+				Debug:     debug,
+				Verbose:   verbose,
+				Clean:     clean,
+				Schema:    schema,
+				Packs:     packs,
+				Rebuild:   rebuild,
+				UpdateRte: updateRte,
+				Context:   context,
+				Load:      load,
+				Output:    output,
+				Toolchain: toolchain,
 			}
 
 			configs, err := utils.GetInstallConfigs()
@@ -182,26 +180,30 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.Flags().BoolP("quiet", "q", false, "Suppress output messages except build invocations")
 	rootCmd.Flags().BoolP("debug", "d", false, "Enable debug messages")
 	rootCmd.Flags().BoolP("verbose", "v", false, "Enable verbose messages from toolchain builds")
-	rootCmd.Flags().BoolP("clean", "c", false, "Remove intermediate and output directories")
+	rootCmd.Flags().BoolP("clean", "C", false, "Remove intermediate and output directories")
 	rootCmd.Flags().BoolP("packs", "p", false, "Download missing software packs with cpackget")
 	rootCmd.Flags().BoolP("rebuild", "r", false, "Remove intermediate and output directories and rebuild")
 	rootCmd.Flags().BoolP("update-rte", "", false, "Update the RTE directory and files")
-	rootCmd.Flags().StringP("intdir", "i", "", "Set directory for intermediate files")
-	rootCmd.Flags().StringP("outdir", "o", "", "Set directory for output binary files")
-	rootCmd.Flags().StringP("update", "u", "", "Generate *.cprj file for reproducing current build")
 	rootCmd.Flags().StringP("generator", "g", "Ninja", "Select build system generator")
-	rootCmd.Flags().StringP("context", "", "", "Input context name e.g. project.buildType+targetType")
-	rootCmd.Flags().StringP("configuration", "", "", "Input configuration name e.g. [.buildType][+targetType]")
-	rootCmd.Flags().StringP("load", "", "", "Set policy for packs loading [latest|all|required]")
+	rootCmd.Flags().StringSliceP("context", "c", []string{}, "Input context name e.g. project.buildType+targetType")
+	rootCmd.Flags().StringP("load", "l", "", "Set policy for packs loading [latest|all|required]")
 	rootCmd.Flags().IntP("jobs", "j", 0, "Number of job slots for parallel execution")
 	rootCmd.Flags().StringP("target", "t", "", "Optional CMake target name")
 	rootCmd.Flags().StringP("output", "O", "", "Set directory for all output files")
 	rootCmd.PersistentFlags().BoolP("schema", "s", false, "Validate project input file(s) against schema")
-	rootCmd.PersistentFlags().StringP("log", "l", "", "Save output messages in a log file")
+	rootCmd.PersistentFlags().StringP("log", "", "", "Save output messages in a log file")
 	rootCmd.PersistentFlags().StringP("toolchain", "", "", "Input toolchain to be used")
 
+	// CPRJ specific hidden flags
+	rootCmd.Flags().StringP("intdir", "i", "", "Set directory for intermediate files")
+	rootCmd.Flags().StringP("outdir", "o", "", "Set directory for output binary files")
+	rootCmd.Flags().StringP("update", "u", "", "Generate *.cprj file for reproducing current build")
+	_ = rootCmd.Flags().MarkHidden("intdir")
+	_ = rootCmd.Flags().MarkHidden("outdir")
+	_ = rootCmd.Flags().MarkHidden("update")
+
 	rootCmd.SetFlagErrorFunc(FlagErrorFunc)
-	rootCmd.AddCommand(list.ListCmd)
+	rootCmd.AddCommand(build.BuildCPRJCmd, list.ListCmd)
 	return rootCmd
 }
 

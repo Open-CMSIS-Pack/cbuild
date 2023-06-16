@@ -24,11 +24,6 @@ type EnvVars struct {
 	BuildRoot    string
 }
 
-type ConfigurationItem struct {
-	BuildType  string
-	TargetType string
-}
-
 type ContextItem struct {
 	ProjectName string
 	BuildType   string
@@ -101,7 +96,7 @@ func GetDefaultCmsisPackRoot() (root string) {
 }
 
 func ParseContext(context string) (item ContextItem, err error) {
-	parseError := errors.New("invalid context. Follow project.buildType+targetType syntax")
+	parseError := errors.New("invalid context. Follow [project][.buildType][+targetType] syntax")
 
 	periodCount := strings.Count(context, ".")
 	plusCount := strings.Count(context, "+")
@@ -115,15 +110,21 @@ func ParseContext(context string) (item ContextItem, err error) {
 	targetIdx := strings.Index(context, "+")
 	buildIdx := strings.Index(context, ".")
 
-	if targetIdx == -1 || targetIdx < buildIdx {
+	if (targetIdx != -1 && buildIdx != -1) && targetIdx < buildIdx {
 		err = parseError
 		return
 	}
 
-	if buildIdx == -1 {
+	if targetIdx == -1 && buildIdx == -1 {
+		projectName = context
+	} else if buildIdx == -1 {
 		// context with only projectName+targetType
 		projectName = context[:targetIdx]
 		targetType = context[targetIdx+1:]
+	} else if targetIdx == -1 {
+		// context with only projectName.buildtype
+		projectName = context[:buildIdx]
+		buildType = context[buildIdx+1:]
 	} else {
 		// fully specified contexts
 		part := context[:targetIdx]
@@ -147,146 +148,19 @@ func ParseContext(context string) (item ContextItem, err error) {
 		}
 	}
 
-	if projectName == "" || targetType == "" {
-		err = parseError
-		return
-	}
 	item.ProjectName = projectName
 	item.BuildType = buildType
 	item.TargetType = targetType
 	return
 }
 
-func CreateContext(contextItem ContextItem) (context string, err error) {
-	if contextItem.ProjectName == "" || contextItem.TargetType == "" {
-		err = errors.New("invalid input context item")
-		return
-	}
+func CreateContext(contextItem ContextItem) (context string) {
 	context = contextItem.ProjectName
 	if contextItem.BuildType != "" {
 		context += "." + contextItem.BuildType
 	}
-	context += "+" + contextItem.TargetType
-	return
-}
-
-func ParseConfiguration(configuration string) (item ConfigurationItem, err error) {
-	parseErr := errors.New("invalid configuration. Follow [.buildType][+targetType] syntax")
-	periodCount := strings.Count(configuration, ".")
-	plusCount := strings.Count(configuration, "+")
-	if configuration == "" || periodCount > 1 || plusCount > 1 {
-		err = parseErr
-		return
-	}
-
-	var buildType, targetType string
-	targetIdx := strings.Index(configuration, "+")
-	buildIdx := strings.Index(configuration, ".")
-
-	if (targetIdx == -1 && buildIdx == -1) || (targetIdx != -1 && targetIdx < buildIdx) {
-		err = parseErr
-		return
-	}
-
-	if !(targetIdx == 0 || buildIdx == 0) {
-		err = parseErr
-		return
-	}
-
-	if targetIdx == -1 {
-		// configuration contains only buildType
-		buildType = configuration[buildIdx+1:]
-	} else if buildIdx == -1 {
-		// configuration contains only targetType
-		targetType = configuration[targetIdx+1:]
-	} else {
-		// fully specified configuration
-		if buildIdx == 0 {
-			buildType = configuration[buildIdx+1 : targetIdx]
-			targetType = configuration[targetIdx+1:]
-		} else {
-			targetType = configuration[targetIdx+1 : buildIdx]
-			buildType = configuration[buildIdx+1:]
-		}
-	}
-
-	if buildType == "" && targetType == "" {
-		err = parseErr
-		return
-	}
-
-	item.BuildType = buildType
-	item.TargetType = targetType
-	return
-}
-
-func CreateConfiguration(configItem ConfigurationItem) (configuration string) {
-	if configItem.BuildType != "" {
-		configuration += "." + configItem.BuildType
-	}
-	if configItem.TargetType != "" {
-		configuration += "+" + configItem.TargetType
-	}
-	return
-}
-
-func GetSelectedContexts(allContexts []string, configuration string) (selectedContexts []string, err error) {
-	if configuration == "" {
-		selectedContexts = allContexts
-		return
-	}
-
-	if IsWildcardPattern(configuration) {
-		configPattern := "*" + configuration
-		for _, context := range allContexts {
-
-			buildIdx := strings.Index(context, ".")
-			targetIdx := strings.Index(context, "+")
-			if buildIdx == -1 && targetIdx == -1 {
-				continue
-			}
-			var config string
-			if buildIdx != -1 {
-				config = context[buildIdx:]
-			} else {
-				config = context[targetIdx:]
-			}
-
-			match, regexErr := MatchString(config, configPattern)
-			if regexErr != nil {
-				err = regexErr
-				return
-			}
-			if match {
-				selectedContexts = append(selectedContexts, context)
-			}
-		}
-	} else {
-		config, parseErr := ParseConfiguration(configuration)
-		if parseErr != nil {
-			err = parseErr
-			return
-		}
-
-		for _, context := range allContexts {
-			contextItem, parseError := ParseContext(context)
-			if parseError != nil {
-				err = parseError
-				return
-			}
-
-			if config.TargetType != "" && config.TargetType != contextItem.TargetType {
-				continue
-			}
-			if config.BuildType != "" && config.BuildType != contextItem.BuildType {
-				continue
-			}
-			selectedContexts = append(selectedContexts, context)
-		}
-	}
-
-	if len(selectedContexts) == 0 {
-		err = errors.New("specified configuration '" + configuration + "' not found")
+	if contextItem.TargetType != "" {
+		context += "+" + contextItem.TargetType
 	}
 	return
 }
@@ -301,7 +175,9 @@ type CbuildIndex struct {
 		} `yaml:"cprojects"`
 		Licenses interface{} `yaml:"licenses"`
 		Cbuilds  []struct {
-			Cbuild string `yaml:"cbuild"`
+			Cbuild        string `yaml:"cbuild"`
+			Project       string `json:"project"`
+			Configuration string `json:"configuration"`
 		} `yaml:"cbuilds"`
 	} `yaml:"build-idx"`
 }
