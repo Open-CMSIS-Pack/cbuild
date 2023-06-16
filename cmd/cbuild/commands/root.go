@@ -10,6 +10,7 @@ import (
 	"cbuild/cmd/cbuild/commands/build"
 	"cbuild/cmd/cbuild/commands/list"
 	"cbuild/pkg/builder"
+	"cbuild/pkg/builder/cproject"
 	"cbuild/pkg/builder/csolution"
 	"cbuild/pkg/utils"
 	"errors"
@@ -102,7 +103,9 @@ func NewRootCmd() *cobra.Command {
 				_ = cmd.Help()
 				return errors.New("invalid arguments")
 			}
-
+			intDir, _ := cmd.Flags().GetString("intdir")
+			outDir, _ := cmd.Flags().GetString("outdir")
+			lockFile, _ := cmd.Flags().GetString("update")
 			logFile, _ := cmd.Flags().GetString("log")
 			generator, _ := cmd.Flags().GetString("generator")
 			target, _ := cmd.Flags().GetString("target")
@@ -121,6 +124,9 @@ func NewRootCmd() *cobra.Command {
 			toolchain, _ := cmd.Flags().GetString("toolchain")
 
 			options := builder.Options{
+				IntDir:    intDir,
+				OutDir:    outDir,
+				LockFile:  lockFile,
 				LogFile:   logFile,
 				Generator: generator,
 				Target:    target,
@@ -153,7 +159,9 @@ func NewRootCmd() *cobra.Command {
 
 			fileExtension := filepath.Ext(inputFile)
 			var b builder.IBuilderInterface
-			if fileExtension == ".yml" || fileExtension == ".yaml" {
+			if fileExtension == ".cprj" {
+				b = cproject.CprjBuilder{BuilderParams: params}
+			} else if fileExtension == ".yml" || fileExtension == ".yaml" {
 				b = csolution.CSolutionBuilder{BuilderParams: params}
 			} else {
 				return errors.New("invalid file argument")
@@ -185,6 +193,14 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.PersistentFlags().BoolP("schema", "s", false, "Validate project input file(s) against schema")
 	rootCmd.PersistentFlags().StringP("log", "", "", "Save output messages in a log file")
 	rootCmd.PersistentFlags().StringP("toolchain", "", "", "Input toolchain to be used")
+
+	// CPRJ specific hidden flags
+	rootCmd.Flags().StringP("intdir", "i", "", "Set directory for intermediate files")
+	rootCmd.Flags().StringP("outdir", "o", "", "Set directory for output binary files")
+	rootCmd.Flags().StringP("update", "u", "", "Generate *.cprj file for reproducing current build")
+	_ = rootCmd.Flags().MarkHidden("intdir")
+	_ = rootCmd.Flags().MarkHidden("outdir")
+	_ = rootCmd.Flags().MarkHidden("update")
 
 	rootCmd.SetFlagErrorFunc(FlagErrorFunc)
 	rootCmd.AddCommand(build.BuildCPRJCmd, list.ListCmd)
