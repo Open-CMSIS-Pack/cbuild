@@ -185,7 +185,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.Flags().BoolP("rebuild", "r", false, "Remove intermediate and output directories and rebuild")
 	rootCmd.Flags().BoolP("update-rte", "", false, "Update the RTE directory and files")
 	rootCmd.Flags().StringP("generator", "g", "Ninja", "Select build system generator")
-	rootCmd.Flags().StringSliceP("context", "c", []string{}, "Input context name e.g. project.buildType+targetType")
+	rootCmd.Flags().StringSliceP("context", "c", []string{}, "Input context name e.g. [<cproject>][.<build-type>][+<target-type>]")
 	rootCmd.Flags().StringP("load", "l", "", "Set policy for packs loading [latest|all|required]")
 	rootCmd.Flags().IntP("jobs", "j", 0, "Number of job slots for parallel execution")
 	rootCmd.Flags().StringP("target", "t", "", "Optional CMake target name")
