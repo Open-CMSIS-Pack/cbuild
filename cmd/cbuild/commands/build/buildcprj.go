@@ -80,13 +80,12 @@ func BuildCPRJ(cmd *cobra.Command, args []string) error {
 		return errors.New("invalid file argument")
 	}
 
-	//log.Info("Build Invocation " + commands.Version + commands.CopyrightNotice)
 	return b.Build()
 }
 
 var BuildCPRJCmd = &cobra.Command{
-	Use:   "buildcprj <project.cprj> [flags]",
-	Short: "Generate output",
+	Use:   "buildcprj <name>.cprj [options]",
+	Short: "Use a *.CPRJ file as build input",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return BuildCPRJ(cmd, args)
@@ -94,6 +93,7 @@ var BuildCPRJCmd = &cobra.Command{
 }
 
 func init() {
+	BuildCPRJCmd.DisableFlagsInUseLine = true
 	BuildCPRJCmd.Flags().IntP("jobs", "j", 0, "Number of job slots for parallel execution")
 	BuildCPRJCmd.Flags().BoolP("help", "h", false, "Print usage")
 	BuildCPRJCmd.Flags().BoolP("quiet", "q", false, "Suppress output messages except build invocations")

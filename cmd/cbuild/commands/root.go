@@ -41,13 +41,13 @@ Aliases:
 Examples:
 {{.Example}}{{end}}{{if .HasAvailableSubCommands}}
 
-Available Commands:{{range .Commands}}{{if (or .IsAvailableCommand (eq .Name "help"))}}
+Commands:{{range .Commands}}{{if (or .IsAvailableCommand (eq .Name "help"))}}
   {{rpad .Name .NamePadding }} {{.Short}}{{end}}{{end}}{{end}}{{if .HasAvailableLocalFlags}}
 
-Flags:
+Options:
 {{.LocalFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}{{if .HasAvailableInheritedFlags}}
 
-Global Flags:
+Global Options:
 {{.InheritedFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}{{if .HasHelpSubCommands}}
 
 Additional help topics:{{range .Commands}}{{if .IsAdditionalHelpTopicCommand}}
@@ -83,7 +83,7 @@ func preConfiguration(cmd *cobra.Command, args []string) (err error) {
 
 func NewRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use:               "cbuild [command] <csolution.yml> [flags]",
+		Use:               "cbuild [command] <name>.csolution.yml [options]",
 		Short:             "cbuild: Build Invocation " + Version + CopyrightNotice,
 		SilenceUsage:      true,
 		SilenceErrors:     true,
@@ -173,6 +173,7 @@ func NewRootCmd() *cobra.Command {
 	}
 
 	rootCmd.SetUsageTemplate(usageTemplate)
+	rootCmd.DisableFlagsInUseLine = true
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 
 	rootCmd.Flags().BoolP("version", "V", false, "Print version")
@@ -185,8 +186,8 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.Flags().BoolP("rebuild", "r", false, "Remove intermediate and output directories and rebuild")
 	rootCmd.Flags().BoolP("update-rte", "", false, "Update the RTE directory and files")
 	rootCmd.Flags().StringP("generator", "g", "Ninja", "Select build system generator")
-	rootCmd.Flags().StringSliceP("context", "c", []string{}, "Input context name e.g. [<cproject>][.<build-type>][+<target-type>]")
-	rootCmd.Flags().StringP("load", "l", "", "Set policy for packs loading [latest|all|required]")
+	rootCmd.Flags().StringSliceP("context", "c", []string{}, "Input context names [<project-name>][.<build-type>][+<target-type>]")
+	rootCmd.Flags().StringP("load", "l", "", "Set policy for packs loading [latest | all | required]")
 	rootCmd.Flags().IntP("jobs", "j", 0, "Number of job slots for parallel execution")
 	rootCmd.Flags().StringP("target", "t", "", "Optional CMake target name")
 	rootCmd.Flags().StringP("output", "O", "", "Set directory for all output files")

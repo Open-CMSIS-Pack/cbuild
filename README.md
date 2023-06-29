@@ -17,24 +17,24 @@ By default, `cbuild` expects a fully configured solution (*.csolution.yml) or co
 ## Usage
 
 ```bash
-cbuild: Build Invocation 2.0.0-dev2 (C) 2023 Arm Ltd. and Contributors
+cbuild: Build Invocation 2.0.0 (C) 2023 Arm Ltd. and Contributors
 
 Usage:
-  cbuild [command] <csolution.yml> [flags]
+  cbuild [command] <name>.csolution.yml [options]
 
-Available Commands:
-  buildcprj   Generate output
+Commands:
+  buildcprj   Use a *.CPRJ file as build input
   help        Help about any command
-  list        List information
+  list        List information about environment, toolchains, and contexts
 
-Flags:
+Options:
   -C, --clean              Remove intermediate and output directories
-  -c, --context strings    Input context name e.g. [<cproject>][.<build-type>][+<target-type>]
+  -c, --context strings    Input context names [<project-name>][.<build-type>][+<target-type>]
   -d, --debug              Enable debug messages
   -g, --generator string   Select build system generator (default "Ninja")
   -h, --help               Print usage
   -j, --jobs int           Number of job slots for parallel execution
-  -l, --load string        Set policy for packs loading [latest|all|required]
+  -l, --load string        Set policy for packs loading [latest | all | required]
       --log string         Save output messages in a log file
   -O, --output string      Set directory for all output files
   -p, --packs              Download missing software packs with cpackget

@@ -32,3 +32,7 @@ var ListEnvironmentCmd = &cobra.Command{
 		return p.ListEnvironment()
 	},
 }
+
+func init() {
+	ListEnvironmentCmd.DisableFlagsInUseLine = true
+}
