@@ -10,14 +10,15 @@ import (
 )
 
 var ListCmd = &cobra.Command{
-	Use:   "list <command> [csolution.yml] [flags]",
-	Short: "List information",
+	Use:   "list <command> [<name>.csolution.yml] [options]",
+	Short: "List information about environment, toolchains, and contexts",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return cmd.Help()
 	},
 }
 
 func init() {
+	ListCmd.DisableFlagsInUseLine = true
 	ListToolchainsCmd.SetHelpFunc(func(command *cobra.Command, strings []string) {
 		_ = command.Flags().MarkHidden("schema")
 		command.Parent().HelpFunc()(command, strings)

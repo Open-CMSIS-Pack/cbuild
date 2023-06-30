@@ -14,7 +14,7 @@ import (
 )
 
 var ListContextsCmd = &cobra.Command{
-	Use:   "contexts <csolution.yml>",
+	Use:   "contexts <name>.csolution.yml [options]",
 	Short: "Print list of contexts in a csolution.yml",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -41,5 +41,6 @@ var ListContextsCmd = &cobra.Command{
 }
 
 func init() {
+	ListContextsCmd.DisableFlagsInUseLine = true
 	ListContextsCmd.Flags().StringP("filter", "f", "", "filter results (case sensitive, accepts several expressions)")
 }

@@ -14,7 +14,7 @@ import (
 )
 
 var ListToolchainsCmd = &cobra.Command{
-	Use:   "toolchains [csolution.yml]",
+	Use:   "toolchains [<name>.csolution.yml] [options]",
 	Short: "Print list of installed toolchains",
 	Args:  cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -45,5 +45,6 @@ var ListToolchainsCmd = &cobra.Command{
 }
 
 func init() {
+	ListToolchainsCmd.DisableFlagsInUseLine = true
 	ListToolchainsCmd.Flags().BoolP("verbose", "v", false, "Enable verbose messages")
 }
