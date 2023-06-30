@@ -18,6 +18,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -45,10 +46,10 @@ Commands:{{range .Commands}}{{if (or .IsAvailableCommand (eq .Name "help"))}}
   {{rpad .Name .NamePadding }} {{.Short}}{{end}}{{end}}{{end}}{{if .HasAvailableLocalFlags}}
 
 Options:
-{{.LocalFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}{{if .HasAvailableInheritedFlags}}
+{{.LocalFlags.FlagUsages | replaceString | trimTrailingWhitespaces}}{{end}}{{if .HasAvailableInheritedFlags}}
 
 Global Options:
-{{.InheritedFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}{{if .HasHelpSubCommands}}
+{{.InheritedFlags.FlagUsages | replaceString | trimTrailingWhitespaces}}{{end}}{{if .HasHelpSubCommands}}
 
 Additional help topics:{{range .Commands}}{{if .IsAdditionalHelpTopicCommand}}
   {{rpad .CommandPath .CommandPathPadding}} {{.Short}}{{end}}{{end}}{{end}}{{if .HasAvailableSubCommands}}
@@ -172,6 +173,9 @@ func NewRootCmd() *cobra.Command {
 		},
 	}
 
+	cobra.AddTemplateFunc("replaceString", func(s string) string {
+		return strings.Replace(strings.Replace(s, "strings  ", "arg [...]", -1), "string ", "arg    ", -1)
+	})
 	rootCmd.SetUsageTemplate(usageTemplate)
 	rootCmd.DisableFlagsInUseLine = true
 	rootCmd.CompletionOptions.DisableDefaultCmd = true

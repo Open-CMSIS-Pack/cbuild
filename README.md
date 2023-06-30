@@ -29,20 +29,20 @@ Commands:
 
 Options:
   -C, --clean              Remove intermediate and output directories
-  -c, --context strings    Input context names [<project-name>][.<build-type>][+<target-type>]
+  -c, --context arg [...]  Input context names [<project-name>][.<build-type>][+<target-type>]
   -d, --debug              Enable debug messages
-  -g, --generator string   Select build system generator (default "Ninja")
+  -g, --generator arg      Select build system generator (default "Ninja")
   -h, --help               Print usage
   -j, --jobs int           Number of job slots for parallel execution
-  -l, --load string        Set policy for packs loading [latest | all | required]
-      --log string         Save output messages in a log file
-  -O, --output string      Set directory for all output files
+  -l, --load arg           Set policy for packs loading [latest | all | required]
+      --log arg            Save output messages in a log file
+  -O, --output arg         Set directory for all output files
   -p, --packs              Download missing software packs with cpackget
   -q, --quiet              Suppress output messages except build invocations
   -r, --rebuild            Remove intermediate and output directories and rebuild
   -s, --schema             Validate project input file(s) against schema
-  -t, --target string      Optional CMake target name
-      --toolchain string   Input toolchain to be used
+  -t, --target arg         Optional CMake target name
+      --toolchain arg      Input toolchain to be used
       --update-rte         Update the RTE directory and files
   -v, --verbose            Enable verbose messages from toolchain builds
   -V, --version            Print version
