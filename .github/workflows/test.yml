@@ -53,12 +53,12 @@ jobs:
           go-version-file: go.mod
           check-latest: true
 
-      - name: Install govulncheck
-        run: go install golang.org/x/vuln/cmd/govulncheck@latest
-      - name: Run vulnerability check
-        run: |
-          echo "$(govulncheck ./... 2>&1 | tee vulnerability_report.out)"          
-          test -n "$(grep 'No vulnerabilities found.' vulnerability_report.out)"
+      - name: Scan for Vulnerabilities in Code
+        uses: Templum/govulncheck-action@<version>
+        with:
+          go-version: 1.20
+          fail-on-vuln: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
   test:
     strategy:
