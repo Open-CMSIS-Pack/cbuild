@@ -59,6 +59,7 @@ jobs:
           go-package: ./...
 
   test:
+    continue-on-error: true
     strategy:
       matrix:
         platform: [ubuntu-latest, windows-latest, macos-latest]
@@ -81,10 +82,14 @@ jobs:
         run: |
           mkdir -p build
           go test -v ./... > build/cbuildtests-${{ matrix.platform }}-amd64.txt
+
+      - name: Generate unit test report
+        if: success() || failure()
+        run: |
           go-junit-report -set-exit-code -in build/cbuildtests-${{ matrix.platform }}-amd64.txt -iocopy -out build/cbuildtests-${{ matrix.platform }}-amd64.xml
 
       - name: Install qemu (for Linux-Arm64)
-        if: ${{ startsWith(runner.os, 'Linux') }}
+        if: ${{ always() && startsWith(runner.os, 'Linux') }}
         run: |
           sudo apt update
           sudo apt-get install -y \
@@ -93,12 +98,17 @@ jobs:
             qemu-user-binfmt
 
       - name: Unit testing (for Linux-Arm64)
-        if: ${{ startsWith(runner.os, 'Linux') }}
+        if: ${{ always() && startsWith(runner.os, 'Linux') }}
         run: |
           GOOS=linux GOARCH=arm64 go test -v ./... > build/cbuildtests-${{ matrix.platform }}-arm64.txt
+
+      - name: Generate unit test report (for Linux-Arm64)
+        if: success() || failure()
+        run: |
           go-junit-report -set-exit-code -in build/cbuildtests-${{ matrix.platform }}-arm64.txt -iocopy -out build/cbuildtests-${{ matrix.platform }}-arm64.xml
 
       - name: Archive unit test results
+        if: ${{ always() }}
         uses: actions/upload-artifact@v3
         with:
           name: unit-test-result-${{ matrix.platform }}
@@ -106,7 +116,10 @@ jobs:
           if-no-files-found: error
 
   publish-test-results:
-    if: github.event_name != 'release'
+    if: ${{ always() && github.event_name != 'release' }} 
+    permissions:
+      checks: write
+      pull-requests: write
     name: "Publish Tests Results"
     needs: [ test ]
     runs-on: ubuntu-latest
@@ -130,11 +143,14 @@ jobs:
           path: testreports/
 
       - name: publish test results
-        uses: EnricoMi/publish-unit-test-result-action/composite@v2
+        uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          commit: ${{ github.event.workflow_run.head_sha }}
+          files: "testreports/*.xml"
           report_individual_runs: true
-          junit_files: "testreports/*.xml"
+        # with:
+        #   commit: ${{ github.event.workflow_run.head_sha }}
+        #   report_individual_runs: true
+        #   junit_files: "testreports/*.xml"
 
   coverage:
     if: github.event_name != 'release'

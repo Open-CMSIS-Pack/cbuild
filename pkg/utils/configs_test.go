@@ -30,7 +30,7 @@ func TestGetInstallConfigs(t *testing.T) {
 	assert := assert.New(t)
 	t.Run("test get install configs with CMSIS_BUILD_ROOT", func(t *testing.T) {
 		err := os.Setenv("CMSIS_BUILD_ROOT", testRoot+"/run/bin")
-		assert.Nil(err)
+		assert.Error(err)
 		configs, err := GetInstallConfigs()
 		assert.Nil(err)
 		assert.NotEmpty(configs.BinPath)
