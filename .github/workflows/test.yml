@@ -59,11 +59,17 @@ jobs:
           go-package: ./...
 
   test:
-    continue-on-error: true
     strategy:
       matrix:
         platform: [ubuntu-latest, windows-latest, macos-latest]
-    name: 'Test (${{ matrix.platform }})'
+        include:
+          - platform: ubuntu-latest
+            target: linux
+          - platform: windows-latest
+            target: windows
+          - platform: macos-latest
+            target: darwin
+    name: 'Test (${{ matrix.target }})'
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Check out repository code
@@ -81,15 +87,11 @@ jobs:
       - name: Unit testing
         run: |
           mkdir -p build
-          go test -v ./... > build/cbuildtests-${{ matrix.platform }}-amd64.txt
-
-      - name: Generate unit test report
-        if: success() || failure()
-        run: |
-          go-junit-report -set-exit-code -in build/cbuildtests-${{ matrix.platform }}-amd64.txt -iocopy -out build/cbuildtests-${{ matrix.platform }}-amd64.xml
+          go test -v ./... > build/cbuildtests-${{ matrix.target }}-amd64.txt
+          go-junit-report -set-exit-code -in build/cbuildtests-${{ matrix.target }}-amd64.txt -iocopy -out build/cbuild-testreport-${{ matrix.target }}-amd64.xml
 
       - name: Install qemu (for Linux-Arm64)
-        if: ${{ always() && startsWith(runner.os, 'Linux') }}
+        if: ${{ startsWith(runner.os, 'Linux') }}
         run: |
           sudo apt update
           sudo apt-get install -y \
@@ -97,60 +99,39 @@ jobs:
             g++-aarch64-linux-gnu \
             qemu-user-binfmt
 
-      - name: Unit testing (for Linux-Arm64)
-        if: ${{ always() && startsWith(runner.os, 'Linux') }}
+      - name: Unit testing (for Arm64)
         run: |
-          GOOS=linux GOARCH=arm64 go test -v ./... > build/cbuildtests-${{ matrix.platform }}-arm64.txt
+          set GOARCH=arm64 && go test -v ./... > build/cbuildtests-${{ matrix.target }}-arm64.txt
 
-      - name: Generate unit test report (for Linux-Arm64)
+      - name: Generate test report
         if: success() || failure()
         run: |
-          go-junit-report -set-exit-code -in build/cbuildtests-${{ matrix.platform }}-arm64.txt -iocopy -out build/cbuildtests-${{ matrix.platform }}-arm64.xml
+          go-junit-report -set-exit-code -in build/cbuildtests-${{ matrix.target }}-arm64.txt -iocopy -out build/cbuild-testreport-${{ matrix.target }}-arm64.xml
 
       - name: Archive unit test results
-        if: ${{ always() }}
+        if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: unit-test-result-${{ matrix.platform }}
-          path: ./build/cbuildtests-*.xml
+          name: unit-test-result-${{ matrix.target }}
+          path: ./build/cbuild-testreport-*.xml
           if-no-files-found: error
 
   publish-test-results:
-    if: ${{ always() && github.event_name != 'release' }} 
-    permissions:
-      checks: write
-      pull-requests: write
+    if: github.event_name != 'release'
     name: "Publish Tests Results"
     needs: [ test ]
     runs-on: ubuntu-latest
     steps:
-      - name: Download unit test report windows
+      - name: Download Artifacts
         uses: actions/download-artifact@v3
         with:
-          name: unit-test-result-windows-latest
-          path: testreports/
-
-      - name: Download unit test report linux
-        uses: actions/download-artifact@v3
-        with:
-          name: unit-test-result-ubuntu-latest
-          path: testreports/
-
-      - name: Download unit test report macos
-        uses: actions/download-artifact@v3
-        with:
-          name: unit-test-result-macos-latest
-          path: testreports/
+          path: artifacts
 
       - name: publish test results
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          files: "testreports/*.xml"
+          files: "artifacts/**/cbuild-testreport-*.xml"
           report_individual_runs: true
-        # with:
-        #   commit: ${{ github.event.workflow_run.head_sha }}
-        #   report_individual_runs: true
-        #   junit_files: "testreports/*.xml"
 
   coverage:
     if: github.event_name != 'release'
