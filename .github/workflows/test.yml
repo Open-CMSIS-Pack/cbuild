@@ -62,7 +62,14 @@ jobs:
     strategy:
       matrix:
         platform: [ubuntu-latest, windows-latest, macos-latest]
-    name: 'Test (${{ matrix.platform }})'
+        include:
+          - platform: ubuntu-latest
+            target: linux
+          - platform: windows-latest
+            target: windows
+          - platform: macos-latest
+            target: darwin
+    name: 'Test (${{ matrix.target }})'
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Check out repository code
@@ -80,8 +87,8 @@ jobs:
       - name: Unit testing
         run: |
           mkdir -p build
-          go test -v ./... > build/cbuildtests-${{ matrix.platform }}-amd64.txt
-          go-junit-report -set-exit-code -in build/cbuildtests-${{ matrix.platform }}-amd64.txt -iocopy -out build/cbuildtests-${{ matrix.platform }}-amd64.xml
+          go test -v ./... > build/cbuildtests-${{ matrix.target }}-amd64.txt
+          go-junit-report -set-exit-code -in build/cbuildtests-${{ matrix.target }}-amd64.txt -iocopy -out build/cbuild-testreport-${{ matrix.target }}-amd64.xml
 
       - name: Install qemu (for Linux-Arm64)
         if: ${{ startsWith(runner.os, 'Linux') }}
@@ -95,14 +102,14 @@ jobs:
       - name: Unit testing (for Linux-Arm64)
         if: ${{ startsWith(runner.os, 'Linux') }}
         run: |
-          GOOS=linux GOARCH=arm64 go test -v ./... > build/cbuildtests-${{ matrix.platform }}-arm64.txt
-          go-junit-report -set-exit-code -in build/cbuildtests-${{ matrix.platform }}-arm64.txt -iocopy -out build/cbuildtests-${{ matrix.platform }}-arm64.xml
+          GOOS=linux GOARCH=arm64 go test -v ./... > build/cbuildtests-${{ matrix.target }}-arm64.txt
+          go-junit-report -set-exit-code -in build/cbuildtests-${{ matrix.target }}-arm64.txt -iocopy -out build/cbuild-testreport-${{ matrix.target }}-arm64.xml
 
       - name: Archive unit test results
         uses: actions/upload-artifact@v3
         with:
-          name: unit-test-result-${{ matrix.platform }}
-          path: ./build/cbuildtests-*.xml
+          name: unit-test-result-${{ matrix.target }}
+          path: ./build/cbuild-testreport-*.xml
           if-no-files-found: error
 
   publish-test-results:
@@ -111,30 +118,16 @@ jobs:
     needs: [ test ]
     runs-on: ubuntu-latest
     steps:
-      - name: Download unit test report windows
+      - name: Download Artifacts
         uses: actions/download-artifact@v3
         with:
-          name: unit-test-result-windows-latest
-          path: testreports/
-
-      - name: Download unit test report linux
-        uses: actions/download-artifact@v3
-        with:
-          name: unit-test-result-ubuntu-latest
-          path: testreports/
-
-      - name: Download unit test report macos
-        uses: actions/download-artifact@v3
-        with:
-          name: unit-test-result-macos-latest
-          path: testreports/
+          path: artifacts
 
       - name: publish test results
-        uses: EnricoMi/publish-unit-test-result-action/composite@v2
+        uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          commit: ${{ github.event.workflow_run.head_sha }}
+          files: "artifacts/**/cbuild-testreport-*.xml"
           report_individual_runs: true
-          junit_files: "testreports/*.xml"
 
   coverage:
     if: github.event_name != 'release'
