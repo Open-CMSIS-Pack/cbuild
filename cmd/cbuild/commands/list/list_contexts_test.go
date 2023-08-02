@@ -8,7 +8,6 @@ package list_test
 
 import (
 	"cbuild/cmd/cbuild/commands"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,7 +15,6 @@ import (
 
 func TestListContextsCommand(t *testing.T) {
 	assert := assert.New(t)
-	os.Setenv("CMSIS_BUILD_ROOT", testRoot+"/run/bin")
 	csolutionFile := testRoot + "/run/TestSolution/test.csolution.yml"
 
 	t.Run("No arguments", func(t *testing.T) {
