@@ -166,7 +166,8 @@ func (b CSolutionBuilder) getIdxFilePath() (string, error) {
 
 func (b CSolutionBuilder) processContext(context string, progress string) (err error) {
 	infoMsg := progress + " Processing context: \"" + context + "\""
-	fmt.Println(strings.Repeat("=", len(infoMsg)+13))
+	sep := strings.Repeat("=", len(infoMsg)+13) + "\n"
+	_, _ = log.StandardLogger().Out.Write([]byte(sep))
 	log.Info(infoMsg)
 
 	// if --output is used, ignore provided --outdir and --intdir
@@ -311,7 +312,7 @@ func (b CSolutionBuilder) ListEnvironment() error {
 		return err
 	}
 	for _, config := range envConfigs {
-		fmt.Println(config)
+		_, _ = log.StandardLogger().Out.Write([]byte(config + "\n"))
 	}
 	return nil
 }
