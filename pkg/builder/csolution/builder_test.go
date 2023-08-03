@@ -8,21 +8,22 @@ package csolution
 
 import (
 	builder "cbuild/pkg/builder"
+	"cbuild/pkg/inittest"
 	"cbuild/pkg/utils"
 	"errors"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"testing"
-	"time"
-
-	cp "github.com/otiai10/copy"
 
 	"github.com/stretchr/testify/assert"
 )
 
 const testRoot = "../../../test"
+
+func init() {
+	inittest.TestInitialization(testRoot)
+}
 
 type RunnerMock struct{}
 
@@ -52,53 +53,26 @@ func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) (
 	return "", nil
 }
 
-func init() {
-	// Prepare test data
-	_ = os.RemoveAll(testRoot + "/run")
-	time.Sleep(2 * time.Second)
-	_ = cp.Copy(testRoot+"/data", testRoot+"/run")
-
-	_ = os.MkdirAll(testRoot+"/run/bin", 0755)
-	_ = os.MkdirAll(testRoot+"/run/etc", 0755)
-	_ = os.MkdirAll(testRoot+"/run/packs", 0755)
-	_ = os.MkdirAll(testRoot+"/run/IntDir", 0755)
-	_ = os.MkdirAll(testRoot+"/run/OutDir", 0755)
-
-	var binExtension string
-	if runtime.GOOS == "windows" {
-		binExtension = ".exe"
-	}
-	cbuildgenBin := testRoot + "/run/bin/cbuildgen" + binExtension
-	file, _ := os.Create(cbuildgenBin)
-	defer file.Close()
-	csolutionBin := testRoot + "/run/bin/csolution" + binExtension
-	file, _ = os.Create(csolutionBin)
-	defer file.Close()
-	cpackgetBin := testRoot + "/run/bin/cpackget" + binExtension
-	file, _ = os.Create(cpackgetBin)
-	defer file.Close()
-
-	_ = cp.Copy(testRoot+"/run/test.Debug+CM0.cprj", testRoot+"/run/OutDir/test.Debug+CM0.cprj")
-}
-
 func TestListContexts(t *testing.T) {
 	assert := assert.New(t)
-	os.Setenv("CMSIS_BUILD_ROOT", testRoot+"/run/bin")
-	configs, err := utils.GetInstallConfigs()
-	assert.Nil(err)
+	configs := inittest.GetTestConfigs(testRoot)
 
 	b := CSolutionBuilder{
 		BuilderParams: builder.BuilderParams{
-			Runner:         RunnerMock{},
-			InputFile:      testRoot + "/run/test.csolution.yml",
-			InstallConfigs: configs,
+			Runner:    RunnerMock{},
+			InputFile: testRoot + "/run/TestSolution/test.csolution.yml",
+			InstallConfigs: utils.Configurations{
+				BinPath: configs.BinPath,
+				BinExtn: configs.BinExtn,
+				EtcPath: configs.EtcPath,
+			},
 		},
 	}
 
 	t.Run("test list contexts", func(t *testing.T) {
 		contexts, err := b.listContexts(true, false)
 		assert.Nil(err)
-		assert.Equal(len(contexts), 2)
+		assert.Equal(2, len(contexts))
 		assert.Equal("test.Debug+CM0", contexts[0])
 		assert.Equal("test.Release+CM0", contexts[1])
 	})
@@ -145,14 +119,16 @@ func TestListContexts(t *testing.T) {
 
 func TestListToolchians(t *testing.T) {
 	assert := assert.New(t)
-	os.Setenv("CMSIS_BUILD_ROOT", testRoot+"/run/bin")
-	configs, err := utils.GetInstallConfigs()
-	assert.Nil(err)
+	configs := inittest.GetTestConfigs(testRoot)
 	b := CSolutionBuilder{
 		BuilderParams: builder.BuilderParams{
-			Runner:         RunnerMock{},
-			InputFile:      testRoot + "/run/test.csolution.yml",
-			InstallConfigs: configs,
+			Runner:    RunnerMock{},
+			InputFile: testRoot + "/run/test.csolution.yml",
+			InstallConfigs: utils.Configurations{
+				BinPath: configs.BinPath,
+				BinExtn: configs.BinExtn,
+				EtcPath: configs.EtcPath,
+			},
 		},
 	}
 
@@ -212,13 +188,15 @@ func TestListToolchians(t *testing.T) {
 
 func TestListEnvironment(t *testing.T) {
 	assert := assert.New(t)
-	os.Setenv("CMSIS_BUILD_ROOT", testRoot+"/run/bin")
-	configs, err := utils.GetInstallConfigs()
-	assert.Nil(err)
+	configs := inittest.GetTestConfigs(testRoot)
 	b := CSolutionBuilder{
 		BuilderParams: builder.BuilderParams{
-			Runner:         RunnerMock{},
-			InstallConfigs: configs,
+			Runner: RunnerMock{},
+			InstallConfigs: utils.Configurations{
+				BinPath: configs.BinPath,
+				BinExtn: configs.BinExtn,
+				EtcPath: configs.EtcPath,
+			},
 		},
 	}
 
@@ -239,7 +217,11 @@ func TestListEnvironment(t *testing.T) {
 		assert.Error(err)
 		assert.Equal(len(envConfigs), 0)
 		// restore install config
-		b.InstallConfigs = configs
+		b.InstallConfigs = utils.Configurations{
+			BinPath: configs.BinPath,
+			BinExtn: configs.BinExtn,
+			EtcPath: configs.EtcPath,
+		}
 	})
 
 	t.Run("test list environment", func(t *testing.T) {
@@ -251,11 +233,8 @@ func TestListEnvironment(t *testing.T) {
 
 func TestBuild(t *testing.T) {
 	assert := assert.New(t)
-	os.Setenv("CMSIS_BUILD_ROOT", testRoot+"/run/bin")
 	os.Setenv("CMSIS_PACK_ROOT", testRoot+"/run/packs")
-	configs, err := utils.GetInstallConfigs()
-	assert.Nil(err)
-
+	configs := inittest.GetTestConfigs(testRoot)
 	b := CSolutionBuilder{
 		BuilderParams: builder.BuilderParams{
 			Runner:    RunnerMock{},
@@ -265,7 +244,11 @@ func TestBuild(t *testing.T) {
 				OutDir: testRoot + "/run/OutDir",
 				Packs:  true,
 			},
-			InstallConfigs: configs,
+			InstallConfigs: utils.Configurations{
+				BinPath: configs.BinPath,
+				BinExtn: configs.BinExtn,
+				EtcPath: configs.EtcPath,
+			},
 		},
 	}
 
@@ -283,19 +266,21 @@ func TestBuild(t *testing.T) {
 
 func TestInstallMissingPacks(t *testing.T) {
 	assert := assert.New(t)
-	os.Setenv("CMSIS_BUILD_ROOT", testRoot+"/run/bin")
-	configs, err := utils.GetInstallConfigs()
-	assert.Nil(err)
+	configs := inittest.GetTestConfigs(testRoot)
 
 	b := CSolutionBuilder{
 		BuilderParams: builder.BuilderParams{
-			Runner:         RunnerMock{},
-			InstallConfigs: configs,
+			Runner: RunnerMock{},
+			InstallConfigs: utils.Configurations{
+				BinPath: configs.BinPath,
+				BinExtn: configs.BinExtn,
+				EtcPath: configs.EtcPath,
+			},
 		},
 	}
 
 	t.Run("test install missing packs", func(t *testing.T) {
-		err = b.installMissingPacks()
+		err := b.installMissingPacks()
 		assert.Nil(err)
 	})
 
