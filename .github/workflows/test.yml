@@ -88,6 +88,10 @@ jobs:
         run: |
           mkdir -p build
           go test -v ./... > build/cbuildtests-${{ matrix.target }}-amd64.txt
+
+      - name: Generate JUnit test report
+        if: always()
+        run: |
           go-junit-report -set-exit-code -in build/cbuildtests-${{ matrix.target }}-amd64.txt -iocopy -out build/cbuild-testreport-${{ matrix.target }}-amd64.xml
 
       - name: Install qemu (for Linux-Arm64)
@@ -100,9 +104,13 @@ jobs:
             qemu-user-binfmt
 
       - name: Unit testing (for Linux-Arm64)
-        if: ${{ startsWith(runner.os, 'Linux') }}
+        if: ${{ startsWith(runner.os, 'Linux') && always() }}
         run: |
           GOOS=linux GOARCH=arm64 go test -v ./... > build/cbuildtests-${{ matrix.target }}-arm64.txt
+
+      - name: Generate JUnit test report (for Linux-Arm64)
+        if: ${{ startsWith(runner.os, 'Linux') && always() }}
+        run: |
           go-junit-report -set-exit-code -in build/cbuildtests-${{ matrix.target }}-arm64.txt -iocopy -out build/cbuild-testreport-${{ matrix.target }}-arm64.xml
 
       - name: Archive unit test results
