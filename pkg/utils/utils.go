@@ -57,14 +57,9 @@ func UpdateEnvVars(binPath string, etcPath string) (env EnvVars) {
 		env.CompilerRoot, _ = filepath.Abs(etcPath)
 		os.Setenv("CMSIS_COMPILER_ROOT", env.CompilerRoot)
 	}
-	env.BuildRoot = os.Getenv("CMSIS_BUILD_ROOT")
-	if env.BuildRoot == "" {
-		env.BuildRoot, _ = filepath.Abs(binPath)
-		os.Setenv("CMSIS_BUILD_ROOT", env.BuildRoot)
-	}
+	env.BuildRoot, _ = filepath.Abs(binPath)
 	log.Debug("CMSIS_PACK_ROOT: " + env.PackRoot)
 	log.Debug("CMSIS_COMPILER_ROOT: " + env.CompilerRoot)
-	log.Debug("CMSIS_BUILD_ROOT: " + env.BuildRoot)
 	return env
 }
 

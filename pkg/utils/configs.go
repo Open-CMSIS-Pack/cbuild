@@ -23,12 +23,9 @@ func GetInstallConfigs() (configs Configurations, err error) {
 	if runtime.GOOS == "windows" {
 		configs.BinExtn = ".exe"
 	}
-	binPath := os.Getenv("CMSIS_BUILD_ROOT")
-	if binPath == "" {
-		binPath, err = GetExecutablePath()
-		if err != nil {
-			return Configurations{}, err
-		}
+	binPath, err := GetExecutablePath()
+	if err != nil {
+		return Configurations{}, err
 	}
 	if binPath != "" {
 		binPath, _ = filepath.Abs(binPath)

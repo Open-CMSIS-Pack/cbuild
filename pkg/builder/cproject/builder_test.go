@@ -8,20 +8,23 @@ package cproject
 
 import (
 	"cbuild/pkg/builder"
-	utils "cbuild/pkg/utils"
+	"cbuild/pkg/inittest"
+	"cbuild/pkg/utils"
 	"errors"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
-	"time"
 
-	cp "github.com/otiai10/copy"
 	"github.com/stretchr/testify/assert"
 )
 
 const testRoot = "../../../test"
+
+func init() {
+	inittest.TestInitialization(testRoot)
+}
 
 type RunnerMock struct{}
 
@@ -44,28 +47,6 @@ func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) (
 		return "", errors.New("invalid command")
 	}
 	return "", nil
-}
-
-func init() {
-	// Prepare test data
-	_ = os.RemoveAll(testRoot + "/run")
-	time.Sleep(2 * time.Second)
-	_ = cp.Copy(testRoot+"/data", testRoot+"/run")
-
-	_ = os.MkdirAll(testRoot+"/run/bin", 0755)
-	_ = os.MkdirAll(testRoot+"/run/etc", 0755)
-
-	var binExtension string
-	if runtime.GOOS == "windows" {
-		binExtension = ".exe"
-	}
-
-	cbuildgenBin := testRoot + "/run/bin/cbuildgen" + binExtension
-	file, _ := os.Create(cbuildgenBin)
-	defer file.Close()
-	cpackgetBin := testRoot + "/run/bin/cpackget" + binExtension
-	file, _ = os.Create(cpackgetBin)
-	defer file.Close()
 }
 
 func TestCheckCprj(t *testing.T) {
@@ -195,26 +176,10 @@ func TestGetInternalVars(t *testing.T) {
 			InputFile: testRoot + "/run/minimal.cprj",
 		},
 	}
-	t.Run("test get internal vars, without CMSIS_BUILD_ROOT", func(t *testing.T) {
+	t.Run("test get internal vars", func(t *testing.T) {
 
 		_, err := b.getInternalVars()
 		assert.Error(err)
-	})
-
-	t.Run("test get internal vars, with CMSIS_BUILD_ROOT", func(t *testing.T) {
-		os.Setenv("CMSIS_BUILD_ROOT", testRoot+"/run/bin")
-		configs, err := utils.GetInstallConfigs()
-		assert.Nil(err)
-		b.InstallConfigs = configs
-
-		vars, err := b.getInternalVars()
-		assert.Nil(err)
-		assert.NotEmpty(vars.cprjPath)
-		assert.NotEmpty(vars.cprjFilename)
-		assert.NotEmpty(vars.binPath)
-		assert.NotEmpty(vars.etcPath)
-		assert.NotEmpty(vars.cbuildgenBin)
-		assert.NotEmpty(vars.cpackgetBin)
 	})
 }
 
@@ -247,9 +212,7 @@ func TestGetJobs(t *testing.T) {
 
 func TestBuild(t *testing.T) {
 	assert := assert.New(t)
-	os.Setenv("CMSIS_BUILD_ROOT", testRoot+"/run/bin")
-	configs, err := utils.GetInstallConfigs()
-	assert.Nil(err)
+	configs := inittest.GetTestConfigs(testRoot)
 
 	b := CprjBuilder{
 		builder.BuilderParams{
@@ -260,7 +223,11 @@ func TestBuild(t *testing.T) {
 				OutDir: testRoot + "/run/OutDir",
 				Packs:  true,
 			},
-			InstallConfigs: configs,
+			InstallConfigs: utils.Configurations{
+				BinPath: configs.BinPath,
+				BinExtn: configs.BinExtn,
+				EtcPath: configs.EtcPath,
+			},
 		},
 	}
 
@@ -359,7 +326,6 @@ func TestBuildFail(t *testing.T) {
 			},
 		},
 	}
-	os.Setenv("CMSIS_BUILD_ROOT", testRoot+"/run/bin")
 
 	t.Run("test build cprj without packs", func(t *testing.T) {
 		b.Options.Packs = false
