@@ -100,7 +100,7 @@ func TestPreLogConfiguration(t *testing.T) {
 		assert.Equal(log.DebugLevel, log.GetLevel())
 	})
 
-	t.Run("test invalid path to log file", func(t *testing.T) {
+	t.Run("test path generation to log file", func(t *testing.T) {
 		os.RemoveAll(logDir)
 
 		cmd := commands.NewRootCmd()
@@ -109,11 +109,48 @@ func TestPreLogConfiguration(t *testing.T) {
 		assert.Nil(err)
 
 		_, err = os.Stat(logFile)
-		assert.True(os.IsNotExist(err))
+		assert.False(os.IsNotExist(err))
+	})
+
+	t.Run("test invalid log file path error", func(t *testing.T) {
+		os.RemoveAll(logDir)
+		if _, err := os.Stat(logDir); os.IsNotExist(err) {
+			_ = os.MkdirAll(logDir, 0755)
+		}
+		file := logDir + "/temp"
+		_, err := os.Create(file)
+		assert.Nil(err)
+
+		invalidLogFilePath := file + "/test/logfile.log"
+		cmd := commands.NewRootCmd()
+		cmd.SetArgs([]string{"--log", invalidLogFilePath, "--version"})
+		err = cmd.Execute()
+
+		// Can't make subdirectory of file.
+		assert.Error(err)
+		_, err = os.Stat(invalidLogFilePath)
+		assert.Error(err)
+	})
+
+	t.Run("test log file creation error", func(t *testing.T) {
+		if _, err := os.Stat(logDir); os.IsNotExist(err) {
+			_ = os.MkdirAll(logDir, 0755)
+		}
+		invalidLogFile := logDir
+
+		cmd := commands.NewRootCmd()
+		cmd.SetArgs([]string{"--log", invalidLogFile, "--version"})
+		err := cmd.Execute()
+		assert.Error(err)
+
+		// log file should get generated
+		fileInfo, err := os.Stat(invalidLogFile)
+		assert.Nil(err)
+		assert.False(fileInfo.Mode().IsRegular())
 	})
 
 	t.Run("test valid path to log file", func(t *testing.T) {
-		_ = os.MkdirAll(logDir, 0755)
+		os.RemoveAll(logDir)
 
 		cmd := commands.NewRootCmd()
 		cmd.SetArgs([]string{"--log", logFile, "--version"})

@@ -57,7 +57,7 @@ Additional help topics:{{range .Commands}}{{if .IsAdditionalHelpTopicCommand}}
 Use "{{.CommandPath}} [command] --help" for more information about a command.{{end}}
 `
 
-func preConfiguration(cmd *cobra.Command, args []string) (err error) {
+func preConfiguration(cmd *cobra.Command, args []string) error {
 	// configure log level
 	log.SetLevel(log.InfoLevel)
 	debug, _ := cmd.Flags().GetBool("debug")
@@ -70,16 +70,20 @@ func preConfiguration(cmd *cobra.Command, args []string) (err error) {
 		log.SetLevel(log.ErrorLevel)
 	}
 	if logFile != "" {
-		logFile, err := os.Create(logFile)
-		if err != nil {
-			log.Warn("error creating log file")
-			fmt.Println(err.Error())
-		} else {
-			multiWriter := io.MultiWriter(os.Stdout, logFile)
-			log.SetOutput(multiWriter)
+		parentLogDir := filepath.Dir(logFile)
+		if _, err := os.Stat(parentLogDir); os.IsNotExist(err) {
+			if err := os.MkdirAll(parentLogDir, 0755); err != nil {
+				return err
+			}
 		}
+		file, err := os.Create(logFile)
+		if err != nil {
+			return err
+		}
+		multiWriter := io.MultiWriter(os.Stdout, file)
+		log.SetOutput(multiWriter)
 	}
-	return
+	return nil
 }
 
 func NewRootCmd() *cobra.Command {
