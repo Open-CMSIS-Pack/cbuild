@@ -51,10 +51,6 @@ all:
 	@echo Generate a report on code-coverage
 	@echo $$ make coverage-report
 
-$(PROG): $(SOURCES)
-	@echo Building project
-	GOOS=$(OS) GOARCH=$(ARCH) go build -o $(PROG) ./cmd/cbuild
-
 run: $(PROG)
 	@./$(PROG) $(ARGS) || true
 
