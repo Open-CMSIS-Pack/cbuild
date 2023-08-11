@@ -6,6 +6,4 @@
 
 package main
 
-var version string
-
 const copyrightNotice = " (C) 2023 Arm Ltd. and Contributors"
