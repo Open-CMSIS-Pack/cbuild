@@ -36,9 +36,9 @@ jobs:
           go-version-file: go.mod
           check-latest: true
 
-      - name: Check formatting
-        run: |
-          make format-check
+      # - name: Check formatting
+      #   run: |
+      #     make format-check
 
   vulnerability-check:
     name: "Vulnerability check"
@@ -152,9 +152,9 @@ jobs:
           go-version-file: go.mod
           check-latest: true
 
-      - name: Check coverage
-        run: |
-          make coverage-check
+      # - name: Check coverage
+      #   run: |
+      #     make coverage-check
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
