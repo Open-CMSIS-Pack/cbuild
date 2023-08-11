@@ -18,7 +18,7 @@ func main() {
 	log.SetFormatter(new(LogFormatter))
 	log.SetOutput(os.Stdout)
 
-	commands.Version = version
+	commands.Version = "0.0.0"
 	commands.CopyrightNotice = copyrightNotice
 
 	cmd := commands.NewRootCmd()
