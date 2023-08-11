@@ -64,14 +64,14 @@ func TestPreLogConfiguration(t *testing.T) {
 		assert.Equal(log.DebugLevel, log.GetLevel())
 	})
 
-	t.Run("test invalid path to log file", func(t *testing.T) {
+	t.Run("test path generation to log file", func(t *testing.T) {
 		os.RemoveAll(logDir)
 
 		cmd := commands.NewRootCmd()
 		cmd.SetArgs([]string{"buildcprj", cprjFile, "--log", logFile, "-C"})
 		_ = cmd.Execute()
 		_, err := os.Stat(logFile)
-		assert.True(os.IsNotExist(err))
+		assert.False(os.IsNotExist(err))
 	})
 
 	t.Run("test valid path to log file", func(t *testing.T) {
