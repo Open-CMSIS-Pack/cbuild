@@ -164,41 +164,68 @@ func (b CSolutionBuilder) getIdxFilePath() (string, error) {
 	return filepath.Join(outputDir, nameTokens[0]+".cbuild-idx.yml"), nil
 }
 
-func (b CSolutionBuilder) processContext(context string, progress string) (err error) {
-	infoMsg := progress + " Processing context: \"" + context + "\""
-	sep := strings.Repeat("=", len(infoMsg)+13) + "\n"
-	_, _ = log.StandardLogger().Out.Write([]byte(sep))
-	log.Info(infoMsg)
+func (b CSolutionBuilder) getCprjsBuilders(selectedContexts []string) (cprjBuilders []cproject.CprjBuilder, err error) {
+	for _, context := range selectedContexts {
+		infoMsg := "Retrieve build information for context: \"" + context + "\""
+		log.Info(infoMsg)
 
-	// if --output is used, ignore provided --outdir and --intdir
-	if b.Options.Output != "" && (b.Options.OutDir != "" || b.Options.IntDir != "") {
-		log.Warn("output files are generated under: \"" +
-			b.Options.Output + "\". Options --outdir and --intdir shall be ignored.")
-	}
+		// if --output is used, ignore provided --outdir and --intdir
+		if b.Options.Output != "" && (b.Options.OutDir != "" || b.Options.IntDir != "") {
+			log.Warn("output files are generated under: \"" +
+				b.Options.Output + "\". Options --outdir and --intdir shall be ignored.")
+		}
 
-	idxFile, err := b.getIdxFilePath()
-	if err != nil {
-		return err
-	}
+		idxFile, err := b.getIdxFilePath()
+		if err != nil {
+			return cprjBuilders, err
+		}
 
-	cprjFile, err := b.getCprjFilePath(idxFile, context)
-	if err != nil {
-		log.Error("error getting cprj file: " + err.Error())
-		return err
+		cprjFile, err := b.getCprjFilePath(idxFile, context)
+		if err != nil {
+			log.Error("error getting cprj file: " + err.Error())
+			return cprjBuilders, err
+		}
+		// get cprj builder
+		cprjBuilder := cproject.CprjBuilder{
+			BuilderParams: builder.BuilderParams{
+				Runner:         b.Runner,
+				Options:        b.Options,
+				InputFile:      cprjFile,
+				InstallConfigs: b.InstallConfigs,
+			},
+		}
+		cprjBuilders = append(cprjBuilders, cprjBuilder)
 	}
+	return cprjBuilders, err
+}
 
-	// process generated CPRJ project
-	cprjBuilder := cproject.CprjBuilder{
-		BuilderParams: builder.BuilderParams{
-			Runner:         b.Runner,
-			Options:        b.Options,
-			InputFile:      cprjFile,
-			InstallConfigs: b.InstallConfigs,
-		},
+func (b CSolutionBuilder) cleanContexts(selectedContexts []string, cprjBuilders []cproject.CprjBuilder) (err error) {
+	for index, cprjBuilder := range cprjBuilders {
+		infoMsg := "Cleaning context: \"" + selectedContexts[index] + "\""
+		log.Info(infoMsg)
+		cprjBuilder.Options.Rebuild = false
+		cprjBuilder.Options.Clean = true
+		err = cprjBuilder.Build()
+		if err != nil {
+			log.Error("error cleaning '" + cprjBuilder.InputFile + "'")
+		}
 	}
-	err = cprjBuilder.Build()
-	if err != nil {
-		log.Error("error processing '" + cprjFile + "'")
+	return
+}
+
+func (b CSolutionBuilder) buildContexts(selectedContexts []string, cprjBuilders []cproject.CprjBuilder) (err error) {
+	for index, cprjBuilder := range cprjBuilders {
+		progress := fmt.Sprintf("(%s/%d)", strconv.Itoa(index+1), len(selectedContexts))
+		infoMsg := progress + " Building context: \"" + selectedContexts[index] + "\""
+		sep := strings.Repeat("=", len(infoMsg)+13) + "\n"
+		_, _ = log.StandardLogger().Out.Write([]byte(sep))
+		log.Info(infoMsg)
+		cprjBuilder.Options.Rebuild = false
+		cprjBuilder.Options.Clean = false
+		err = cprjBuilder.Build()
+		if err != nil {
+			log.Error("error building '" + cprjBuilder.InputFile + "'")
+		}
 	}
 	return
 }
@@ -351,13 +378,21 @@ func (b CSolutionBuilder) Build() (err error) {
 	totalContexts := strconv.Itoa(len(selectedContexts))
 	log.Info("Processing " + totalContexts + " context(s)")
 
-	// step2: process each selected context
-	for index, context := range selectedContexts {
-		progress := fmt.Sprintf("(%s/%s)", strconv.Itoa(index+1), totalContexts)
-		err = b.processContext(context, progress)
-		if err != nil {
-			break
+	// get cprj builder for each selected context
+	cprjsBuilders, err := b.getCprjsBuilders(selectedContexts)
+	if err != nil {
+		return err
+	}
+
+	// clean all selected contexts when rebuild or clean are requested
+	if b.Options.Rebuild || b.Options.Clean {
+		err = b.cleanContexts(selectedContexts, cprjsBuilders)
+		if b.Options.Clean || err != nil {
+			return err
 		}
 	}
+
+	// build all selected contexts
+	err = b.buildContexts(selectedContexts, cprjsBuilders)
 	return err
 }
