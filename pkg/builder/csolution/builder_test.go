@@ -238,7 +238,7 @@ func TestBuild(t *testing.T) {
 	b := CSolutionBuilder{
 		BuilderParams: builder.BuilderParams{
 			Runner:    RunnerMock{},
-			InputFile: testRoot + "/run/test.csolution.yml",
+			InputFile: testRoot + "/run/Test.csolution.yml",
 			Options: builder.Options{
 				//IntDir: testRoot + "/run/IntDir",
 				OutDir: testRoot + "/run/OutDir",
@@ -271,7 +271,7 @@ func TestRebuild(t *testing.T) {
 	b := CSolutionBuilder{
 		BuilderParams: builder.BuilderParams{
 			Runner:    RunnerMock{},
-			InputFile: testRoot + "/run/test.csolution.yml",
+			InputFile: testRoot + "/run/Test.csolution.yml",
 			Options: builder.Options{
 				OutDir:  testRoot + "/run/OutDir",
 				Packs:   true,
