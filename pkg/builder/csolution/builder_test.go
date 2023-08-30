@@ -264,6 +264,33 @@ func TestBuild(t *testing.T) {
 	})
 }
 
+func TestRebuild(t *testing.T) {
+	assert := assert.New(t)
+	os.Setenv("CMSIS_PACK_ROOT", testRoot+"/run/packs")
+	configs := inittest.GetTestConfigs(testRoot)
+	b := CSolutionBuilder{
+		BuilderParams: builder.BuilderParams{
+			Runner:    RunnerMock{},
+			InputFile: testRoot + "/run/test.csolution.yml",
+			Options: builder.Options{
+				OutDir:  testRoot + "/run/OutDir",
+				Packs:   true,
+				Rebuild: true,
+			},
+			InstallConfigs: utils.Configurations{
+				BinPath: configs.BinPath,
+				BinExtn: configs.BinExtn,
+				EtcPath: configs.EtcPath,
+			},
+		},
+	}
+
+	t.Run("test rebuild csolution without context", func(t *testing.T) {
+		err := b.Build()
+		assert.Error(err)
+	})
+}
+
 func TestInstallMissingPacks(t *testing.T) {
 	assert := assert.New(t)
 	configs := inittest.GetTestConfigs(testRoot)
