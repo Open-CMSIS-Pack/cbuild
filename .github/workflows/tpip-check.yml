@@ -4,8 +4,10 @@ on:
   # Trigger on pull request any Go package is changed.
   pull_request:
     paths:
+      - ".github/workflows/tpip-check.yml"
       - "**/go.mod"
       - "**/go.sum"
+      - "scripts/template/**"
   workflow_dispatch:
       
 jobs:
@@ -21,15 +23,15 @@ jobs:
           go-version-file: go.mod
           check-latest: true
 
-      - name: tidy
+      - name: Go tidy
         run:  go mod tidy
 
-      - name: install go-licenses
+      - name: Install go-licenses
         run:  go install github.com/google/go-licenses@latest
 
       - name: Generate TPIP Report
         run:  |
-          go-licenses report . --ignore github.com/Open-CMSIS-Pack/cbuild --template ../../scripts/templates/tpip-license.template > ../../scripts/tpip.md
+          go-licenses report . --ignore github.com/Open-CMSIS-Pack/cbuild --template ../../scripts/template/tpip-license.template > ../../scripts/tpip.md
           date +"%Y/%m/%d %T" >> ../../scripts/tpip.md
         working-directory: ./cmd/cbuild
         
