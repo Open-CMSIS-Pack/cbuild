@@ -1,7 +1,6 @@
 name: TPIP Check
 
 on:
-  # Trigger on pull request any Go package is changed.
   pull_request:
     paths:
       - ".github/workflows/tpip-check.yml"
@@ -35,10 +34,10 @@ jobs:
           date +"%Y/%m/%d %T" >> ../../scripts/tpip.md
         working-directory: ./cmd/cbuild
         
-      - name: Save Changes
+      - name: Archive TPIP report
         uses: actions/upload-artifact@v3
         with:
-          name: changes
+          name: tpip-report
           path: scripts/tpip.md
 
       - name: Print TPIP Report
@@ -48,3 +47,30 @@ jobs:
       - name: Check Licenses
         run: go-licenses check . --ignore github.com/Open-CMSIS-Pack/cbuild --disallowed_types=forbidden,restricted
         working-directory: ./cmd/cbuild
+
+  commit-changes:
+    needs: [ check-licenses ]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GH_ADMIN_TOKEN }}
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Restore Changes
+        uses: actions/download-artifact@v3
+        with:
+          name: tpip-report
+
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
+      - name: Commit Changes
+        uses: EndBug/add-and-commit@1bad3abcf0d6ec49a5857d124b0bfb52dc7bb081
+        with:
+          message: "Update TPIP report [skip ci]"
+          add: |
+            scripts/tpip.md
