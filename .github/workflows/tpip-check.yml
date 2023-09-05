@@ -8,7 +8,10 @@ on:
       - "**/go.sum"
       - "scripts/template/**"
   workflow_dispatch:
-      
+
+env:
+  report_name: "tpip.md"
+
 jobs:
   check-licenses:
     runs-on: ubuntu-latest
@@ -30,18 +33,18 @@ jobs:
 
       - name: Generate TPIP Report
         run:  |
-          go-licenses report . --ignore github.com/Open-CMSIS-Pack/cbuild --template ../../scripts/template/tpip-license.template > ../../scripts/tpip.md
-          date +"%Y/%m/%d %T" >> ../../scripts/tpip.md
+          go-licenses report . --ignore github.com/Open-CMSIS-Pack/cbuild --template ../../scripts/template/tpip-license.template > ../../scripts/${{ env.report_name }}
+          date +"%Y/%m/%d %T" >> ../../scripts/${{ env.report_name }}
         working-directory: ./cmd/cbuild
         
       - name: Archive TPIP report
         uses: actions/upload-artifact@v3
         with:
           name: tpip-report
-          path: scripts/tpip.md
+          path: scripts/${{ env.report_name }}
 
       - name: Print TPIP Report
-        run: cat tpip.md >> $GITHUB_STEP_SUMMARY
+        run: cat ${{ env.report_name }} >> $GITHUB_STEP_SUMMARY
         working-directory: scripts
 
       - name: Check Licenses
@@ -55,7 +58,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          token: ${{ secrets.GH_ADMIN_TOKEN }}
           ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Restore Changes
@@ -69,8 +71,7 @@ jobs:
         id: extract_branch
 
       - name: Commit Changes
-        uses: EndBug/add-and-commit@1bad3abcf0d6ec49a5857d124b0bfb52dc7bb081
+        uses: EndBug/add-and-commit@v9
         with:
           message: "Update TPIP report [skip ci]"
-          add: |
-            scripts/tpip.md
+          add: scripts/${{ env.report_name }}
