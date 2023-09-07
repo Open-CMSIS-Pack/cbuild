@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 env:
-  report_name: "third_party_licenses.md"
+  tpip_report: "third_party_licenses.md"
 
 jobs:
   check-licenses:
@@ -33,18 +33,18 @@ jobs:
 
       - name: Generate TPIP Report
         run:  |
-          go-licenses report . --ignore github.com/Open-CMSIS-Pack/cbuild --template ../../scripts/template/tpip-license.template > ../../${{ env.report_name }}
-          date +"%Y/%m/%d %T" >> ../../${{ env.report_name }}
+          go-licenses report . --ignore github.com/Open-CMSIS-Pack/cbuild --template ../../scripts/template/${{ env.tpip_report }}.template > ../../${{ env.tpip_report }}
+          date +"%Y/%m/%d %T" >> ../../${{ env.tpip_report }}
         working-directory: ./cmd/cbuild
         
       - name: Archive TPIP report
         uses: actions/upload-artifact@v3
         with:
           name: tpip-report
-          path: ./${{ env.report_name }}
+          path: ./${{ env.tpip_report }}
 
       - name: Print TPIP Report
-        run: cat ${{ env.report_name }} >> $GITHUB_STEP_SUMMARY
+        run: cat ${{ env.tpip_report }} >> $GITHUB_STEP_SUMMARY
 
       - name: Check Licenses
         run: go-licenses check . --ignore github.com/Open-CMSIS-Pack/cbuild --disallowed_types=forbidden,restricted
