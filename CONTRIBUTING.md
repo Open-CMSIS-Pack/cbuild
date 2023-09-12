@@ -2,7 +2,7 @@
 
 Contributions are accepted under Apache 2.0. Only submit contributions where you have authored all of the code.
 
-### Proposals, Reviews and Project
+## Proposals, Reviews and Project
 
 Please feel free to raise an [issue on GitHub](https://github.com/Open-CMSIS-Pack/cbuild)
 to start the discussion about your proposal.
@@ -24,12 +24,14 @@ In the spirit of openness we shall be tagging issues with the following:
 
 - **wontfix** - We appreciate this issue but decided not to change the current behavior.
 
-- **out-of-scope** - We consider this issue loosely related to CMSIS. It might be implemented outside of CMSIS. Let us know about your work.
+- **out-of-scope** - We consider this issue loosely related to CMSIS.
+ It might be implemented outside of CMSIS. Let us know about your work.
 
 - **question** – We have further questions about this issue. Please review and provide feedback.
 
 - **documentation** - This issue is a documentation flaw that shall be improved in the future.
 
-- **DONE** - We consider this issue as resolved - please review and close it. In case of no further activity, these issues shall be closed after a week.
+- **DONE** - We consider this issue as resolved - please review and close it.
+ In case of no further activity, these issues shall be closed after a week.
 
 - **duplicate** - This issue is already addressed elsewhere, see a comment with provided references.
