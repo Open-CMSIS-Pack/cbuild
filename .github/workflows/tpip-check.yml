@@ -51,6 +51,10 @@ jobs:
         working-directory: ./cmd/cbuild
 
   commit-changes:
+    # Temporarily moving this job to 'workflow_disapatch'
+    # in order not to block others and fixing issue releated
+    # to deletion of GH checks data
+    if: ${{ github.event_name == 'workflow_dispatch' }}
     needs: [ check-licenses ]
     runs-on: ubuntu-latest
     timeout-minutes: 5
