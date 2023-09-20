@@ -1,0 +1,10 @@
+build-idx:
+  generated-by: csolution version 2.0.0
+  csolution: test.csolution.yml
+  cprojects:
+    - cproject: TestProject1/test1.cproject.yml
+    - cproject: TestProject2/test2.cproject.yml
+  cbuilds:
+    - cbuild: TestProject1/test1.Debug+CM3.cbuild.yml
+      project: test1
+      configuration: .Debug+CM3

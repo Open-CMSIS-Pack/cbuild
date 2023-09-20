@@ -1,0 +1,673 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/Open-CMSIS-Pack/devtools/schemas/projmgr/1.4.0/tools/projmgr/schemas/common.schema.json",
+  "title": "CMSIS Project Manager common",
+  "version": "1.4.0",
+  "definitions": {
+    "ArrayOfStrings": {
+      "type": "array",
+      "uniqueItems": true,
+      "minItems": 1,
+      "items": { "type": "string" }
+    },
+    "BuildContext": {
+      "type": "string",
+      "pattern": "^(((^[.][^.+\\s]*)|(^[+][^.+\\s]*))|((^[.][^.+\\s]*)[+][^.+\\s]*|(^[+][^.+\\s]*)[.][^.+\\s]*))$"
+    },
+    "ArrayOfBuildContext": {
+      "type": "array",
+      "uniqueItems": true,
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/BuildContext" }
+    },
+    "ForType": {
+      "oneOf": [
+        {"$ref": "#/definitions/ArrayOfBuildContext" },
+        {"$ref": "#/definitions/BuildContext" }
+      ],
+      "description": "Include node for a list of [.<build-type>][+<target-type>]"
+    },
+    "NotForType": {
+      "oneOf": [
+        {"$ref": "#/definitions/ArrayOfBuildContext" },
+        {"$ref": "#/definitions/BuildContext" }
+      ],
+      "description": "Exclude node for a list of [.<build-type>][+<target-type>]"
+    },
+    "TypeListMutualExclusion": {
+      "oneOf": [
+        { "required": ["for-type"],
+          "allOf": [
+            { "not": {"required": ["not-for-type"]} },
+            { "not": {"required": ["for-context"]} },
+            { "not": {"required": ["not-for-context"]} }
+          ]
+        },
+        { "required": ["for-context"],
+          "allOf": [
+            { "not": {"required": ["for-type"]} },
+            { "not": {"required": ["not-for-type"]} },
+            { "not": {"required": ["not-for-context"]} }
+          ]
+        },
+        { "required": ["not-for-type"],
+          "allOf": [
+            { "not": {"required": ["for-type"]} },
+            { "not": {"required": ["for-context"]} },
+            { "not": {"required": ["not-for-context"]} }
+          ]
+        },
+        { "required": ["not-for-context"],
+          "allOf": [
+            { "not": {"required": ["for-type"]} },
+            { "not": {"required": ["not-for-type"]} },
+            { "not": {"required": ["for-context"]} }
+          ]
+        },
+        {
+          "allOf": [
+            { "not": {"required": ["for-type"] }},
+            { "not": {"required": ["not-for-type"]}},
+            { "not": {"required": ["for-context"] }},
+            { "not": {"required": ["not-for-context"]}}
+          ]
+        }
+      ]
+    },
+    "ForContext": {
+      "oneOf": [
+        {"$ref": "#/definitions/ArrayOfBuildContext" },
+        {"$ref": "#/definitions/BuildContext" }
+      ],
+      "description": "Include node for a list of [.<build-type>][+<target-type>]"
+    },
+    "NotForContext": {
+      "oneOf": [
+        {"$ref": "#/definitions/ArrayOfBuildContext" },
+        {"$ref": "#/definitions/BuildContext" }
+      ],
+      "description": "Exclude node for a list of [.<build-type>][+<target-type>]"
+    },
+    "CompilerType": {
+      "type": "string",
+      "pattern": "^(GCC|AC6|IAR)(@(\\d+\\.\\d+\\.\\d+((\\+|\\-)[\\w.+-]+)?))?$",
+      "description": "Selection of the toolchain used in the project (GCC, AC6, IAR), optionally with version, for example AC6@6.16.0"
+    },
+    "ConsumesProvidesType": {
+      "oneOf": [
+        {"type": "string" },
+        {"type": "object", "additionalProperties": {"type": "number"}}
+      ]      
+    },
+    "VariablesType": {
+      "type": "array",
+      "uniqueItems": true,
+      "minItems": 1,
+      "items": {"type": "object", "additionalProperties": {"type": "string"}}
+    },
+    "ArrayOfCompilerType": {
+      "type": "array",
+      "uniqueItems": true,
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/CompilerType" }
+    },
+    "CompilersType": {
+      "oneOf": [
+        {"$ref": "#/definitions/ArrayOfCompilerType" },
+        {"$ref": "#/definitions/CompilerType" }
+      ],
+      "description": "Include node for a list of compilers"
+    },
+    "DeviceType": {
+      "type": "string",
+      "pattern": "^(([ -9;-~]+::)?[ -9;-~]+)?(:[ -9;-~]+)?$",
+      "description": "Unique device name optionally preceded by device vendor in the format [[vendor::]device][:processor]. A unique processor identifier is required in case of devices with multiple processors, even if the device is implicitly inferred from the board. If both board and device fields are present the given device overrules the device inferred from the board setting."
+    },
+    "BoardType": {
+      "type": "string",
+      "pattern": "^([ -9;-~]+::)?[ -9;-~]+(:[ -9;-~]+)?$",
+      "description": "Unique board name, optionally preceded by board vendor and succeeded by board revision string, in the format [vendor::]board[:revision]"
+    },
+    "OptimizeType": {
+      "enum": [ "size", "speed", "balanced", "none" ],
+      "description": "Generic optimize levels (size, speed, balanced, none) for code generation."
+    },
+    "DebugType": {
+      "enum": [ "on", "off" ],
+      "description": "Generic control for the generation of debug information (on, off)."
+    },
+    "WarningsType": {
+      "enum": [ "on", "off" ],
+      "description": "Control warnings (on, off)."
+    },
+    "OutputType": {
+      "enum": [ "exe", "lib" ],
+      "description": "Generate executable (default) or library (exe, lib)."
+    },
+    "OutputDirectoriesType": {
+      "type": "object",
+      "properties": {
+        "gendir":   { "type": "string" },
+        "rtedir":   { "type": "string" },
+        "intdir":   { "type": "string" },
+        "outdir":   { "type": "string" },
+        "cprjdir":  { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "DefinesType": {
+      "type": "array",
+      "description": "List of #define symbol settings for the code generation.",
+      "uniqueItems": true,
+      "minItems": 1,
+      "items": { "type": "string" }
+    },
+    "UndefinesType": {
+      "type": "array",
+      "description": "List of #define symbol settings to be removed for the code generation.",
+      "uniqueItems": true,
+      "minItems": 1,
+      "items": { "type": "string" }
+    },
+    "AddpathsType": {
+      "type": "array",
+      "description": "List of include path settings for the code generation.",
+      "uniqueItems": true,
+      "minItems": 1,
+      "items": { "type": "string" }
+    },
+    "DelpathsType": {
+      "type": "array",
+      "description": "List of include path settings to be removed for the code generation.",
+      "uniqueItems": true,
+      "minItems": 1,
+      "items": { "type": "string" }
+    },
+    "MiscTypes": {
+      "type": "array",
+      "description": "List of miscellaneous literal tool-specific controls that are passed directly to the tools depending on the file type",
+      "uniqueItems": true,
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/MiscType" }
+    },
+    "MiscType": {
+      "type": ["object", "null"],
+      "properties": {
+        "for-compiler": { "$ref": "#/definitions/CompilerType" },
+        "compiler":     { "$ref": "#/definitions/CompilerType", "description": "DEPRECATED" },
+        "C":            { "$ref": "#/definitions/ArrayOfStrings", "description": "List of C flags" },
+        "CPP":          { "$ref": "#/definitions/ArrayOfStrings", "description": "List of CPP flags" },
+        "C*":           { "$ref": "#/definitions/ArrayOfStrings", "description": "List of C & CPP flags (DEPRECATED use: C-CPP)"},
+        "C-CPP":        { "$ref": "#/definitions/ArrayOfStrings", "description": "List of C & CPP flags" },
+        "ASM":          { "$ref": "#/definitions/ArrayOfStrings", "description": "List of ASM flags"  },
+        "Link":         { "$ref": "#/definitions/ArrayOfStrings", "description": "List of Linker flags" },
+        "Link-C":       { "$ref": "#/definitions/ArrayOfStrings", "description": "List of Linker flags for pure C project" },
+        "Link-CPP":     { "$ref": "#/definitions/ArrayOfStrings", "description": "List of Linker flags for project with C++ files" },
+        "Lib":          { "$ref": "#/definitions/ArrayOfStrings", "description": "List of Library Manager or Archiver flags" }
+      },
+      "additionalProperties": false
+    },
+    "TargetTypes": {
+      "type": "array",
+      "description": "Target type declaration list that allow to switch among different targets.",
+      "uniqueItems": true,
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/TargetType" }
+    },
+    "TargetType": {
+      "type": "object",
+      "properties": {
+        "type":       { "type": "string", "description": "Name of the target type." },
+        "board":      { "$ref": "#/definitions/BoardType" },
+        "device":     { "$ref": "#/definitions/DeviceType" },
+        "processor":  { "$ref": "#/definitions/ProcessorType" },
+        "compiler":   { "$ref": "#/definitions/CompilerType" },
+        "optimize":   { "$ref": "#/definitions/OptimizeType" },
+        "debug":      { "$ref": "#/definitions/DebugType" },
+        "warnings":   { "$ref": "#/definitions/WarningsType" },
+        "defines":    { "$ref": "#/definitions/DefinesType", "description": "DEPRECATED use: define" },
+        "define":     { "$ref": "#/definitions/DefinesType" },
+        "undefines":  { "$ref": "#/definitions/UndefinesType", "description": "DEPRECATED use: undefine" },
+        "undefine":   { "$ref": "#/definitions/UndefinesType" },
+        "add-paths":  { "$ref": "#/definitions/AddpathsType", "description": "DEPRECATED use: add-path" },
+        "add-path":   { "$ref": "#/definitions/AddpathsType" },
+        "del-paths":  { "$ref": "#/definitions/DelpathsType", "description": "DEPRECATED use: del-path" },
+        "del-path":   { "$ref": "#/definitions/DelpathsType" },
+        "misc":       { "$ref": "#/definitions/MiscTypes" },
+        "variables":  { "$ref": "#/definitions/VariablesType" }
+      },
+      "additionalProperties": false,
+      "required" : [ "type"]
+    },
+    "BuildTypes": {
+      "type": "array",
+      "description": "Build type declaration list that allow to switch among different build settings such as: Release, Debug, Test.",
+      "uniqueItems": true,
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/BuildType" }
+    },
+    "BuildType": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Name of build configuration type. (Debug | Test | Release)"
+        },
+        "processor":  { "$ref": "#/definitions/ProcessorType" },
+        "compiler":   { "$ref": "#/definitions/CompilerType" },
+        "optimize":   { "$ref": "#/definitions/OptimizeType" },
+        "debug":      { "$ref": "#/definitions/DebugType" },
+        "warnings":   { "$ref": "#/definitions/WarningsType" },
+        "defines":    { "$ref": "#/definitions/DefinesType", "description": "DEPRECATED use: define" },
+        "define":     { "$ref": "#/definitions/DefinesType" },
+        "undefines":  { "$ref": "#/definitions/UndefinesType", "description": "DEPRECATED use: undefine" },
+        "undefine":   { "$ref": "#/definitions/UndefinesType" },
+        "add-paths":  { "$ref": "#/definitions/AddpathsType", "description": "DEPRECATED use: add-path" },
+        "add-path":   { "$ref": "#/definitions/AddpathsType" },
+        "del-paths":  { "$ref": "#/definitions/DelpathsType", "description": "DEPRECATED use: del-path" },
+        "del-path":   { "$ref": "#/definitions/DelpathsType" },
+        "misc":       { "$ref": "#/definitions/MiscTypes" },
+        "variables":  { "$ref": "#/definitions/VariablesType" }
+      },
+      "additionalProperties": false,
+      "required" : [ "type"]
+    },
+    "ProjectsType": {
+      "type": "array",
+      "description": "This section defines the collection of related projects",
+      "uniqueItems": true,
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/ProjectType" }
+    },
+    "ProjectType": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Path to the valid project file"
+        },
+        "for-type":        { "$ref": "#/definitions/ForType", "description": "DEPRECATED use: for-context" },
+        "for-context":     { "$ref": "#/definitions/ForContext" },
+        "not-for-type":    { "$ref": "#/definitions/NotForType", "description": "DEPRECATED use: not-for-context" },
+        "not-for-context": { "$ref": "#/definitions/NotForContext" }
+      },
+      "additionalProperties": false,
+      "$ref": "#/definitions/TypeListMutualExclusion",
+      "required": [ "project" ]
+    },
+    "ProcessorType": {
+      "type": ["object", "null"],
+      "description": "Processor specific settings",
+      "properties": {
+        "trustzone": {
+          "enum": [ "secure", "non-secure", "off" ],
+          "description": "Select TrustZone mode: secure | non-secure | off"
+        },
+        "fpu": {
+          "enum": [ "on", "off" ],
+          "description": "Controls usage of FPU registers (S-Registers that are used for Helium and FPU hardware): on | off"
+        },
+        "endian": {
+          "enum": [ "little", "big" ],
+          "description": "Select endianess."
+        }
+      }
+    },
+    "GroupsType": {
+      "type": "array",
+      "description": "List of source groups to be added to a project or layer.",
+      "uniqueItems": true,
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/GroupType" }
+    },
+    "GroupType": {
+      "type": "object",
+      "properties": {
+        "group":           { "type": "string", "description": "Name of the group." },
+        "for-type":        { "$ref": "#/definitions/ForType", "description": "DEPRECATED use: for-context" },
+        "for-context":     { "$ref": "#/definitions/ForContext" },
+        "not-for-type":    { "$ref": "#/definitions/NotForType", "description": "DEPRECATED use: not-for-context" },
+        "not-for-context": { "$ref": "#/definitions/NotForContext" },
+        "for-compiler":    { "$ref": "#/definitions/CompilersType" },
+        "optimize":        { "$ref": "#/definitions/OptimizeType" },
+        "debug":           { "$ref": "#/definitions/DebugType" },
+        "warnings":        { "$ref": "#/definitions/WarningsType" },
+        "defines":         { "$ref": "#/definitions/DefinesType", "description": "DEPRECATED use: define" },
+        "define":          { "$ref": "#/definitions/DefinesType" },
+        "undefines":       { "$ref": "#/definitions/UndefinesType", "description": "DEPRECATED use: undefine" },
+        "undefine":        { "$ref": "#/definitions/UndefinesType" },
+        "add-paths":       { "$ref": "#/definitions/AddpathsType", "description": "DEPRECATED use: add-path" },
+        "add-path":        { "$ref": "#/definitions/AddpathsType" },
+        "del-paths":       { "$ref": "#/definitions/DelpathsType", "description": "DEPRECATED use: del-path" },
+        "del-path":        { "$ref": "#/definitions/DelpathsType" },
+        "misc":            { "$ref": "#/definitions/MiscTypes" },
+        "groups":          { "$ref": "#/definitions/GroupsType" },
+        "files":           { "$ref": "#/definitions/FilesType" }
+      },
+      "$ref": "#/definitions/TypeListMutualExclusion",
+      "anyOf": [
+        {"required" : ["files"]},
+        {"required" : ["groups"]}
+      ],
+      "additionalProperties": false
+    },
+    "FilesType": {
+      "type": "array",
+      "description": "List of source files to be added to a project or layer.",
+      "uniqueItems": true,
+      "items": { "$ref": "#/definitions/FileType" }
+    },
+    "FileType": {
+      "type": "object",
+      "properties": {
+        "file":            { "type": "string", "description": "File name along with the path." },
+        "for-type":        { "$ref": "#/definitions/ForType", "description": "DEPRECATED use: for-context" },
+        "for-context":     { "$ref": "#/definitions/ForContext" },
+        "not-for-type":    { "$ref": "#/definitions/NotForType", "description": "DEPRECATED use: not-for-context" },
+        "not-for-context": { "$ref": "#/definitions/NotForContext" },
+        "for-compiler":    { "$ref": "#/definitions/CompilersType" },
+        "optimize":        { "$ref": "#/definitions/OptimizeType" },
+        "debug":           { "$ref": "#/definitions/DebugType" },
+        "warnings":        { "$ref": "#/definitions/WarningsType" },
+        "defines":         { "$ref": "#/definitions/DefinesType", "description": "DEPRECATED use: define" },
+        "define":          { "$ref": "#/definitions/DefinesType" },
+        "undefines":       { "$ref": "#/definitions/UndefinesType", "description": "DEPRECATED use: undefine" },
+        "undefine":        { "$ref": "#/definitions/UndefinesType" },
+        "add-paths":       { "$ref": "#/definitions/AddpathsType", "description": "DEPRECATED use: add-path" },
+        "add-path":        { "$ref": "#/definitions/AddpathsType" },
+        "del-paths":       { "$ref": "#/definitions/DelpathsType", "description": "DEPRECATED use: del-path" },
+        "del-path":        { "$ref": "#/definitions/DelpathsType" },
+        "misc":            { "$ref": "#/definitions/MiscTypes" }
+      },
+      "$ref": "#/definitions/TypeListMutualExclusion",
+      "required": [ "file" ],
+      "additionalProperties": false
+    },
+    "ComponentsType": {
+      "type": "array",
+      "description": "List of software components to be added in a project or layer.",
+      "uniqueItems": true,
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/ComponentType" }
+    },
+    "ComponentType": {
+      "type": "object",
+      "properties": {
+        "component": {
+          "type": "string",
+          "pattern": "(^[\\w \\/.+-]+$)|(^([\\w \\/.+-]+::)?([\\w \\/.+-]+)(&[\\w \\/.+-]+)?(:[\\w \\/.+-]+)(:[\\w \\/.+-]+)?(&[\\w \\/.+-]+)?(@(>=)?(\\d+\\.\\d+\\.\\d+((\\+|\\-)[\\w.\\/+-]+)?))?$)",
+          "description": "Name of the software component. It can be a free text or a component identifier in the format [Cvendor::] Cclass [&Cbundle] :Cgroup [:Csub] [&Cvariant] [@[>=]Cversion]"
+        },
+        "for-type":        { "$ref": "#/definitions/ForType", "description": "DEPRECATED use: for-context" },
+        "for-context":     { "$ref": "#/definitions/ForContext" },
+        "not-for-type":    { "$ref": "#/definitions/NotForType", "description": "DEPRECATED use: not-for-context" },
+        "not-for-context": { "$ref": "#/definitions/NotForContext" },
+        "optimize":        { "$ref": "#/definitions/OptimizeType" },
+        "debug":           { "$ref": "#/definitions/DebugType" },
+        "warnings":        { "$ref": "#/definitions/WarningsType" },
+        "defines":         { "$ref": "#/definitions/DefinesType", "description": "DEPRECATED use: define" },
+        "define":          { "$ref": "#/definitions/DefinesType" },
+        "undefines":       { "$ref": "#/definitions/UndefinesType", "description": "DEPRECATED use: undefine" },
+        "undefine":        { "$ref": "#/definitions/UndefinesType" },
+        "add-paths":       { "$ref": "#/definitions/AddpathsType", "description": "DEPRECATED use: add-path" },
+        "add-path":        { "$ref": "#/definitions/AddpathsType" },
+        "del-paths":       { "$ref": "#/definitions/DelpathsType", "description": "DEPRECATED use: del-path" },
+        "del-path":        { "$ref": "#/definitions/DelpathsType" },
+        "misc":            { "$ref": "#/definitions/MiscTypes" }
+      },
+      "$ref": "#/definitions/TypeListMutualExclusion",
+      "required": [ "component" ],
+      "additionalProperties": false
+    },
+    "LayersType": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/definitions/LayerType" }
+    },
+    "LayerType": {
+      "type": "object",
+      "properties": {
+        "layer": {
+          "type": "string",
+          "description": "Path to the '*.clayer.yml' file that defines the layer"
+        },
+        "type": {
+          "type": "string",
+          "description": "Layer type for compatible layers matching"
+        },
+        "for-type":        { "$ref": "#/definitions/ForType", "description": "DEPRECATED use: for-context" },
+        "for-context":     { "$ref": "#/definitions/ForContext" },
+        "not-for-type":    { "$ref": "#/definitions/NotForType", "description": "DEPRECATED use: not-for-context" },
+        "not-for-context": { "$ref": "#/definitions/NotForContext" },
+        "optimize":        { "$ref": "#/definitions/OptimizeType" },
+        "debug":           { "$ref": "#/definitions/DebugType" },
+        "warnings":        { "$ref": "#/definitions/WarningsType" },
+        "defines":         { "$ref": "#/definitions/DefinesType", "description": "DEPRECATED use: define" },
+        "define":          { "$ref": "#/definitions/DefinesType" },
+        "undefines":       { "$ref": "#/definitions/UndefinesType", "description": "DEPRECATED use: undefine" },
+        "undefine":        { "$ref": "#/definitions/UndefinesType" },
+        "add-paths":       { "$ref": "#/definitions/AddpathsType", "description": "DEPRECATED use: add-path" },
+        "add-path":        { "$ref": "#/definitions/AddpathsType" },
+        "del-paths":       { "$ref": "#/definitions/DelpathsType", "description": "DEPRECATED use: del-path" },
+        "del-path":        { "$ref": "#/definitions/DelpathsType" },
+        "misc":            { "$ref": "#/definitions/MiscTypes" }
+      },
+      "$ref": "#/definitions/TypeListMutualExclusion",
+      "anyOf": [
+        { "required": ["layer"] },
+        { "required": ["type"]  }
+      ],
+      "additionalProperties": false
+    },
+    "DefaultDescType": {
+      "type": "object",
+      "properties": {
+        "packs": {
+          "$ref": "#/definitions/PacksType", "description": "DEPRECATED"
+        },
+        "compiler": {
+          "$ref": "#/definitions/CompilerType"
+        },
+        "build-types": {
+          "$ref": "#/definitions/BuildTypes", "description": "DEPRECATED"
+        },
+        "output-dirs": {
+          "$ref": "#/definitions/OutputDirectoriesType", "description": "DEPRECATED"
+        },
+        "misc": { "$ref": "#/definitions/MiscTypes" }
+      },
+      "additionalProperties": false
+    },
+    "SolutionDescType": {
+      "type": ["object", "null"],
+      "properties": {
+        "target-types": {
+          "$ref": "#/definitions/TargetTypes"
+        },
+        "build-types": {
+          "$ref": "#/definitions/BuildTypes"
+        },
+        "output-dirs": {
+          "$ref": "#/definitions/OutputDirectoriesType"
+        },
+        "packs": {
+           "$ref": "#/definitions/PacksType"
+        },
+        "projects": {
+          "$ref": "#/definitions/ProjectsType"
+        },
+        "processor":    { "$ref": "#/definitions/ProcessorType" },
+        "compiler":     { "$ref": "#/definitions/CompilerType" },
+        "optimize":     { "$ref": "#/definitions/OptimizeType" },
+        "debug":        { "$ref": "#/definitions/DebugType" },
+        "warnings":     { "$ref": "#/definitions/WarningsType" },
+        "defines":      { "$ref": "#/definitions/DefinesType", "description": "DEPRECATED use: define" },
+        "define":       { "$ref": "#/definitions/DefinesType" },
+        "undefines":    { "$ref": "#/definitions/UndefinesType", "description": "DEPRECATED use: undefine" },
+        "undefine":     { "$ref": "#/definitions/UndefinesType" },
+        "add-paths":    { "$ref": "#/definitions/AddpathsType", "description": "DEPRECATED use: add-path" },
+        "add-path":     { "$ref": "#/definitions/AddpathsType" },
+        "del-paths":    { "$ref": "#/definitions/DelpathsType", "description": "DEPRECATED use: del-path" },
+        "del-path":     { "$ref": "#/definitions/DelpathsType" },
+        "misc":         { "$ref": "#/definitions/MiscTypes" },
+        "variables":    { "$ref": "#/definitions/VariablesType" }
+      },
+      "additionalProperties": false
+    },
+    "ProjectDescType": {
+      "type": ["object", "null"],
+      "properties": {
+        "description": { "type": "string" },
+        "output-type": { "$ref": "#/definitions/OutputType" },
+        "output-dirs": { "$ref": "#/definitions/OutputDirectoriesType" },
+        "board":       { "$ref": "#/definitions/BoardType" },
+        "device":      { "$ref": "#/definitions/DeviceType" },
+        "compiler":    { "$ref": "#/definitions/CompilerType" },
+        "optimize":    { "$ref": "#/definitions/OptimizeType" },
+        "debug":       { "$ref": "#/definitions/DebugType" },
+        "warnings":    { "$ref": "#/definitions/WarningsType" },
+        "processor":   { "$ref": "#/definitions/ProcessorType" },
+        "defines":     { "$ref": "#/definitions/DefinesType", "description": "DEPRECATED use: define" },
+        "define":      { "$ref": "#/definitions/DefinesType" },
+        "undefines":   { "$ref": "#/definitions/UndefinesType", "description": "DEPRECATED use: undefine" },
+        "undefine":    { "$ref": "#/definitions/UndefinesType" },
+        "add-paths":   { "$ref": "#/definitions/AddpathsType", "description": "DEPRECATED use: add-path" },
+        "add-path":    { "$ref": "#/definitions/AddpathsType" },
+        "del-paths":   { "$ref": "#/definitions/DelpathsType", "description": "DEPRECATED use: del-path" },
+        "del-path":    { "$ref": "#/definitions/DelpathsType" },
+        "misc":        { "$ref": "#/definitions/MiscTypes" },
+        "groups":      { "$ref": "#/definitions/GroupsType" },
+        "components":  { "$ref": "#/definitions/ComponentsType" },
+        "layers":      { "$ref": "#/definitions/LayersType" },
+        "setups":      { "$ref": "#/definitions/SetupsType" },
+        "connections": { "$ref": "#/definitions/ConnectionsType" }
+      },
+      "additionalProperties": false
+    },
+    "LayerDescType": {
+      "type": "object",
+      "description": "This section describes layer contents.",
+      "properties": {
+        "description": { "type": "string" },
+        "type": {
+          "type": "string",
+          "description": "Layer type for compatible layers matching"
+        },
+        "output-type": { "$ref": "#/definitions/OutputType" },
+        "board":       { "$ref": "#/definitions/BoardType" },
+        "device":      { "$ref": "#/definitions/DeviceType" },
+        "compiler":    { "$ref": "#/definitions/CompilerType" },
+        "optimize":    { "$ref": "#/definitions/OptimizeType" },
+        "debug":       { "$ref": "#/definitions/DebugType" },
+        "warnings":    { "$ref": "#/definitions/WarningsType" },
+        "processor":   { "$ref": "#/definitions/ProcessorType" },
+        "defines":     { "$ref": "#/definitions/DefinesType", "description": "DEPRECATED use: define" },
+        "define":      { "$ref": "#/definitions/DefinesType" },
+        "undefines":   { "$ref": "#/definitions/UndefinesType", "description": "DEPRECATED use: undefine" },
+        "undefine":    { "$ref": "#/definitions/UndefinesType" },
+        "add-paths":   { "$ref": "#/definitions/AddpathsType", "description": "DEPRECATED use: add-path" },
+        "add-path":    { "$ref": "#/definitions/AddpathsType" },
+        "del-paths":   { "$ref": "#/definitions/DelpathsType", "description": "DEPRECATED use: del-path" },
+        "del-path":    { "$ref": "#/definitions/DelpathsType" },
+        "misc":        { "$ref": "#/definitions/MiscTypes" },
+        "groups":      { "$ref": "#/definitions/GroupsType" },
+        "components":  { "$ref": "#/definitions/ComponentsType" },
+        "connections": { "$ref": "#/definitions/ConnectionsType" }
+      },
+      "additionalProperties": false
+    },
+    "PacksType": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/definitions/PackType" }
+    },
+    "PackType": {
+      "type": "object",
+      "properties": {
+        "pack": {
+          "type": "string",
+          "pattern": "^([\\w .-]+)((::[\\w .*-]+)(@(>=)?(\\d+\\.\\d+\\.\\d+((\\+|\\-)[\\w.+-]+)?))?)?$",
+          "description": "Name of a required Software Pack in the format Vendor [:: Pack [@[>=] version]]"
+        },
+        "path": {
+          "type": "string",
+          "description": "Path to software pack"
+        },
+        "for-type":        { "$ref": "#/definitions/ForType", "description": "DEPRECATED use: for-context" },
+        "for-context":     { "$ref": "#/definitions/ForContext" },
+        "not-for-type":    { "$ref": "#/definitions/NotForType", "description": "DEPRECATED use: not-for-context" },
+        "not-for-context": { "$ref": "#/definitions/NotForContext" }
+      },
+      "$ref": "#/definitions/TypeListMutualExclusion",
+      "required": [ "pack" ],
+      "additionalProperties": false
+    },
+    "SetupsType": {
+      "type": "array",
+      "description": "List of setup nodes that collects various toolchain options",
+      "uniqueItems": true,
+      "items": { "$ref": "#/definitions/SetupType" }
+    },
+    "SetupType": {
+      "type": "object",
+      "properties": {
+        "setup":           { "type": "string" },
+        "for-type":        { "$ref": "#/definitions/ForType", "description": "DEPRECATED use: for-context" },
+        "for-context":     { "$ref": "#/definitions/ForContext" },
+        "not-for-type":    { "$ref": "#/definitions/NotForType", "description": "DEPRECATED use: not-for-context" },
+        "not-for-context": { "$ref": "#/definitions/NotForContext" },
+        "for-compiler":    { "$ref": "#/definitions/CompilersType" },
+        "optimize":        { "$ref": "#/definitions/OptimizeType" },
+        "debug":           { "$ref": "#/definitions/DebugType" },
+        "defines":         { "$ref": "#/definitions/DefinesType", "description": "DEPRECATED use: define" },
+        "define":          { "$ref": "#/definitions/DefinesType" },
+        "undefines":       { "$ref": "#/definitions/UndefinesType", "description": "DEPRECATED use: undefine" },
+        "undefine":        { "$ref": "#/definitions/UndefinesType" },
+        "add-paths":       { "$ref": "#/definitions/AddpathsType", "description": "DEPRECATED use: add-path" },
+        "add-path":        { "$ref": "#/definitions/AddpathsType" },
+        "del-paths":       { "$ref": "#/definitions/DelpathsType", "description": "DEPRECATED use: del-path" },
+        "del-path":        { "$ref": "#/definitions/DelpathsType" },
+        "misc":            { "$ref": "#/definitions/MiscTypes" }
+      },
+      "$ref": "#/definitions/TypeListMutualExclusion",
+      "additionalProperties": false
+    },
+    "ConnectionsType": {
+      "description": "List of consumed and provided connections compatibility",
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/definitions/ConnectType" }
+    },
+    "ConnectType": {
+      "type": "object",
+      "description": "Group of specific functionality",
+      "properties": {
+        "connect": {
+          "type": "string",
+          "description": "Description of specific functionality"
+        },
+        "set": {
+          "type": "string",
+          "pattern": "^.+\\..+$",
+          "description": "Set configuration option in the format 'config-id.select'"
+        },
+        "info": {
+          "type": "string",
+          "description": "Display description when connect is selected"
+        },
+        "consumes": {
+          "type": "array",
+          "description": "Consumed connections",
+          "items": { "$ref": "#/definitions/ConsumesProvidesType" }
+        },
+        "provides": {
+          "type": "array",
+          "description": "Provided connections",
+          "items": { "$ref": "#/definitions/ConsumesProvidesType" }
+        }
+      },
+      "additionalProperties": false,
+      "required": [ "connect" ]
+    }
+  }
+}

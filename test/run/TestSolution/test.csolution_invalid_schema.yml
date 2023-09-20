@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Open-CMSIS-Pack/devtools/schemas/projmgr/1.3.0/tools/projmgr/schemas/csolution.schema.json
+
+solution:
+  target-types:
+    - type: CM3
+      device: ARMCM3
+      misc:
+        - Acompiler: GCC
+
+  build-types:
+    - type: Debug
+      misc:
+      - compiler: GCC
+        C*:
+        - -O
+        - -Wall
+        - -gdwarf-2
+        - -mapcs-frame
+        - -mthumb
+        Link:
+        - --entry=Reset_Handler
+        - --specs=nosys.specs
+        - -mcpu=cortex-m3
+        - -mthumb
+
+      compiler: GCC
+      processor:
+        fpu: off
+        endian: little
+        trustzone: non-secure
+
+  packs:
+    - pack: ARM::CMSIS
+
+  projects:
+    - project: ./TestProject/test.cproject.yml

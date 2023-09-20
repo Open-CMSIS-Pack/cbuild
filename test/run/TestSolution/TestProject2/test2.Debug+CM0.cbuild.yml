@@ -1,0 +1,70 @@
+build:
+  generated-by: csolution version 2.0.0-dev2
+  solution: ../test.csolution.yml
+  project: test2.cproject.yml
+  context: test2.Debug+CM0
+  compiler: GCC
+  device: ARMCM0
+  processor:
+    fpu: off
+    endian: little
+    trustzone: non-secure
+  packs:
+    - pack: ARM::CMSIS@5.9.0
+      path: ${CMSIS_PACK_ROOT}/ARM/CMSIS/5.9.0
+  misc:
+    Link:
+      - --entry=Reset_Handler
+      - --specs=nosys.specs
+      - -mcpu=cortex-m3
+      - -mthumb
+  define:
+    - ARMCM0
+    - _RTE_
+  add-path:
+    - RTE/_Debug_CM0
+    - ${CMSIS_PACK_ROOT}/ARM/CMSIS/5.9.0/CMSIS/Core/Include
+    - ${CMSIS_PACK_ROOT}/ARM/CMSIS/5.9.0/Device/ARM/ARMCM0/Include
+  output-dirs:
+    intdir: ../tmp/test2/CM0/Debug
+    outdir: ../out/test2/CM0/Debug
+    rtedir: RTE
+  output:
+    - type: elf
+      file: test2.elf
+  components:
+    - component: ARM::CMSIS:CORE@5.6.0
+      condition: ARMv6_7_8-M Device
+      from-pack: ARM::CMSIS@5.9.0
+      selected-by: CORE
+    - component: ARM::Device:Startup&C Startup@2.0.3
+      condition: ARMCM0 CMSIS
+      from-pack: ARM::CMSIS@5.9.0
+      selected-by: Startup
+      files:
+        - file: RTE/Device/ARMCM0/gcc_arm.ld
+          category: linkerScript
+          attr: config
+          version: 2.1.0
+        - file: RTE/Device/ARMCM0/startup_ARMCM0.c
+          category: sourceC
+          attr: config
+          version: 2.0.3
+        - file: RTE/Device/ARMCM0/system_ARMCM0.c
+          category: sourceC
+          attr: config
+          version: 1.0.0
+  linker:
+    script: RTE/Device/ARMCM0/gcc_arm.ld
+  groups:
+    - group: Sources
+      files:
+        - file: main.c
+          category: sourceC
+    - group: Debug Group
+      files:
+        - file: debug.c
+          category: sourceC
+  constructed-files:
+    - file: RTE/_Debug_CM0/RTE_Components.h
+      category: header

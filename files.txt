@@ -1,0 +1,15 @@
+build/
+cbuildtests-amd64.xml
+CHANGELOG.md
+cmd/
+CONTRIBUTING.md
+DEVELOPING.md
+go.mod
+go.sum
+LICENSE
+makefile
+pkg/
+README.md
+scripts/
+test/
+test.txt
