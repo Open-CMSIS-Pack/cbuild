@@ -156,5 +156,5 @@ jobs:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
         with:
           debug: true
-          coverageLocations: ./cover.out:gocov
+          coverageLocations: ./build/cover.out:gocov
           prefix: cbuild
