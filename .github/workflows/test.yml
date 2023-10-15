@@ -2,9 +2,9 @@ name: Test
 
 on:
   pull_request:
-    paths:
-      - '!.github/workflows/markdown.yml'
-      - '!**/*.md'
+    paths-ignore:
+      - '.github/workflows/markdown.yml'
+      - '**/*.md'
   push:
     branches: [ main ]
 
