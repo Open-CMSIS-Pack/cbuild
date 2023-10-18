@@ -2,9 +2,9 @@ name: Test
 
 on:
   pull_request:
-    paths:
-      - '!.github/workflows/markdown.yml'
-      - '!**/*.md'
+    paths-ignore:
+      - '.github/workflows/markdown.yml'
+      - '**/*.md'
   push:
     branches: [ main ]
 
@@ -150,9 +150,11 @@ jobs:
         run: |
           make coverage-check
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+      - name: Publish coverage report to Code Climate
+        uses: paambaati/codeclimate-action@v5.0.0
+        env:
+          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
         with:
-          files: ./build/cover.out
-          fail_ci_if_error: true
-          functionalities: fix
+          debug: true
+          coverageLocations: ./build/cover.out:gocov
+          prefix: cbuild
