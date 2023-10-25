@@ -131,13 +131,11 @@ func (b CSolutionBuilder) getCprjFilePath(idxFile string, context string) (strin
 	return cprjPath, err
 }
 
-func (b CSolutionBuilder) getSelectedContexts(idxFile string) ([]string, error) {
+func (b CSolutionBuilder) getSelectedContexts(cbuildSetFile string) ([]string, error) {
 	var contexts []string
-	data, err := utils.ParseCbuildIndexFile(idxFile)
+	data, err := utils.ParseCbuildSetFile(cbuildSetFile)
 	if err == nil {
-		for _, cbuild := range data.BuildIdx.Cbuilds {
-			contexts = append(contexts, cbuild.Project+cbuild.Configuration)
-		}
+		contexts = append(contexts, data.ContextSet.Contexts...)
 	}
 	return contexts, err
 }
@@ -150,7 +148,7 @@ func (b CSolutionBuilder) getCSolutionPath() (path string, err error) {
 	return
 }
 
-func (b CSolutionBuilder) getIdxFilePath() (string, error) {
+func (b CSolutionBuilder) getFilePath(fileNameSuffix string) (string, error) {
 	// get project name from file name
 	nameTokens := strings.Split(filepath.Base(b.InputFile), ".")
 	if len(nameTokens) != 3 {
@@ -161,7 +159,7 @@ func (b CSolutionBuilder) getIdxFilePath() (string, error) {
 	if outputDir == "" {
 		outputDir = filepath.Dir(b.InputFile)
 	}
-	return filepath.Join(outputDir, nameTokens[0]+".cbuild-idx.yml"), nil
+	return filepath.Join(outputDir, nameTokens[0]+fileNameSuffix), nil
 }
 
 func (b CSolutionBuilder) getCprjsBuilders(selectedContexts []string) (cprjBuilders []cproject.CprjBuilder, err error) {
@@ -175,7 +173,7 @@ func (b CSolutionBuilder) getCprjsBuilders(selectedContexts []string) (cprjBuild
 				b.Options.Output + "\". Options --outdir and --intdir shall be ignored.")
 		}
 
-		idxFile, err := b.getIdxFilePath()
+		idxFile, err := b.getFilePath(".cbuild-idx.yml")
 		if err != nil {
 			return cprjBuilders, err
 		}
@@ -367,7 +365,7 @@ func (b CSolutionBuilder) Build() (err error) {
 	}
 
 	// get list of selected contexts
-	idxFile, err := b.getIdxFilePath()
+	idxFile, err := b.getFilePath(".cbuild-set.yml")
 	if err != nil {
 		return err
 	}

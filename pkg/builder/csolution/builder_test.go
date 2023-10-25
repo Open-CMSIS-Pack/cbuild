@@ -358,27 +358,27 @@ func TestGetCprjFilePath(t *testing.T) {
 func TestGetSelectedContexts(t *testing.T) {
 	assert := assert.New(t)
 
-	testIdxFile := testRoot + "/run/Test.cbuild-idx.yml"
+	testSetFile := testRoot + "/run/Test.cbuild-set.yml"
 	b := CSolutionBuilder{
 		BuilderParams: builder.BuilderParams{
 			Runner: RunnerMock{},
 		},
 	}
 
-	t.Run("test idx file missing", func(t *testing.T) {
-		contexts, err := b.getSelectedContexts("missingfile.cbuild-idx.yml")
+	t.Run("test set file missing", func(t *testing.T) {
+		contexts, err := b.getSelectedContexts("missingfile.cbuild-set.yml")
 		assert.Error(err)
 		assert.Len(contexts, 0)
 	})
 
 	t.Run("test get cprj file path", func(t *testing.T) {
 		expectedContexts := []string{
-			"HelloWorld_cm0plus.Debug+FRDM-K32L3A6",
-			"HelloWorld_cm0plus.Release+FRDM-K32L3A6",
-			"HelloWorld_cm4.Debug+FRDM-K32L3A6",
-			"HelloWorld_cm4.Release+FRDM-K32L3A6",
+			"test2.Debug+CM0",
+			"test2.Debug+CM3",
+			"test1.Debug+CM0",
+			"test1.Release+CM0",
 		}
-		contexts, err := b.getSelectedContexts(testIdxFile)
+		contexts, err := b.getSelectedContexts(testSetFile)
 		assert.Nil(err)
 		assert.Equal(contexts, expectedContexts)
 	})

@@ -177,8 +177,25 @@ type CbuildIndex struct {
 	} `yaml:"build-idx"`
 }
 
+type CbuildSet struct {
+	ContextSet struct {
+		GeneratedBy string   `yaml:"generated-by"`
+		Contexts    []string `yaml:"contexts"`
+		Compiler    string   `yaml:"compiler"`
+	} `yaml:"cbuild-set"`
+}
+
 func ParseCbuildIndexFile(cbuildIndexFile string) (data CbuildIndex, err error) {
 	yfile, err := os.ReadFile(cbuildIndexFile)
+	if err != nil {
+		return
+	}
+	err = yaml.Unmarshal(yfile, &data)
+	return
+}
+
+func ParseCbuildSetFile(cbuildSetFile string) (data CbuildSet, err error) {
+	yfile, err := os.ReadFile(cbuildSetFile)
 	if err != nil {
 		return
 	}

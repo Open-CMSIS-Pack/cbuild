@@ -9,6 +9,7 @@ package utils
 import (
 	"os"
 	"path/filepath"
+	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -137,10 +138,11 @@ func TestParseCbuildIndexFile(t *testing.T) {
 		assert.Error(err)
 	})
 
-	t.Run("test", func(t *testing.T) {
+	t.Run("test cbuild-idx file parsing", func(t *testing.T) {
 		data, err := ParseCbuildIndexFile(testRoot + "/run/Test.cbuild-idx.yml")
 		assert.Nil(err)
-		assert.Equal(data.BuildIdx.GeneratedBy, "csolution 1.4.0")
+		var re = regexp.MustCompile(`^csolution\s[\d]+.[\d+]+.[\d+].*`)
+		assert.True(re.MatchString(data.BuildIdx.GeneratedBy))
 		assert.Equal(data.BuildIdx.Cdefault, "HelloWorld.cdefault.yml")
 		assert.Equal(data.BuildIdx.Csolution, "HelloWorld.csolution.yml")
 		assert.Equal(len(data.BuildIdx.Cprojects), 2)
@@ -152,6 +154,28 @@ func TestParseCbuildIndexFile(t *testing.T) {
 		assert.Equal(data.BuildIdx.Cbuilds[1].Cbuild, "cm0plus/HelloWorld_cm0plus.Release+FRDM-K32L3A6.cbuild.yml")
 		assert.Equal(data.BuildIdx.Cbuilds[2].Cbuild, "cm4/HelloWorld_cm4.Debug+FRDM-K32L3A6.cbuild.yml")
 		assert.Equal(data.BuildIdx.Cbuilds[3].Cbuild, "cm4/HelloWorld_cm4.Release+FRDM-K32L3A6.cbuild.yml")
+	})
+}
+
+func TestParseCbuildSetFile(t *testing.T) {
+	assert := assert.New(t)
+
+	t.Run("test file not available", func(t *testing.T) {
+		_, err := ParseCbuildSetFile("Unknown.cbuild-idx.yml")
+		assert.Error(err)
+	})
+
+	t.Run("test cbuild-set file parsing", func(t *testing.T) {
+		data, err := ParseCbuildSetFile(testRoot + "/run/Test.cbuild-set.yml")
+		assert.Nil(err)
+		var re = regexp.MustCompile(`^csolution\sversion\s[\d]+.[\d+]+.[\d+].*`)
+		assert.True(re.MatchString(data.ContextSet.GeneratedBy))
+		assert.Equal(len(data.ContextSet.Contexts), 4)
+		assert.Equal(data.ContextSet.Contexts[0], "test2.Debug+CM0")
+		assert.Equal(data.ContextSet.Contexts[1], "test2.Debug+CM3")
+		assert.Equal(data.ContextSet.Contexts[2], "test1.Debug+CM0")
+		assert.Equal(data.ContextSet.Contexts[3], "test1.Release+CM0")
+		assert.Equal(data.ContextSet.Compiler, "AC6")
 	})
 }
 
