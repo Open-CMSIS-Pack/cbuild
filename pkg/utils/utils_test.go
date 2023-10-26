@@ -225,3 +225,37 @@ func TestGetInstalledExePath(t *testing.T) {
 		assert.Error(err)
 	})
 }
+
+func TestNormalizePath(t *testing.T) {
+	assert := assert.New(t)
+	t.Run("test with backslash path", func(t *testing.T) {
+		path := NormalizePath("test\\input\\test.csolution.yml")
+		assert.Equal(path, "test/input/test.csolution.yml")
+	})
+
+	t.Run("test NormalizePath", func(t *testing.T) {
+		path := NormalizePath("test/input/test.csolution.yml")
+		assert.Equal(path, "test/input/test.csolution.yml")
+	})
+}
+
+func TestGetProjectName(t *testing.T) {
+	assert := assert.New(t)
+	t.Run("test get project name from backslash path", func(t *testing.T) {
+		projName, err := GetProjectName("test\\input\\test.csolution.yml")
+		assert.Nil(err)
+		assert.Equal(projName, "test")
+	})
+
+	t.Run("test get project name from path", func(t *testing.T) {
+		projName, err := GetProjectName("test/input/test.csolution.yml")
+		assert.Nil(err)
+		assert.Equal(projName, "test")
+	})
+
+	t.Run("test get project name with invalid file name", func(t *testing.T) {
+		projName, err := GetProjectName("test/input/csolution.yml")
+		assert.Error(err)
+		assert.Equal(projName, "")
+	})
+}

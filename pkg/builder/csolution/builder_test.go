@@ -383,3 +383,38 @@ func TestGetSelectedContexts(t *testing.T) {
 		assert.Equal(contexts, expectedContexts)
 	})
 }
+
+func TestGetIdxFilePath(t *testing.T) {
+	assert := assert.New(t)
+
+	b := CSolutionBuilder{
+		BuilderParams: builder.BuilderParams{
+			Runner: RunnerMock{},
+		},
+	}
+
+	t.Run("test invalid input file", func(t *testing.T) {
+		b.InputFile = "run/TestSolution/invalid_file.yml"
+
+		path, err := b.getIdxFilePath()
+		assert.Error(err)
+		assert.Equal(path, "")
+	})
+
+	t.Run("test get idx file path", func(t *testing.T) {
+		b.InputFile = "run/TestSolution/test.csolution.yml"
+
+		path, err := b.getIdxFilePath()
+		assert.Nil(err)
+		assert.Equal(path, "run/TestSolution/test.cbuild-idx.yml")
+	})
+
+	t.Run("test get idx file path with output path", func(t *testing.T) {
+		b.InputFile = "run/TestSolution/test.csolution.yml"
+		b.Options.Output = "run/outdir"
+
+		path, err := b.getIdxFilePath()
+		assert.Nil(err)
+		assert.Equal(path, b.Options.Output+"/test.cbuild-idx.yml")
+	})
+}

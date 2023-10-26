@@ -148,18 +148,18 @@ func (b CSolutionBuilder) getCSolutionPath() (path string, err error) {
 	return
 }
 
-func (b CSolutionBuilder) getFilePath(fileNameSuffix string) (string, error) {
-	// get project name from file name
-	nameTokens := strings.Split(filepath.Base(b.InputFile), ".")
-	if len(nameTokens) != 3 {
-		return "", errors.New("invalid csolution file name")
+func (b CSolutionBuilder) getIdxFilePath() (string, error) {
+	projName, err := utils.GetProjectName(b.InputFile)
+	if err != nil {
+		return "", err
 	}
 
 	outputDir := b.Options.Output
 	if outputDir == "" {
 		outputDir = filepath.Dir(b.InputFile)
 	}
-	return filepath.Join(outputDir, nameTokens[0]+fileNameSuffix), nil
+	idxFilePath := utils.NormalizePath(filepath.Join(outputDir, projName+".cbuild-idx.yml"))
+	return idxFilePath, nil
 }
 
 func (b CSolutionBuilder) getCprjsBuilders(selectedContexts []string) (cprjBuilders []cproject.CprjBuilder, err error) {
@@ -173,7 +173,7 @@ func (b CSolutionBuilder) getCprjsBuilders(selectedContexts []string) (cprjBuild
 				b.Options.Output + "\". Options --outdir and --intdir shall be ignored.")
 		}
 
-		idxFile, err := b.getFilePath(".cbuild-idx.yml")
+		idxFile, err := b.getIdxFilePath()
 		if err != nil {
 			return cprjBuilders, err
 		}
@@ -364,12 +364,14 @@ func (b CSolutionBuilder) Build() (err error) {
 		return err
 	}
 
-	// get list of selected contexts
-	idxFile, err := b.getFilePath(".cbuild-set.yml")
+	projName, err := utils.GetProjectName(b.InputFile)
 	if err != nil {
 		return err
 	}
-	selectedContexts, err := b.getSelectedContexts(idxFile)
+	setFile := utils.NormalizePath(filepath.Join(filepath.Dir(b.InputFile), projName+".cbuild-set.yml"))
+
+	// get list of selected contexts
+	selectedContexts, err := b.getSelectedContexts(setFile)
 	if err != nil {
 		return err
 	}

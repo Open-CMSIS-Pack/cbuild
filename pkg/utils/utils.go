@@ -228,8 +228,24 @@ func Contains[T comparable](slice []T, elem T) bool {
 
 func GetInstalledExePath(exeName string) (path string, err error) {
 	path, err = exec.LookPath(exeName)
+	if err != nil {
+		path = NormalizePath(path)
+	}
+	return
+}
+
+func NormalizePath(path string) string {
 	if strings.Contains(path, "\\") {
 		path = strings.ReplaceAll(path, "\\", "/")
 	}
-	return
+	return path
+}
+
+func GetProjectName(csolutionFile string) (projectName string, err error) {
+	csolutionFile = NormalizePath(csolutionFile)
+	nameTokens := strings.Split(filepath.Base(csolutionFile), ".")
+	if len(nameTokens) != 3 {
+		return "", errors.New("invalid csolution file name")
+	}
+	return nameTokens[0], nil
 }
