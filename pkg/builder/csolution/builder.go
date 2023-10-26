@@ -131,13 +131,11 @@ func (b CSolutionBuilder) getCprjFilePath(idxFile string, context string) (strin
 	return cprjPath, err
 }
 
-func (b CSolutionBuilder) getSelectedContexts(idxFile string) ([]string, error) {
+func (b CSolutionBuilder) getSelectedContexts(cbuildSetFile string) ([]string, error) {
 	var contexts []string
-	data, err := utils.ParseCbuildIndexFile(idxFile)
+	data, err := utils.ParseCbuildSetFile(cbuildSetFile)
 	if err == nil {
-		for _, cbuild := range data.BuildIdx.Cbuilds {
-			contexts = append(contexts, cbuild.Project+cbuild.Configuration)
-		}
+		contexts = append(contexts, data.ContextSet.Contexts...)
 	}
 	return contexts, err
 }
@@ -151,17 +149,17 @@ func (b CSolutionBuilder) getCSolutionPath() (path string, err error) {
 }
 
 func (b CSolutionBuilder) getIdxFilePath() (string, error) {
-	// get project name from file name
-	nameTokens := strings.Split(filepath.Base(b.InputFile), ".")
-	if len(nameTokens) != 3 {
-		return "", errors.New("invalid csolution file name")
+	projName, err := utils.GetProjectName(b.InputFile)
+	if err != nil {
+		return "", err
 	}
 
 	outputDir := b.Options.Output
 	if outputDir == "" {
 		outputDir = filepath.Dir(b.InputFile)
 	}
-	return filepath.Join(outputDir, nameTokens[0]+".cbuild-idx.yml"), nil
+	idxFilePath := utils.NormalizePath(filepath.Join(outputDir, projName+".cbuild-idx.yml"))
+	return idxFilePath, nil
 }
 
 func (b CSolutionBuilder) getCprjsBuilders(selectedContexts []string) (cprjBuilders []cproject.CprjBuilder, err error) {
@@ -366,12 +364,14 @@ func (b CSolutionBuilder) Build() (err error) {
 		return err
 	}
 
-	// get list of selected contexts
-	idxFile, err := b.getIdxFilePath()
+	projName, err := utils.GetProjectName(b.InputFile)
 	if err != nil {
 		return err
 	}
-	selectedContexts, err := b.getSelectedContexts(idxFile)
+	setFile := utils.NormalizePath(filepath.Join(filepath.Dir(b.InputFile), projName+".cbuild-set.yml"))
+
+	// get list of selected contexts
+	selectedContexts, err := b.getSelectedContexts(setFile)
 	if err != nil {
 		return err
 	}
