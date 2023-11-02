@@ -1,0 +1,25 @@
+name: global
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/global.yml'
+      - '.pre-commit-config.yaml'
+      - 'scripts/check_copyright_notice.py'
+      - '**/*.go'
+      - '!**/docs/**/*'
+      - '!**/*.md'
+
+jobs:
+  copyright:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout devtools
+        uses: actions/checkout@v4
+
+      - name: Check copyright notice
+        run: |
+          pip install \
+            pre-commit \
+            python-magic==0.4.18 \
+            comment-parser>=1.2.3
+          pre-commit run --all-files
