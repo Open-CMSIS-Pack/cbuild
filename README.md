@@ -6,6 +6,7 @@
 
 [![Maintainability](https://api.codeclimate.com/v1/badges/53904fe8cbd887f3d5b0/maintainability)](https://codeclimate.com/github/Open-CMSIS-Pack/cbuild/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/53904fe8cbd887f3d5b0/test_coverage)](https://codeclimate.com/github/Open-CMSIS-Pack/cbuild/test_coverage)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/Open-CMSIS-Pack/cbuild/badge)](https://securityscorecards.dev/viewer/?uri=github.com/Open-CMSIS-Pack/cbuild)
 
 # cbuild: Open-CMSIS-Pack Build Invocation Utility
 
