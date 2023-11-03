@@ -2,9 +2,15 @@ name: Build
 
 on:
   pull_request:
-    paths-ignore:
-      - '.github/workflows/markdown.yml'
-      - '**/*.md'
+    paths:
+      - '.github/workflows/build.yml'
+      - 'cmd/**'
+      - 'pkg/**'
+      - 'test/**'
+      - 'go.mod'
+      - 'go.sum'
+      - 'makefile'
+      - '!**/*.md'
   push:
     branches: [ main ]
 
