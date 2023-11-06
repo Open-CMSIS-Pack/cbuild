@@ -127,27 +127,29 @@ func NewRootCmd() *cobra.Command {
 			rebuild, _ := cmd.Flags().GetBool("rebuild")
 			updateRte, _ := cmd.Flags().GetBool("update-rte")
 			toolchain, _ := cmd.Flags().GetString("toolchain")
+			useContextSet, _ := cmd.Flags().GetBool("context-set")
 
 			options := builder.Options{
-				IntDir:    intDir,
-				OutDir:    outDir,
-				LockFile:  lockFile,
-				LogFile:   logFile,
-				Generator: generator,
-				Target:    target,
-				Jobs:      jobs,
-				Quiet:     quiet,
-				Debug:     debug,
-				Verbose:   verbose,
-				Clean:     clean,
-				Schema:    schema,
-				Packs:     packs,
-				Rebuild:   rebuild,
-				UpdateRte: updateRte,
-				Context:   context,
-				Load:      load,
-				Output:    output,
-				Toolchain: toolchain,
+				IntDir:        intDir,
+				OutDir:        outDir,
+				LockFile:      lockFile,
+				LogFile:       logFile,
+				Generator:     generator,
+				Target:        target,
+				Jobs:          jobs,
+				Quiet:         quiet,
+				Debug:         debug,
+				Verbose:       verbose,
+				Clean:         clean,
+				Schema:        schema,
+				Packs:         packs,
+				Rebuild:       rebuild,
+				UpdateRte:     updateRte,
+				Context:       context,
+				UseContextSet: useContextSet,
+				Load:          load,
+				Output:        output,
+				Toolchain:     toolchain,
 			}
 
 			configs, err := utils.GetInstallConfigs()
@@ -193,6 +195,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.Flags().BoolP("packs", "p", false, "Download missing software packs with cpackget")
 	rootCmd.Flags().BoolP("rebuild", "r", false, "Remove intermediate and output directories and rebuild")
 	rootCmd.Flags().BoolP("update-rte", "", false, "Update the RTE directory and files")
+	rootCmd.Flags().BoolP("context-set", "S", false, "Use context set")
 	rootCmd.Flags().StringP("generator", "g", "Ninja", "Select build system generator")
 	rootCmd.Flags().StringSliceP("context", "c", []string{}, "Input context names [<project-name>][.<build-type>][+<target-type>]")
 	rootCmd.Flags().StringP("load", "l", "", "Set policy for packs loading [latest | all | required]")
