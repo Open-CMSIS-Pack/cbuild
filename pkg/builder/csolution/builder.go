@@ -49,6 +49,9 @@ func (b CSolutionBuilder) formulateArgs(command []string) (args []string, err er
 			args = append(args, "--context="+context)
 		}
 	}
+	if b.Options.UseContextSet {
+		args = append(args, "--context-set")
+	}
 	if b.Options.Toolchain != "" {
 		args = append(args, "--toolchain="+b.Options.Toolchain)
 	}

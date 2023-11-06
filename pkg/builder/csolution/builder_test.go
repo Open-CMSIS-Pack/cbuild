@@ -418,3 +418,32 @@ func TestGetIdxFilePath(t *testing.T) {
 		assert.Equal(path, b.Options.Output+"/test.cbuild-idx.yml")
 	})
 }
+
+func TestFormulateArg(t *testing.T) {
+	assert := assert.New(t)
+	b := CSolutionBuilder{
+		BuilderParams: builder.BuilderParams{
+			Runner:    RunnerMock{},
+			InputFile: testRoot + "/run/Test.csolution.yml",
+		},
+	}
+
+	t.Run("test default arg", func(t *testing.T) {
+		args, err := b.formulateArgs([]string{"convert"})
+		strArg := strings.Join(args, " ")
+		assert.Nil(err)
+		assert.Equal("convert --solution=../../../test/run/Test.csolution.yml --no-check-schema --no-update-rte", strArg)
+	})
+
+	t.Run("test context-set arg", func(t *testing.T) {
+		b.Options = builder.Options{
+			OutDir:        testRoot + "/run/OutDir",
+			Context:       []string{"test.Debug+Target", "test.Release+Target"},
+			UseContextSet: true,
+		}
+		args, err := b.formulateArgs([]string{"convert"})
+		strArg := strings.Join(args, " ")
+		assert.Nil(err)
+		assert.Equal("convert --solution=../../../test/run/Test.csolution.yml --no-check-schema --no-update-rte --context=test.Debug+Target --context=test.Release+Target --context-set", strArg)
+	})
+}
