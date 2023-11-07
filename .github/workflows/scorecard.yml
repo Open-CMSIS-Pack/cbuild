@@ -16,6 +16,8 @@ permissions: read-all
 
 jobs:
   analysis:
+    # Avoid running this on forks
+    if: github.repository == 'Open-CMSIS-Pack/cbuild'
     name: Scorecard analysis
     runs-on: ubuntu-latest
     permissions:
