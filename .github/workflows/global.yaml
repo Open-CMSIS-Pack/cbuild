@@ -9,6 +9,9 @@ on:
       - '!**/docs/**/*'
       - '!**/*.md'
 
+# Declare default permissions as read only.
+permissions: read-all
+
 jobs:
   copyright:
     runs-on: ubuntu-latest
