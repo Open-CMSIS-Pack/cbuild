@@ -38,6 +38,7 @@ Commands:
 Options:
   -C, --clean              Remove intermediate and output directories
   -c, --context arg [...]  Input context names [<project-name>][.<build-type>][+<target-type>]
+  -S, --context-set        Use context set
   -d, --debug              Enable debug messages
   -g, --generator arg      Select build system generator (default "Ninja")
   -h, --help               Print usage

@@ -5,6 +5,9 @@ on:
     tags:
       - "v*"
 
+# Declare default permissions as read only.
+permissions: read-all
+
 jobs:
   goreleaser:
     runs-on: ubuntu-latest

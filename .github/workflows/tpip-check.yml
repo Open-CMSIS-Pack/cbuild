@@ -14,6 +14,9 @@ on:
 env:
   tpip_report: "third_party_licenses.md"
 
+# Declare default permissions as read only.
+permissions: read-all
+
 jobs:
   check-licenses:
     # Avoid running this on forks
