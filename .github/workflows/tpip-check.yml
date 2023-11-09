@@ -19,6 +19,8 @@ permissions: read-all
 
 jobs:
   check-licenses:
+    # Avoid running this on forks
+    if: github.repository == 'Open-CMSIS-Pack/cbuild'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

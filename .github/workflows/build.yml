@@ -36,12 +36,6 @@ jobs:
           go-version-file: go.mod
           check-latest: true
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
-        with:
-          languages: go
-          queries: security-and-quality
-
       - name: Build executables
         run: |
           GOOS=windows GOARCH=amd64 go build -o build/win-amd64/cbuild.exe ./cmd/cbuild
@@ -98,6 +92,3 @@ jobs:
           path: ./build/lin-arm64/cbuild
           retention-days: 1
           if-no-files-found: error
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
