@@ -57,6 +57,8 @@ jobs:
       - name: Scan for Vulnerabilities
         uses: golang/govulncheck-action@v1
         with:
+          go-version-file: go.mod
+          check-latest: true
           go-package: ./...
 
   test:
