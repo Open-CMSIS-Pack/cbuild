@@ -365,20 +365,35 @@ func TestGetSelectedContexts(t *testing.T) {
 		},
 	}
 
-	t.Run("test set file missing", func(t *testing.T) {
+	t.Run("test with missing set file", func(t *testing.T) {
+		b.Options.UseContextSet = true
 		contexts, err := b.getSelectedContexts("missingfile.cbuild-set.yml")
 		assert.Error(err)
 		assert.Len(contexts, 0)
 	})
 
-	t.Run("test get cprj file path", func(t *testing.T) {
+	t.Run("test get contexts from set file", func(t *testing.T) {
 		expectedContexts := []string{
 			"test2.Debug+CM0",
 			"test2.Debug+CM3",
 			"test1.Debug+CM0",
 			"test1.Release+CM0",
 		}
+		b.Options.UseContextSet = true
 		contexts, err := b.getSelectedContexts(testSetFile)
+		assert.Nil(err)
+		assert.Equal(contexts, expectedContexts)
+	})
+
+	t.Run("test get contexts from idx file", func(t *testing.T) {
+		expectedContexts := []string{
+			"HelloWorld_cm0plus.Debug+FRDM-K32L3A6",
+			"HelloWorld_cm0plus.Release+FRDM-K32L3A6",
+			"HelloWorld_cm4.Debug+FRDM-K32L3A6",
+			"HelloWorld_cm4.Release+FRDM-K32L3A6",
+		}
+		b.Options.UseContextSet = false
+		contexts, err := b.getSelectedContexts(testRoot + "/run/Test.cbuild-idx.yml")
 		assert.Nil(err)
 		assert.Equal(contexts, expectedContexts)
 	})
@@ -445,5 +460,31 @@ func TestFormulateArg(t *testing.T) {
 		strArg := strings.Join(args, " ")
 		assert.Nil(err)
 		assert.Equal("convert --solution=../../../test/run/Test.csolution.yml --no-check-schema --no-update-rte --context=test.Debug+Target --context=test.Release+Target --context-set", strArg)
+	})
+}
+
+func TestGetCbuildSetFilePath(t *testing.T) {
+	assert := assert.New(t)
+
+	b := CSolutionBuilder{
+		BuilderParams: builder.BuilderParams{
+			Runner: RunnerMock{},
+		},
+	}
+
+	t.Run("test invalid input file", func(t *testing.T) {
+		b.InputFile = "run/TestSolution/invalid_file.yml"
+
+		path, err := b.getCbuildSetFilePath()
+		assert.Error(err)
+		assert.Equal(path, "")
+	})
+
+	t.Run("test get cbuild-set file path", func(t *testing.T) {
+		b.InputFile = "run/TestSolution/test.csolution.yml"
+
+		path, err := b.getCbuildSetFilePath()
+		assert.Nil(err)
+		assert.Equal(path, "run/TestSolution/test.cbuild-set.yml")
 	})
 }
