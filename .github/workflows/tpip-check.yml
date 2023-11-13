@@ -14,9 +14,6 @@ on:
 env:
   tpip_report: "third_party_licenses.md"
 
-# Declare default permissions as read only.
-permissions: read-all
-
 jobs:
   check-licenses:
     # Avoid running this on forks
@@ -26,6 +23,7 @@ jobs:
     permissions:
       checks: write
       pull-requests: write
+      actions: write
     steps:
       - uses: actions/checkout@v4.1.1
 
