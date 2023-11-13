@@ -134,13 +134,26 @@ func (b CSolutionBuilder) getCprjFilePath(idxFile string, context string) (strin
 	return cprjPath, err
 }
 
-func (b CSolutionBuilder) getSelectedContexts(cbuildSetFile string) ([]string, error) {
+func (b CSolutionBuilder) getSelectedContexts(filePath string) ([]string, error) {
 	var contexts []string
-	data, err := utils.ParseCbuildSetFile(cbuildSetFile)
-	if err == nil {
-		contexts = append(contexts, data.ContextSet.Contexts...)
+	var retErr error
+
+	if b.Options.UseContextSet {
+		data, err := utils.ParseCbuildSetFile(filePath)
+		if err == nil {
+			contexts = append(contexts, data.ContextSet.Contexts...)
+		}
+		retErr = err
+	} else {
+		data, err := utils.ParseCbuildIndexFile(filePath)
+		if err == nil {
+			for _, cbuild := range data.BuildIdx.Cbuilds {
+				contexts = append(contexts, cbuild.Project+cbuild.Configuration)
+			}
+		}
+		retErr = err
 	}
-	return contexts, err
+	return contexts, retErr
 }
 
 func (b CSolutionBuilder) getCSolutionPath() (path string, err error) {
@@ -163,6 +176,16 @@ func (b CSolutionBuilder) getIdxFilePath() (string, error) {
 	}
 	idxFilePath := utils.NormalizePath(filepath.Join(outputDir, projName+".cbuild-idx.yml"))
 	return idxFilePath, nil
+}
+
+func (b CSolutionBuilder) getCbuildSetFilePath() (string, error) {
+	projName, err := utils.GetProjectName(b.InputFile)
+	if err != nil {
+		return "", err
+	}
+
+	setFilePath := utils.NormalizePath(filepath.Join(filepath.Dir(b.InputFile), projName+".cbuild-set.yml"))
+	return setFilePath, nil
 }
 
 func (b CSolutionBuilder) getCprjsBuilders(selectedContexts []string) (cprjBuilders []cproject.CprjBuilder, err error) {
@@ -367,17 +390,23 @@ func (b CSolutionBuilder) Build() (err error) {
 		return err
 	}
 
-	projName, err := utils.GetProjectName(b.InputFile)
+	var filePath string
+	if b.Options.UseContextSet {
+		filePath, err = b.getCbuildSetFilePath()
+	} else {
+		filePath, err = b.getIdxFilePath()
+	}
+
 	if err != nil {
 		return err
 	}
-	setFile := utils.NormalizePath(filepath.Join(filepath.Dir(b.InputFile), projName+".cbuild-set.yml"))
 
 	// get list of selected contexts
-	selectedContexts, err := b.getSelectedContexts(setFile)
+	selectedContexts, err := b.getSelectedContexts(filePath)
 	if err != nil {
 		return err
 	}
+
 	totalContexts := strconv.Itoa(len(selectedContexts))
 	log.Info("Processing " + totalContexts + " context(s)")
 
