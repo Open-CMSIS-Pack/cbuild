@@ -44,8 +44,8 @@ func (b CSolutionBuilder) formulateArgs(command []string) (args []string, err er
 	if !b.Options.UpdateRte {
 		args = append(args, "--no-update-rte")
 	}
-	if len(b.Options.Context) != 0 {
-		for _, context := range b.Options.Context {
+	if len(b.Options.Contexts) != 0 {
+		for _, context := range b.Options.Contexts {
 			args = append(args, "--context="+context)
 		}
 	}
@@ -178,7 +178,7 @@ func (b CSolutionBuilder) getIdxFilePath() (string, error) {
 	return idxFilePath, nil
 }
 
-func (b CSolutionBuilder) getCbuildSetFilePath() (string, error) {
+func (b CSolutionBuilder) getSetFilePath() (string, error) {
 	projName, err := utils.GetProjectName(b.InputFile)
 	if err != nil {
 		return "", err
@@ -390,19 +390,28 @@ func (b CSolutionBuilder) Build() (err error) {
 		return err
 	}
 
-	var filePath string
-	if b.Options.UseContextSet {
-		filePath, err = b.getCbuildSetFilePath()
+	var allContexts, selectedContexts []string
+
+	if len(b.Options.Contexts) != 0 && !b.Options.UseContextSet {
+		allContexts, err = b.listContexts(true, true)
+		if err != nil {
+			log.Error("error getting list of contexts: \"" + err.Error() + "\"")
+			return err
+		}
+		selectedContexts, err = utils.ResolveContexts(allContexts, b.Options.Contexts)
 	} else {
-		filePath, err = b.getIdxFilePath()
+		var filePath string
+		if b.Options.UseContextSet {
+			filePath, err = b.getSetFilePath()
+		} else {
+			filePath, err = b.getIdxFilePath()
+		}
+		if err != nil {
+			return err
+		}
+		selectedContexts, err = b.getSelectedContexts(filePath)
 	}
 
-	if err != nil {
-		return err
-	}
-
-	// get list of selected contexts
-	selectedContexts, err := b.getSelectedContexts(filePath)
 	if err != nil {
 		return err
 	}

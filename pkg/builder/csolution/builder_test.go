@@ -258,7 +258,7 @@ func TestBuild(t *testing.T) {
 	})
 
 	t.Run("test build csolution with context", func(t *testing.T) {
-		b.Options.Context = []string{"test.Debug+CM0"}
+		b.Options.Contexts = []string{"test.Debug+CM0"}
 		err := b.Build()
 		assert.Error(err)
 	})
@@ -453,7 +453,7 @@ func TestFormulateArg(t *testing.T) {
 	t.Run("test context-set arg", func(t *testing.T) {
 		b.Options = builder.Options{
 			OutDir:        testRoot + "/run/OutDir",
-			Context:       []string{"test.Debug+Target", "test.Release+Target"},
+			Contexts:      []string{"test.Debug+Target", "test.Release+Target"},
 			UseContextSet: true,
 		}
 		args, err := b.formulateArgs([]string{"convert"})
@@ -475,7 +475,7 @@ func TestGetCbuildSetFilePath(t *testing.T) {
 	t.Run("test invalid input file", func(t *testing.T) {
 		b.InputFile = "run/TestSolution/invalid_file.yml"
 
-		path, err := b.getCbuildSetFilePath()
+		path, err := b.getSetFilePath()
 		assert.Error(err)
 		assert.Equal(path, "")
 	})
@@ -483,7 +483,7 @@ func TestGetCbuildSetFilePath(t *testing.T) {
 	t.Run("test get cbuild-set file path", func(t *testing.T) {
 		b.InputFile = "run/TestSolution/test.csolution.yml"
 
-		path, err := b.getCbuildSetFilePath()
+		path, err := b.getSetFilePath()
 		assert.Nil(err)
 		assert.Equal(path, "run/TestSolution/test.cbuild-set.yml")
 	})
