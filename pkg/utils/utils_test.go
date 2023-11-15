@@ -259,3 +259,67 @@ func TestGetProjectName(t *testing.T) {
 		assert.Equal(projName, "")
 	})
 }
+
+func TestResolveContexts(t *testing.T) {
+	assert := assert.New(t)
+
+	allContexts := []string{
+		"Project1.Debug+Target",
+		"Project1.Release+Target",
+		"Project1.Debug+Target2",
+		"Project1.Release+Target2",
+		"Project2.Debug+Target",
+		"Project2.Release+Target",
+		"Project2.Debug+Target2",
+		"Project2.Release+Target2",
+	}
+
+	testCases := []struct {
+		contextFilters           []string
+		expectedResolvedContexts []string
+		ExpectError              bool
+	}{
+		{[]string{"Project1"}, []string{"Project1.Debug+Target", "Project1.Release+Target", "Project1.Debug+Target2", "Project1.Release+Target2"}, false},
+		{[]string{".Debug"}, []string{"Project1.Debug+Target", "Project1.Debug+Target2", "Project2.Debug+Target", "Project2.Debug+Target2"}, false},
+		{[]string{"+Target"}, []string{"Project1.Debug+Target", "Project1.Release+Target", "Project2.Debug+Target", "Project2.Release+Target"}, false},
+		{[]string{"Project1.Debug"}, []string{"Project1.Debug+Target", "Project1.Debug+Target2"}, false},
+		{[]string{"Project1+Target"}, []string{"Project1.Debug+Target", "Project1.Release+Target"}, false},
+		{[]string{".Release+Target2"}, []string{"Project1.Release+Target2", "Project2.Release+Target2"}, false},
+		{[]string{"Project1.Release+Target2"}, []string{"Project1.Release+Target2"}, false},
+
+		{[]string{"*"}, allContexts, false},
+		{[]string{"*.*+*"}, allContexts, false},
+		{[]string{"*.*"}, allContexts, false},
+		{[]string{"Proj*"}, allContexts, false},
+		{[]string{".De*"}, []string{"Project1.Debug+Target", "Project1.Debug+Target2", "Project2.Debug+Target", "Project2.Debug+Target2"}, false},
+		{[]string{"+Tar*"}, allContexts, false},
+		{[]string{"Proj*.D*g"}, []string{"Project1.Debug+Target", "Project1.Debug+Target2", "Project2.Debug+Target", "Project2.Debug+Target2"}, false},
+		{[]string{"Proj*+Tar*"}, allContexts, false},
+		{[]string{"Project2.Rel*+Tar*"}, []string{"Project2.Release+Target", "Project2.Release+Target2"}, false},
+		{[]string{".Rel*+*2"}, []string{"Project1.Release+Target2", "Project2.Release+Target2"}, false},
+		{[]string{"Project*.Release+*"}, []string{"Project1.Release+Target", "Project1.Release+Target2", "Project2.Release+Target", "Project2.Release+Target2"}, false},
+
+		// negative tests
+		{[]string{"Unknown"}, nil, true},
+		{[]string{".UnknownBuild"}, nil, true},
+		{[]string{"+UnknownTarget"}, nil, true},
+		{[]string{"Project.UnknownBuild"}, nil, true},
+		{[]string{"Project+UnknownTarget"}, nil, true},
+		{[]string{".UnknownBuild+Target"}, nil, true},
+		{[]string{"TestProject*"}, nil, true},
+		{[]string{"Project.*Build"}, nil, true},
+		{[]string{"Project.Debug+*H"}, nil, true},
+		{[]string{"Project1.Release.Debug+Target"}, nil, true},
+		{[]string{"Project1.Debug+Target+Target2"}, nil, true},
+	}
+
+	for _, test := range testCases {
+		outResolvedContexts, err := ResolveContexts(allContexts, test.contextFilters)
+		if test.ExpectError {
+			assert.Error(err)
+		} else {
+			assert.Nil(err)
+		}
+		assert.Equal(test.expectedResolvedContexts, outResolvedContexts)
+	}
+}

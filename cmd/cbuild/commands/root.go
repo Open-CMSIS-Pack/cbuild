@@ -114,7 +114,7 @@ func NewRootCmd() *cobra.Command {
 			logFile, _ := cmd.Flags().GetString("log")
 			generator, _ := cmd.Flags().GetString("generator")
 			target, _ := cmd.Flags().GetString("target")
-			context, _ := cmd.Flags().GetStringSlice("context")
+			contexts, _ := cmd.Flags().GetStringSlice("context")
 			load, _ := cmd.Flags().GetString("load")
 			output, _ := cmd.Flags().GetString("output")
 			jobs, _ := cmd.Flags().GetInt("jobs")
@@ -145,7 +145,7 @@ func NewRootCmd() *cobra.Command {
 				Packs:         packs,
 				Rebuild:       rebuild,
 				UpdateRte:     updateRte,
-				Context:       context,
+				Contexts:      contexts,
 				UseContextSet: useContextSet,
 				Load:          load,
 				Output:        output,

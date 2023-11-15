@@ -249,3 +249,57 @@ func GetProjectName(csolutionFile string) (projectName string, err error) {
 	}
 	return nameTokens[0], nil
 }
+
+func ResolveContexts(allContext []string, contextFilters []string) ([]string, error) {
+	var selectedContexts []string
+
+	for _, filter := range contextFilters {
+		filterContextItem, err := ParseContext(filter)
+		if err != nil {
+			return nil, err
+		}
+		matchFound := false
+		for _, context := range allContext {
+			availableContextItem, err := ParseContext(context)
+			if err != nil {
+				return nil, err
+			}
+
+			var contextPattern string
+			if filterContextItem.ProjectName != "" {
+				contextPattern = filterContextItem.ProjectName
+			} else {
+				contextPattern = "*"
+			}
+
+			if availableContextItem.BuildType != "" {
+				contextPattern += "."
+				if filterContextItem.BuildType != "" {
+					contextPattern += filterContextItem.BuildType
+				} else {
+					contextPattern += "*"
+				}
+			}
+
+			contextPattern += "+"
+			if filterContextItem.TargetType != "" {
+				contextPattern += filterContextItem.TargetType
+			} else {
+				contextPattern += "*"
+			}
+
+			match, err := MatchString(context, contextPattern)
+			if err != nil {
+				return nil, err
+			}
+			if match && !Contains(selectedContexts, context) {
+				matchFound = match
+				selectedContexts = append(selectedContexts, context)
+			}
+		}
+		if !matchFound {
+			return nil, errors.New("no suitable match found for \"" + filter + "\"")
+		}
+	}
+	return selectedContexts, nil
+}
