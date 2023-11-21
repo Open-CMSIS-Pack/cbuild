@@ -141,7 +141,9 @@ func (b CSolutionBuilder) getSelectedContexts(filePath string) ([]string, error)
 	if b.Options.UseContextSet {
 		data, err := utils.ParseCbuildSetFile(filePath)
 		if err == nil {
-			contexts = append(contexts, data.ContextSet.Contexts...)
+			for _, context := range data.ContextSet.Contexts {
+				contexts = append(contexts, context.Context)
+			}
 		}
 		retErr = err
 	} else {

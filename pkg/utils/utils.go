@@ -179,9 +179,11 @@ type CbuildIndex struct {
 
 type CbuildSet struct {
 	ContextSet struct {
-		GeneratedBy string   `yaml:"generated-by"`
-		Contexts    []string `yaml:"contexts"`
-		Compiler    string   `yaml:"compiler"`
+		GeneratedBy string `yaml:"generated-by"`
+		Contexts    []struct {
+			Context string `yaml:"context"`
+		} `yaml:"contexts"`
+		Compiler string `yaml:"compiler"`
 	} `yaml:"cbuild-set"`
 }
 
