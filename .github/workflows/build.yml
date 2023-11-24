@@ -28,10 +28,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Install Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
         with:
           go-version-file: go.mod
           check-latest: true
@@ -46,7 +46,7 @@ jobs:
           GOOS=linux GOARCH=arm64 go build -o build/lin-arm64/cbuild ./cmd/cbuild        
 
       - name: Archive windows amd64 binaries
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
         with:
           name: cbuild-windows-amd64
           path: ./build/win-amd64/cbuild.exe
@@ -54,7 +54,7 @@ jobs:
           if-no-files-found: error
 
       - name: Archive windows arm64 binaries
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
         with:
           name: cbuild-windows-arm64
           path: ./build/win-arm64/cbuild.exe
@@ -62,7 +62,7 @@ jobs:
           if-no-files-found: error
 
       - name: Archive macos amd64 binaries
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
         with:
           name: cbuild-mac-amd64
           path: ./build/mac-amd64/cbuild
@@ -70,7 +70,7 @@ jobs:
           if-no-files-found: error
 
       - name: Archive macos arm64 binaries
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
         with:
           name: cbuild-mac-arm64
           path: ./build/mac-arm64/cbuild
@@ -78,7 +78,7 @@ jobs:
           if-no-files-found: error
 
       - name: Archive linux amd64 binaries
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
         with:
           name: cbuild-lin-amd64
           path: ./build/lin-amd64/cbuild
@@ -86,7 +86,7 @@ jobs:
           if-no-files-found: error
 
       - name: Archive linux arm64 binaries
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
         with:
           name: cbuild-lin-arm64
           path: ./build/lin-arm64/cbuild
