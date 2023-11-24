@@ -274,13 +274,11 @@ func ResolveContexts(allContext []string, contextFilters []string) ([]string, er
 				contextPattern = "*"
 			}
 
-			if availableContextItem.BuildType != "" {
-				contextPattern += "."
-				if filterContextItem.BuildType != "" {
-					contextPattern += filterContextItem.BuildType
-				} else {
-					contextPattern += "*"
-				}
+			contextPattern += "."
+			if filterContextItem.BuildType != "" {
+				contextPattern += filterContextItem.BuildType
+			} else {
+				contextPattern += "*"
 			}
 
 			contextPattern += "+"
@@ -290,7 +288,9 @@ func ResolveContexts(allContext []string, contextFilters []string) ([]string, er
 				contextPattern += "*"
 			}
 
-			match, err := MatchString(context, contextPattern)
+			fullContextItem := availableContextItem.ProjectName + "." + availableContextItem.BuildType + "+" + availableContextItem.TargetType
+
+			match, err := MatchString(fullContextItem, contextPattern)
 			if err != nil {
 				return nil, err
 			}
