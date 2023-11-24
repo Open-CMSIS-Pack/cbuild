@@ -27,9 +27,9 @@ jobs:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - uses: golangci/golangci-lint-action@v3
+      - uses: golangci/golangci-lint-action@3a919529898de77ec3da873e3063ca4b10e7f5cc # v3.7.0
         with:
           version: latest
 
@@ -38,10 +38,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Install Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
         with:
           go-version-file: go.mod
           check-latest: true
@@ -55,7 +55,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Scan for Vulnerabilities
-        uses: golang/govulncheck-action@v1
+        uses: golang/govulncheck-action@7da72f730e37eeaad891fcff0a532d27ed737cd4 # v1.0.1
         with:
           go-version-file: go.mod
           check-latest: true
@@ -76,10 +76,10 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Install Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
         with:
           go-version-file: go.mod
           check-latest: true
@@ -117,7 +117,7 @@ jobs:
           go-junit-report -set-exit-code -in build/cbuildtests-${{ matrix.target }}-arm64.txt -iocopy -out build/cbuild-testreport-${{ matrix.target }}-arm64.xml
 
       - name: Archive unit test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
         with:
           name: unit-test-result-${{ matrix.target }}
           path: ./build/cbuild-testreport-*.xml
@@ -133,12 +133,12 @@ jobs:
       pull-requests: write
     steps:
       - name: Download Artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
         with:
           path: artifacts
 
       - name: publish test results
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: EnricoMi/publish-unit-test-result-action@ca89ad036b5fcd524c1017287fb01b5139908408 # v2.11.0
         with:
           files: "artifacts/**/cbuild-testreport-*.xml"
           report_individual_runs: true
@@ -150,10 +150,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Install Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
         with:
           go-version-file: go.mod
           check-latest: true
