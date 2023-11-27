@@ -272,6 +272,8 @@ func TestResolveContexts(t *testing.T) {
 		"Project2.Release+Target",
 		"Project2.Debug+Target2",
 		"Project2.Release+Target2",
+		"Project3.Debug",
+		"Project4+Target",
 	}
 
 	testCases := []struct {
@@ -280,8 +282,8 @@ func TestResolveContexts(t *testing.T) {
 		ExpectError              bool
 	}{
 		{[]string{"Project1"}, []string{"Project1.Debug+Target", "Project1.Release+Target", "Project1.Debug+Target2", "Project1.Release+Target2"}, false},
-		{[]string{".Debug"}, []string{"Project1.Debug+Target", "Project1.Debug+Target2", "Project2.Debug+Target", "Project2.Debug+Target2"}, false},
-		{[]string{"+Target"}, []string{"Project1.Debug+Target", "Project1.Release+Target", "Project2.Debug+Target", "Project2.Release+Target"}, false},
+		{[]string{".Debug"}, []string{"Project1.Debug+Target", "Project1.Debug+Target2", "Project2.Debug+Target", "Project2.Debug+Target2", "Project3.Debug"}, false},
+		{[]string{"+Target"}, []string{"Project1.Debug+Target", "Project1.Release+Target", "Project2.Debug+Target", "Project2.Release+Target", "Project4+Target"}, false},
 		{[]string{"Project1.Debug"}, []string{"Project1.Debug+Target", "Project1.Debug+Target2"}, false},
 		{[]string{"Project1+Target"}, []string{"Project1.Debug+Target", "Project1.Release+Target"}, false},
 		{[]string{".Release+Target2"}, []string{"Project1.Release+Target2", "Project2.Release+Target2"}, false},
@@ -291,10 +293,10 @@ func TestResolveContexts(t *testing.T) {
 		{[]string{"*.*+*"}, allContexts, false},
 		{[]string{"*.*"}, allContexts, false},
 		{[]string{"Proj*"}, allContexts, false},
-		{[]string{".De*"}, []string{"Project1.Debug+Target", "Project1.Debug+Target2", "Project2.Debug+Target", "Project2.Debug+Target2"}, false},
-		{[]string{"+Tar*"}, allContexts, false},
-		{[]string{"Proj*.D*g"}, []string{"Project1.Debug+Target", "Project1.Debug+Target2", "Project2.Debug+Target", "Project2.Debug+Target2"}, false},
-		{[]string{"Proj*+Tar*"}, allContexts, false},
+		{[]string{".De*"}, []string{"Project1.Debug+Target", "Project1.Debug+Target2", "Project2.Debug+Target", "Project2.Debug+Target2", "Project3.Debug"}, false},
+		{[]string{"+Tar*"}, []string{"Project1.Debug+Target", "Project1.Release+Target", "Project1.Debug+Target2", "Project1.Release+Target2", "Project2.Debug+Target", "Project2.Release+Target", "Project2.Debug+Target2", "Project2.Release+Target2", "Project4+Target"}, false},
+		{[]string{"Proj*.D*g"}, []string{"Project1.Debug+Target", "Project1.Debug+Target2", "Project2.Debug+Target", "Project2.Debug+Target2", "Project3.Debug"}, false},
+		{[]string{"Proj*+Tar*"}, []string{"Project1.Debug+Target", "Project1.Release+Target", "Project1.Debug+Target2", "Project1.Release+Target2", "Project2.Debug+Target", "Project2.Release+Target", "Project2.Debug+Target2", "Project2.Release+Target2", "Project4+Target"}, false},
 		{[]string{"Project2.Rel*+Tar*"}, []string{"Project2.Release+Target", "Project2.Release+Target2"}, false},
 		{[]string{".Rel*+*2"}, []string{"Project1.Release+Target2", "Project2.Release+Target2"}, false},
 		{[]string{"Project*.Release+*"}, []string{"Project1.Release+Target", "Project1.Release+Target2", "Project2.Release+Target", "Project2.Release+Target2"}, false},
@@ -306,6 +308,8 @@ func TestResolveContexts(t *testing.T) {
 		{[]string{"Project.UnknownBuild"}, nil, true},
 		{[]string{"Project+UnknownTarget"}, nil, true},
 		{[]string{".UnknownBuild+Target"}, nil, true},
+		{[]string{"+Debug"}, nil, true},
+		{[]string{".Target"}, nil, true},
 		{[]string{"TestProject*"}, nil, true},
 		{[]string{"Project.*Build"}, nil, true},
 		{[]string{"Project.Debug+*H"}, nil, true},
