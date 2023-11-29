@@ -125,7 +125,7 @@ jobs:
           if-no-files-found: error
 
   publish-test-results:
-    if: github.workflow != 'Release'
+    if: ${{ github.workflow != 'Release' }}
     name: "Publish Tests Results"
     needs: [ test ]
     runs-on: ubuntu-latest
@@ -145,7 +145,7 @@ jobs:
           report_individual_runs: true
 
   coverage:
-    if: github.workflow != 'Release'
+    if: ${{ github.workflow != 'Release' && github.repository == 'Open-CMSIS-Pack/cbuild' }}
     needs: [ test ]
     name: 'Coverage check'
     runs-on: ubuntu-latest
