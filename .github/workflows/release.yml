@@ -9,11 +9,33 @@ on:
 permissions: read-all
 
 jobs:
+  test:
+    uses: Open-CMSIS-Pack/cbuild/.github/workflows/test.yml@main
+
   goreleaser:
+    needs: test
     permissions:
       contents: write
     runs-on: ubuntu-latest
     steps:
+      - name: Download coverage report
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+        with:
+          name: test-results
+          path: testreport/
+
+      - name: Zip test reports
+        run: |
+          zip -r testreport.zip testreport
+
+      - name: Attach coverage report to release assets
+        uses: svenstaro/upload-release-action@1beeb572c19a9242f4361f4cee78f8e0d9aec5df # v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: testreport.zip
+          tag: ${{ github.ref }}
+          overwrite: true
+
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
