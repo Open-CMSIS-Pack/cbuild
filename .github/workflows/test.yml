@@ -125,7 +125,7 @@ jobs:
           if-no-files-found: error
 
   publish-test-results:
-    if: github.event_name != 'release'
+    if: github.workflow != 'Release'
     name: "Publish Tests Results"
     needs: [ test ]
     runs-on: ubuntu-latest
@@ -145,7 +145,7 @@ jobs:
           report_individual_runs: true
 
   coverage:
-    if: github.event_name != 'release'
+    if: github.workflow != 'Release'
     needs: [ test ]
     name: 'Coverage check'
     runs-on: ubuntu-latest
