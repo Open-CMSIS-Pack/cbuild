@@ -7,9 +7,6 @@
 package cproject
 
 import (
-	"cbuild/pkg/builder"
-	"cbuild/pkg/inittest"
-	"cbuild/pkg/utils"
 	"errors"
 	"os"
 	"path/filepath"
@@ -17,6 +14,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder"
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/inittest"
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
 	"github.com/stretchr/testify/assert"
 )
 

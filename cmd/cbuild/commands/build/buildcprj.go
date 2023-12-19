@@ -6,12 +6,12 @@
 package build
 
 import (
-	"cbuild/pkg/builder"
-	"cbuild/pkg/builder/cproject"
-	"cbuild/pkg/utils"
 	"errors"
 	"path/filepath"
 
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder"
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder/cproject"
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
 	"github.com/spf13/cobra"
 )
 

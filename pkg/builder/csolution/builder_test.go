@@ -7,15 +7,15 @@
 package csolution
 
 import (
-	builder "cbuild/pkg/builder"
-	"cbuild/pkg/inittest"
-	"cbuild/pkg/utils"
 	"errors"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
+	builder "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder"
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/inittest"
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
 	"github.com/stretchr/testify/assert"
 )
 

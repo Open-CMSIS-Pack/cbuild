@@ -7,11 +7,11 @@
 package main
 
 import (
-	"cbuild/cmd/cbuild/commands"
 	"fmt"
 	"os"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/Open-CMSIS-Pack/cbuild/v2/cmd/cbuild/commands"
 )
 
 func main() {

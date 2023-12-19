@@ -7,9 +7,8 @@
 package utils
 
 import (
-	"cbuild/pkg/inittest"
 	"testing"
-
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/inittest"
 	"github.com/stretchr/testify/assert"
 )
 
