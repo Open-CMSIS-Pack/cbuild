@@ -1,4 +1,4 @@
-module cbuild
+module github.com/Open-CMSIS-Pack/cbuild/v2
 
 go 1.21
 
