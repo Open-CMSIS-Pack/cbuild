@@ -7,9 +7,6 @@
 package csolution
 
 import (
-	builder "cbuild/pkg/builder"
-	"cbuild/pkg/builder/cproject"
-	utils "cbuild/pkg/utils"
 	"errors"
 	"fmt"
 	"os"
@@ -18,6 +15,9 @@ import (
 	"strconv"
 	"strings"
 
+	builder "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder"
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder/cproject"
+	utils "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
 	log "github.com/sirupsen/logrus"
 )
 

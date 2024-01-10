@@ -120,7 +120,7 @@ jobs:
       - name: Archive unit test results
         uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 # v4.0.0
         with:
-          name: test-results
+          name: test-results-${{ matrix.target }}
           path: ./build/cbuild-testreport-*.xml
           if-no-files-found: error
 
@@ -170,4 +170,4 @@ jobs:
         with:
           debug: true
           coverageLocations: ./build/cover.out:gocov
-          prefix: cbuild
+          prefix: github.com/Open-CMSIS-Pack/cbuild/v2

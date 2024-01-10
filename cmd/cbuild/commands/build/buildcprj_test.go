@@ -7,10 +7,10 @@
 package build_test
 
 import (
-	"cbuild/cmd/cbuild/commands"
 	"os"
 	"testing"
 
+	"github.com/Open-CMSIS-Pack/cbuild/v2/cmd/cbuild/commands"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )

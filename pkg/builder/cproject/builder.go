@@ -15,9 +15,8 @@ import (
 	"runtime"
 	"strings"
 
-	builder "cbuild/pkg/builder"
-	utils "cbuild/pkg/utils"
-
+	builder "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder"
+	utils "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
 	log "github.com/sirupsen/logrus"
 )
 

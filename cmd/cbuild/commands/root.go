@@ -7,12 +7,6 @@
 package commands
 
 import (
-	"cbuild/cmd/cbuild/commands/build"
-	"cbuild/cmd/cbuild/commands/list"
-	"cbuild/pkg/builder"
-	"cbuild/pkg/builder/cproject"
-	"cbuild/pkg/builder/csolution"
-	"cbuild/pkg/utils"
 	"errors"
 	"fmt"
 	"io"
@@ -20,6 +14,12 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Open-CMSIS-Pack/cbuild/v2/cmd/cbuild/commands/build"
+	"github.com/Open-CMSIS-Pack/cbuild/v2/cmd/cbuild/commands/list"
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder"
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder/cproject"
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder/csolution"
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )

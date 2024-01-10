@@ -7,7 +7,7 @@
 package builder
 
 import (
-	"cbuild/pkg/utils"
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
 )
 
 type BuilderParams struct {
