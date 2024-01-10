@@ -170,4 +170,4 @@ jobs:
         with:
           debug: true
           coverageLocations: ./build/cover.out:gocov
-          prefix: cbuild
+          prefix: github.com/Open-CMSIS-Pack/cbuild/v2

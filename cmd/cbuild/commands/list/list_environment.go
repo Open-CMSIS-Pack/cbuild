@@ -6,10 +6,9 @@
 package list
 
 import (
-	"cbuild/pkg/builder"
-	"cbuild/pkg/builder/csolution"
-	"cbuild/pkg/utils"
-
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder"
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder/csolution"
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
 	"github.com/spf13/cobra"
 )
 

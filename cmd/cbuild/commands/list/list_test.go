@@ -7,9 +7,9 @@
 package list_test
 
 import (
-	"cbuild/cmd/cbuild/commands"
 	"testing"
 
+	"github.com/Open-CMSIS-Pack/cbuild/v2/cmd/cbuild/commands"
 	"github.com/stretchr/testify/assert"
 )
 
