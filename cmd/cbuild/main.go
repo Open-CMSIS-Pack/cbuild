@@ -7,10 +7,10 @@
 package main
 
 import (
-	"cbuild/cmd/cbuild/commands"
 	"fmt"
 	"os"
 
+	"github.com/Open-CMSIS-Pack/cbuild/v2/cmd/cbuild/commands"
 	log "github.com/sirupsen/logrus"
 )
 
