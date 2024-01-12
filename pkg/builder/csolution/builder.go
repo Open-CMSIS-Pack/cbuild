@@ -211,6 +211,7 @@ func (b CSolutionBuilder) getCprjsBuilders(selectedContexts []string) (cprjBuild
 			log.Error("error getting cprj file: " + err.Error())
 			return cprjBuilders, err
 		}
+
 		// get cprj builder
 		cprjBuilder := cproject.CprjBuilder{
 			BuilderParams: builder.BuilderParams{
@@ -220,6 +221,12 @@ func (b CSolutionBuilder) getCprjsBuilders(selectedContexts []string) (cprjBuild
 				InstallConfigs: b.InstallConfigs,
 			},
 		}
+
+		// Set XML schema check to false, when input is yml
+		if b.Options.Schema {
+			cprjBuilder.Options.Schema = false
+		}
+
 		cprjBuilders = append(cprjBuilders, cprjBuilder)
 	}
 	return cprjBuilders, err
