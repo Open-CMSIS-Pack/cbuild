@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Arm Limited. All rights reserved.
+ * Copyright (c) 2023-2024 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -60,6 +60,9 @@ func (b CSolutionBuilder) formulateArgs(command []string) (args []string, err er
 	}
 	if b.Options.Verbose {
 		args = append(args, "--verbose")
+	}
+	if b.Options.FrozenPacks {
+		args = append(args, "--frozen-packs")
 	}
 
 	return

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Arm Limited. All rights reserved.
+ * Copyright (c) 2023-2024 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -39,6 +39,7 @@ type Options struct {
 	Rebuild       bool
 	UpdateRte     bool
 	UseContextSet bool
+	FrozenPacks   bool
 }
 
 type IBuilderInterface interface {
