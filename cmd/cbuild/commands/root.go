@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Arm Limited. All rights reserved.
+ * Copyright (c) 2022-2024 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -128,6 +128,7 @@ func NewRootCmd() *cobra.Command {
 			updateRte, _ := cmd.Flags().GetBool("update-rte")
 			toolchain, _ := cmd.Flags().GetString("toolchain")
 			useContextSet, _ := cmd.Flags().GetBool("context-set")
+			frozenPacks, _ := cmd.Flags().GetBool("frozen-packs")
 
 			options := builder.Options{
 				IntDir:        intDir,
@@ -150,6 +151,7 @@ func NewRootCmd() *cobra.Command {
 				Load:          load,
 				Output:        output,
 				Toolchain:     toolchain,
+				FrozenPacks:   frozenPacks,
 			}
 
 			configs, err := utils.GetInstallConfigs()
@@ -196,6 +198,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.Flags().BoolP("rebuild", "r", false, "Remove intermediate and output directories and rebuild")
 	rootCmd.Flags().BoolP("update-rte", "", false, "Update the RTE directory and files")
 	rootCmd.Flags().BoolP("context-set", "S", false, "Use context set")
+	rootCmd.Flags().BoolP("frozen-packs", "", false, "The list of packs from cbuild-pack.yml is frozen and raises error if not up-to-date")
 	rootCmd.Flags().StringP("generator", "g", "Ninja", "Select build system generator")
 	rootCmd.Flags().StringSliceP("context", "c", []string{}, "Input context names [<project-name>][.<build-type>][+<target-type>]")
 	rootCmd.Flags().StringP("load", "l", "", "Set policy for packs loading [latest | all | required]")

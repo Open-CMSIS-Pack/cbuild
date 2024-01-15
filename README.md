@@ -25,7 +25,7 @@ use the command line option: `--update-rte`.
 ## Usage
 
 ```bash
-cbuild: Build Invocation 2.0.0 (C) 2023 Arm Ltd. and Contributors
+cbuild: Build Invocation 2.0.0 (C) 2024 Arm Ltd. and Contributors
 
 Usage:
   cbuild [command] <name>.csolution.yml [options]
@@ -40,6 +40,7 @@ Options:
   -c, --context arg [...]  Input context names [<project-name>][.<build-type>][+<target-type>]
   -S, --context-set        Use context set
   -d, --debug              Enable debug messages
+      --frozen-packs       The list of packs from cbuild-pack.yml is frozen and raises error if not up-to-date
   -g, --generator arg      Select build system generator (default "Ninja")
   -h, --help               Print usage
   -j, --jobs int           Number of job slots for parallel execution
