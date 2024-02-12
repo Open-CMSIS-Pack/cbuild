@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Arm Limited. All rights reserved.
+ * Copyright (c) 2022-2024 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -14,9 +14,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder"
+	builder "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/inittest"
-	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
+	utils "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -92,8 +92,8 @@ func TestGetDirs(t *testing.T) {
 		assert.Nil(err)
 		intDir, _ := filepath.Abs(testRoot + "/run/IntDir")
 		outDir, _ := filepath.Abs(testRoot + "/run/OutDir")
-		assert.Equal(intDir, dirs.intDir)
-		assert.Equal(outDir, dirs.outDir)
+		assert.Equal(intDir, dirs.IntDir)
+		assert.Equal(outDir, dirs.OutDir)
 	})
 
 	t.Run("test valid directories in cprj", func(t *testing.T) {
@@ -102,8 +102,8 @@ func TestGetDirs(t *testing.T) {
 		assert.Nil(err)
 		intDir, _ := filepath.Abs(testRoot + "/run/Intermediate")
 		outDir, _ := filepath.Abs(testRoot + "/run/Output")
-		assert.Equal(intDir, dirs.intDir)
-		assert.Equal(outDir, dirs.outDir)
+		assert.Equal(intDir, dirs.IntDir)
+		assert.Equal(outDir, dirs.OutDir)
 	})
 
 	t.Run("test valid directories as arguments", func(t *testing.T) {
@@ -114,8 +114,8 @@ func TestGetDirs(t *testing.T) {
 		assert.Nil(err)
 		intDir, _ := filepath.Abs(b.Options.IntDir)
 		outDir, _ := filepath.Abs(b.Options.OutDir)
-		assert.Equal(intDir, dirs.intDir)
-		assert.Equal(outDir, dirs.outDir)
+		assert.Equal(intDir, dirs.IntDir)
+		assert.Equal(outDir, dirs.OutDir)
 	})
 
 	t.Run("test invalid cprj", func(t *testing.T) {
@@ -133,36 +133,36 @@ func TestClean(t *testing.T) {
 			Runner: RunnerMock{},
 		},
 	}
-	var dirs BuildDirs
-	var vars InternalVars
+	var dirs builder.BuildDirs
+	var vars builder.InternalVars
 
 	t.Run("test clean directories, invalid tool", func(t *testing.T) {
-		vars.cbuildgenBin = testRoot + "/bin/invalid-tool"
+		vars.CbuildgenBin = testRoot + "/bin/invalid-tool"
 
-		dirs.outDir = testRoot + "/run/OutDir"
-		_ = os.MkdirAll(dirs.outDir, 0755)
+		dirs.OutDir = testRoot + "/run/OutDir"
+		_ = os.MkdirAll(dirs.OutDir, 0755)
 		err := b.clean(dirs, vars)
 		assert.Error(err)
 
-		dirs.intDir = testRoot + "/run/IntDir"
-		_ = os.MkdirAll(dirs.intDir, 0755)
+		dirs.IntDir = testRoot + "/run/IntDir"
+		_ = os.MkdirAll(dirs.IntDir, 0755)
 		err = b.clean(dirs, vars)
 		assert.Error(err)
 	})
 
 	t.Run("test clean directories", func(t *testing.T) {
-		vars.cbuildgenBin = testRoot + "/bin/cbuildgen"
-		dirs.intDir = testRoot + "/run/IntDir"
-		dirs.outDir = testRoot + "/run/OutDir"
-		_ = os.MkdirAll(dirs.intDir, 0755)
-		_ = os.MkdirAll(dirs.outDir, 0755)
+		vars.CbuildgenBin = testRoot + "/bin/cbuildgen"
+		dirs.IntDir = testRoot + "/run/IntDir"
+		dirs.OutDir = testRoot + "/run/OutDir"
+		_ = os.MkdirAll(dirs.IntDir, 0755)
+		_ = os.MkdirAll(dirs.OutDir, 0755)
 		err := b.clean(dirs, vars)
 		assert.Nil(err)
 	})
 
 	t.Run("test clean non-existent directories", func(t *testing.T) {
-		dirs.intDir = testRoot + "/run/non-existent-intdir"
-		dirs.outDir = testRoot + "/run/non-existent-outdir"
+		dirs.IntDir = testRoot + "/run/non-existent-intdir"
+		dirs.OutDir = testRoot + "/run/non-existent-outdir"
 		err := b.clean(dirs, vars)
 		assert.Nil(err)
 	})
@@ -178,7 +178,7 @@ func TestGetInternalVars(t *testing.T) {
 	}
 	t.Run("test get internal vars", func(t *testing.T) {
 
-		_, err := b.getInternalVars()
+		_, err := b.GetInternalVars()
 		assert.Error(err)
 	})
 }
@@ -193,19 +193,19 @@ func TestGetJobs(t *testing.T) {
 
 	t.Run("test get jobs = 0", func(t *testing.T) {
 		b.Options.Jobs = 0
-		jobs := b.getJobs()
+		jobs := b.GetJobs()
 		assert.Equal(jobs, runtime.NumCPU())
 	})
 
 	t.Run("test get jobs > 0", func(t *testing.T) {
 		b.Options.Jobs = 2
-		jobs := b.getJobs()
+		jobs := b.GetJobs()
 		assert.Equal(jobs, 2)
 	})
 
 	t.Run("test get jobs < 0", func(t *testing.T) {
 		b.Options.Jobs = -1
-		jobs := b.getJobs()
+		jobs := b.GetJobs()
 		assert.Equal(jobs, runtime.NumCPU())
 	})
 }
@@ -232,7 +232,6 @@ func TestBuild(t *testing.T) {
 	}
 
 	t.Run("test build cprj", func(t *testing.T) {
-
 		err := b.Build()
 		assert.Nil(err)
 	})

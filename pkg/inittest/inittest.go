@@ -44,6 +44,9 @@ func TestInitialization(testRoot string) {
 	cpackgetBin := testRoot + "/run/bin/cpackget" + binExtension
 	file, _ = os.Create(cpackgetBin)
 	defer file.Close()
+	cbuild2cmakeBin := testRoot + "/run/bin/cbuild2cmake" + binExtension
+	file, _ = os.Create(cbuild2cmakeBin)
+	defer file.Close()
 }
 
 type TestConfigs struct {
