@@ -52,7 +52,7 @@ func TestCheckCbuildIdx(t *testing.T) {
 		},
 	}
 
-	t.Run("test valid cprj", func(t *testing.T) {
+	t.Run("test valid cbuild-idx", func(t *testing.T) {
 		b.InputFile = testRoot + "/run/Hello.cbuild-idx.yml"
 		err := b.checkCbuildIdx()
 		assert.Nil(err)
@@ -76,12 +76,13 @@ func TestGetDirs(t *testing.T) {
 
 	b := CbuildIdxBuilder{
 		builder.BuilderParams{
-			Runner: RunnerMock{},
+			Runner:    RunnerMock{},
+			InputFile: testRoot + "/run/Hello.cbuild-idx.yml",
+			Options: builder.Options{
+				Contexts: []string{"Hello.Debug+AVH"},
+			},
 		},
 	}
-
-	b.InputFile = testRoot + "/run/Hello.cbuild-idx.yml"
-	b.Options.Contexts = []string{"Hello.Debug+AVH"}
 
 	t.Run("test valid directories in cprj", func(t *testing.T) {
 		dirs, err := b.getDirs()
@@ -155,8 +156,9 @@ func TestBuild(t *testing.T) {
 			Runner:    RunnerMock{},
 			InputFile: testRoot + "/run/Hello.cbuild-idx.yml",
 			Options: builder.Options{
-				OutDir: testRoot + "/run/OutDir",
-				Packs:  true,
+				Contexts: []string{"Hello.Debug+AVH"},
+				OutDir:   testRoot + "/run/OutDir",
+				Packs:    true,
 			},
 			InstallConfigs: utils.Configurations{
 				BinPath: configs.BinPath,
@@ -165,8 +167,6 @@ func TestBuild(t *testing.T) {
 			},
 		},
 	}
-	b.Options.Contexts = []string{"Hello.Debug+AVH"}
-
 	t.Run("test build cbuild-idx", func(t *testing.T) {
 		err := b.Build()
 		assert.Nil(err)

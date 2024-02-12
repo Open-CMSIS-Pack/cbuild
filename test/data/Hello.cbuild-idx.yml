@@ -4,7 +4,6 @@ build-idx:
   csolution: Hello.csolution.yml
   cprojects:
     - cproject: Hello.cproject.yml
-  licenses: test123
   cbuilds:
     - cbuild: Hello.Debug+AVH.cbuild.yml
       project: Hello
