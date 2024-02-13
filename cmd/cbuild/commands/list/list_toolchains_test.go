@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Arm Limited. All rights reserved.
+ * Copyright (c) 2023-2024 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -7,6 +7,7 @@
 package list_test
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/Open-CMSIS-Pack/cbuild/v2/cmd/cbuild/commands"
@@ -15,7 +16,7 @@ import (
 
 func TestListToolchainsCommand(t *testing.T) {
 	assert := assert.New(t)
-	csolutionFile := testRoot + "/run/TestSolution/test.csolution.yml"
+	csolutionFile := filepath.Join(testRoot, testDir, "TestSolution/test.csolution.yml")
 
 	t.Run("invalid flag", func(t *testing.T) {
 		cmd := commands.NewRootCmd()

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Arm Limited. All rights reserved.
+ * Copyright (c) 2022-2024 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -8,6 +8,7 @@ package commands_test
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/Open-CMSIS-Pack/cbuild/v2/cmd/cbuild/commands"
@@ -17,15 +18,16 @@ import (
 )
 
 const testRoot = "../../../test"
+const testDir = "command"
 
 func init() {
-	inittest.TestInitialization(testRoot)
+	inittest.TestInitialization(testRoot, testDir)
 }
 
 func TestCommands(t *testing.T) {
 	assert := assert.New(t)
-	cprjFile := testRoot + "/run/minimal.cprj"
-	csolutionFile := testRoot + "/run/test.csolution.yml"
+	cprjFile := filepath.Join(testRoot, testDir, "minimal.cprj")
+	csolutionFile := filepath.Join(testRoot, testDir, "test.csolution.yml")
 
 	t.Run("test version", func(t *testing.T) {
 		cmd := commands.NewRootCmd()
@@ -72,8 +74,8 @@ func TestCommands(t *testing.T) {
 
 func TestPreLogConfiguration(t *testing.T) {
 	assert := assert.New(t)
-	logDir := testRoot + "/run/log"
-	logFile := logDir + "/test.log"
+	logDir := filepath.Join(testRoot, testDir, "log")
+	logFile := filepath.Join(logDir, "test.log")
 
 	t.Run("test normal verbosity level", func(t *testing.T) {
 		// No quiet, No debug

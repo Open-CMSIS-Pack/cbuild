@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Arm Limited. All rights reserved.
+ * Copyright (c) 2022-2024 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -12,10 +12,16 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/inittest"
 	"github.com/stretchr/testify/assert"
 )
 
 const testRoot = "../../test"
+const testDir = "utils"
+
+func init() {
+	inittest.TestInitialization(testRoot, testDir)
+}
 
 func TestGetExecutablePath(t *testing.T) {
 	assert := assert.New(t)
@@ -139,7 +145,7 @@ func TestParseCbuildIndexFile(t *testing.T) {
 	})
 
 	t.Run("test cbuild-idx file parsing", func(t *testing.T) {
-		data, err := ParseCbuildIndexFile(testRoot + "/run/Test.cbuild-idx.yml")
+		data, err := ParseCbuildIndexFile(filepath.Join(testRoot, testDir, "Test.cbuild-idx.yml"))
 		assert.Nil(err)
 		var re = regexp.MustCompile(`^csolution\s[\d]+.[\d+]+.[\d+].*`)
 		assert.True(re.MatchString(data.BuildIdx.GeneratedBy))
@@ -166,7 +172,7 @@ func TestParseCbuildSetFile(t *testing.T) {
 	})
 
 	t.Run("test cbuild-set file parsing", func(t *testing.T) {
-		data, err := ParseCbuildSetFile(testRoot + "/run/Test.cbuild-set.yml")
+		data, err := ParseCbuildSetFile(filepath.Join(testRoot, testDir, "Test.cbuild-set.yml"))
 		assert.Nil(err)
 		var re = regexp.MustCompile(`^csolution\sversion\s[\d]+.[\d+]+.[\d+].*`)
 		assert.True(re.MatchString(data.ContextSet.GeneratedBy))
