@@ -260,6 +260,13 @@ func TestBuild(t *testing.T) {
 		err := b.Build()
 		assert.Error(err)
 	})
+
+	t.Run("test build csolution using cbuild2cmake", func(t *testing.T) {
+		b.Options.Contexts = []string{"test.Debug+CM0"}
+		b.Options.UseCbuild2CMake = true
+		err := b.Build()
+		assert.Error(err)
+	})
 }
 
 func TestRebuild(t *testing.T) {

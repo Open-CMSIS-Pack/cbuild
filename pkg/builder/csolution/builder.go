@@ -250,55 +250,58 @@ func (b CSolutionBuilder) getProjsBuilders(selectedContexts []string) (projBuild
 	return projBuilders, err
 }
 
+func (b CSolutionBuilder) setBuilderOptions(builder *builder.IBuilderInterface, clean bool) {
+	if b.Options.UseCbuild2CMake {
+		idxBuilder := (*builder).(cbuildidx.CbuildIdxBuilder)
+		idxBuilder.Options.Rebuild = false
+		idxBuilder.Options.Clean = clean
+		(*builder) = idxBuilder
+	} else {
+		cprjBuilder := (*builder).(cproject.CprjBuilder)
+		cprjBuilder.Options.Rebuild = false
+		cprjBuilder.Options.Clean = clean
+		(*builder) = cprjBuilder
+	}
+}
+
+func (b CSolutionBuilder) getBuilderInputFile(builder builder.IBuilderInterface) string {
+	var inputFile string
+	if b.Options.UseCbuild2CMake {
+		idxBuilder := builder.(cbuildidx.CbuildIdxBuilder)
+		inputFile = idxBuilder.InputFile
+	} else {
+		cprjBuilder := builder.(cproject.CprjBuilder)
+		inputFile = cprjBuilder.InputFile
+	}
+	return inputFile
+}
+
 func (b CSolutionBuilder) cleanContexts(selectedContexts []string, projBuilders []builder.IBuilderInterface) (err error) {
-	for index, bldr := range projBuilders {
+	for index := range projBuilders {
 		infoMsg := "Cleaning context: \"" + selectedContexts[index] + "\""
 		log.Info(infoMsg)
 
-		var inputFile string
-		if b.Options.UseCbuild2CMake {
-			idxBuilder := bldr.(cbuildidx.CbuildIdxBuilder)
-			idxBuilder.Options.Rebuild = false
-			idxBuilder.Options.Clean = true
-			inputFile = idxBuilder.InputFile
-		} else {
-			cprjBuilder := bldr.(cproject.CprjBuilder)
-			cprjBuilder.Options.Rebuild = false
-			cprjBuilder.Options.Clean = true
-			inputFile = cprjBuilder.InputFile
-		}
-
-		err = bldr.Build()
+		b.setBuilderOptions(&projBuilders[index], true)
+		err = projBuilders[index].Build()
 		if err != nil {
-			log.Error("error cleaning '" + inputFile + "'")
+			log.Error("error cleaning '" + b.getBuilderInputFile(projBuilders[index]) + "'")
 		}
 	}
 	return
 }
 
 func (b CSolutionBuilder) buildContexts(selectedContexts []string, projBuilders []builder.IBuilderInterface) (err error) {
-	for index, bldr := range projBuilders {
+	for index := range projBuilders {
 		progress := fmt.Sprintf("(%s/%d)", strconv.Itoa(index+1), len(selectedContexts))
 		infoMsg := progress + " Building context: \"" + selectedContexts[index] + "\""
 		sep := strings.Repeat("=", len(infoMsg)+13) + "\n"
 		_, _ = log.StandardLogger().Out.Write([]byte(sep))
 		log.Info(infoMsg)
 
-		var inputFile string
-		if b.Options.UseCbuild2CMake {
-			idxBuilder := bldr.(cbuildidx.CbuildIdxBuilder)
-			idxBuilder.Options.Rebuild = false
-			idxBuilder.Options.Clean = false
-			inputFile = idxBuilder.InputFile
-		} else {
-			cprjBuilder := bldr.(cproject.CprjBuilder)
-			cprjBuilder.Options.Rebuild = false
-			cprjBuilder.Options.Clean = false
-			inputFile = cprjBuilder.InputFile
-		}
-		err = bldr.Build()
+		b.setBuilderOptions(&projBuilders[index], false)
+		err = projBuilders[index].Build()
 		if err != nil {
-			log.Error("error building '" + inputFile + "'")
+			log.Error("error building '" + b.getBuilderInputFile(projBuilders[index]) + "'")
 		}
 	}
 	return

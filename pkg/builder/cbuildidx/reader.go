@@ -17,7 +17,6 @@ type Cbuild struct {
 		OutputDirs struct {
 			Intdir string `yaml:"intdir"`
 			Outdir string `yaml:"outdir"`
-			// Rtedir string `yaml:"rtedir"`
 		} `yaml:"output-dirs"`
 	} `yaml:"build"`
 }

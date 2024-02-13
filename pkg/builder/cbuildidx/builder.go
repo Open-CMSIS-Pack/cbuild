@@ -37,35 +37,41 @@ func (b CbuildIdxBuilder) checkCbuildIdx() error {
 }
 
 func (b CbuildIdxBuilder) clean(dirs builder.BuildDirs, vars builder.InternalVars) (err error) {
-	if _, err := os.Stat(dirs.IntDir); !os.IsNotExist(err) {
-		args := []string{"-E", "remove_directory", dirs.IntDir}
+	removeDirectory := func(dir string) error {
+		if _, err := os.Stat(dir); os.IsNotExist(err) {
+			return nil
+		}
+		args := []string{"-E", "remove_directory", dir}
 		_, err = b.Runner.ExecuteCommand(vars.CmakeBin, false, args...)
 		if err != nil {
-			log.Error("error executing 'cmake' clean " + dirs.IntDir)
-			return err
+			log.Error("error executing 'cmake' clean for " + dir)
 		}
+		return err
 	}
-	if _, err := os.Stat(dirs.OutDir); !os.IsNotExist(err) {
-		args := []string{"-E", "remove_directory", dirs.OutDir}
-		_, err = b.Runner.ExecuteCommand(vars.CmakeBin, false, args...)
-		if err != nil {
-			log.Error("error executing 'cmake' clean " + dirs.OutDir)
-			return err
-		}
+
+	if err := removeDirectory(dirs.IntDir); err != nil {
+		return err
 	}
+
+	if err := removeDirectory(dirs.OutDir); err != nil {
+		return err
+	}
+
 	log.Info("clean finished successfully!")
 	return nil
 }
 
 func (b CbuildIdxBuilder) getDirs() (dirs builder.BuildDirs, err error) {
 	if _, err := os.Stat(b.InputFile); os.IsNotExist(err) {
-		log.Error("project file " + b.InputFile + " does not exist")
+		log.Error("file " + b.InputFile + " does not exist")
 		return dirs, err
 	}
 
-	if b.Options.IntDir != "" {
-		dirs.IntDir = b.Options.IntDir
+	if len(b.Options.Contexts) != 1 {
+		err = errors.New("error invalid context(s) process request")
+		return dirs, err
 	}
+
 	if b.Options.OutDir != "" {
 		dirs.OutDir = b.Options.OutDir
 	}
@@ -75,19 +81,20 @@ func (b CbuildIdxBuilder) getDirs() (dirs builder.BuildDirs, err error) {
 		dirs.OutDir = ""
 	}
 
-	path := filepath.Dir(b.InputFile)
-	cbuildFile := filepath.Join(path, b.Options.Contexts[0]+".cbuild.yml")
-	_, outDir, err := GetBuildDirs(cbuildFile)
-	if err != nil {
-		log.Error("error parsing file: " + cbuildFile)
-		return dirs, err
-	}
-
 	// cbuild2cmake generates cmake files under fixed tmp directory
 	dirs.IntDir = "tmp"
 	dirs.IntDir = filepath.Join(filepath.Dir(b.InputFile), dirs.IntDir)
 
 	if dirs.OutDir == "" {
+		// get output directory from cbuild.yml file
+		path := filepath.Dir(b.InputFile)
+		cbuildFile := filepath.Join(path, b.Options.Contexts[0]+".cbuild.yml")
+		_, outDir, err := GetBuildDirs(cbuildFile)
+		if err != nil {
+			log.Error("error parsing file: " + cbuildFile)
+			return dirs, err
+		}
+
 		dirs.OutDir = outDir
 		if dirs.OutDir == "" {
 			dirs.OutDir = "OutDir"
