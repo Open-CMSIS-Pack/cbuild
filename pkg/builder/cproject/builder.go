@@ -36,6 +36,10 @@ func (b CprjBuilder) checkCprj() error {
 }
 
 func (b CprjBuilder) clean(dirs builder.BuildDirs, vars builder.InternalVars) (err error) {
+	fileName := filepath.Base(b.InputFile)
+	fileName = fileName[:len(fileName)-len(filepath.Ext(fileName))]
+	log.Info("Cleaning context: \"" + fileName + "\"")
+
 	if _, err := os.Stat(dirs.IntDir); !os.IsNotExist(err) {
 		_, err = b.Runner.ExecuteCommand(vars.CbuildgenBin, false, "rmdir", dirs.IntDir)
 		if err != nil {

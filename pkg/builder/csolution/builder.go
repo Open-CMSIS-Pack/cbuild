@@ -195,40 +195,42 @@ func (b CSolutionBuilder) getSetFilePath() (string, error) {
 }
 
 func (b CSolutionBuilder) getProjsBuilders(selectedContexts []string) (projBuilders []builder.IBuilderInterface, err error) {
-	for _, context := range selectedContexts {
-		infoMsg := "Retrieve build information for context: \"" + context + "\""
-		log.Info(infoMsg)
+	buildOptions := b.Options
 
-		// if --output is used, ignore provided --outdir and --intdir
-		if b.Options.Output != "" && (b.Options.OutDir != "" || b.Options.IntDir != "") {
-			log.Warn("output files are generated under: \"" +
-				b.Options.Output + "\". Options --outdir and --intdir shall be ignored.")
+	// Set XML schema check to false, when input is yml
+	if b.Options.Schema {
+		buildOptions.Schema = false
+	}
+
+	idxFile, err := b.getIdxFilePath()
+	if err != nil {
+		return projBuilders, err
+	}
+
+	var projBuilder builder.IBuilderInterface
+	if b.Options.UseCbuild2CMake {
+		buildOptions.Contexts = selectedContexts
+		// get idx builder
+		projBuilder = cbuildidx.CbuildIdxBuilder{
+			BuilderParams: builder.BuilderParams{
+				Runner:         b.Runner,
+				Options:        buildOptions,
+				InputFile:      idxFile,
+				InstallConfigs: b.InstallConfigs,
+			},
 		}
+		projBuilders = append(projBuilders, projBuilder)
+	} else {
+		for _, context := range selectedContexts {
+			infoMsg := "Retrieve build information for context: \"" + context + "\""
+			log.Info(infoMsg)
 
-		idxFile, err := b.getIdxFilePath()
-		if err != nil {
-			return projBuilders, err
-		}
-
-		buildOptions := b.Options
-		// Set XML schema check to false, when input is yml
-		if b.Options.Schema {
-			buildOptions.Schema = false
-		}
-
-		var projBuilder builder.IBuilderInterface
-		if b.Options.UseCbuild2CMake {
-			buildOptions.Contexts = []string{context}
-			// get cprj builder
-			projBuilder = cbuildidx.CbuildIdxBuilder{
-				BuilderParams: builder.BuilderParams{
-					Runner:         b.Runner,
-					Options:        buildOptions,
-					InputFile:      idxFile,
-					InstallConfigs: b.InstallConfigs,
-				},
+			// if --output is used, ignore provided --outdir and --intdir
+			if b.Options.Output != "" && (b.Options.OutDir != "" || b.Options.IntDir != "") {
+				log.Warn("output files are generated under: \"" +
+					b.Options.Output + "\". Options --outdir and --intdir shall be ignored.")
 			}
-		} else {
+
 			cprjFile, err := b.getCprjFilePath(idxFile, context)
 			if err != nil {
 				log.Error("error getting cprj file: " + err.Error())
@@ -244,8 +246,8 @@ func (b CSolutionBuilder) getProjsBuilders(selectedContexts []string) (projBuild
 					InstallConfigs: b.InstallConfigs,
 				},
 			}
+			projBuilders = append(projBuilders, projBuilder)
 		}
-		projBuilders = append(projBuilders, projBuilder)
 	}
 	return projBuilders, err
 }
@@ -276,10 +278,11 @@ func (b CSolutionBuilder) getBuilderInputFile(builder builder.IBuilderInterface)
 	return inputFile
 }
 
-func (b CSolutionBuilder) cleanContexts(selectedContexts []string, projBuilders []builder.IBuilderInterface) (err error) {
+// func (b CSolutionBuilder) cleanContexts(selectedContexts []string, projBuilders []builder.IBuilderInterface) (err error) {
+func (b CSolutionBuilder) cleanContexts(projBuilders []builder.IBuilderInterface) (err error) {
 	for index := range projBuilders {
-		infoMsg := "Cleaning context: \"" + selectedContexts[index] + "\""
-		log.Info(infoMsg)
+		// infoMsg := "Cleaning context: \"" + selectedContexts[index] + "\""
+		// log.Info(infoMsg)
 
 		b.setBuilderOptions(&projBuilders[index], true)
 		err = projBuilders[index].Build()
@@ -292,12 +295,16 @@ func (b CSolutionBuilder) cleanContexts(selectedContexts []string, projBuilders 
 
 func (b CSolutionBuilder) buildContexts(selectedContexts []string, projBuilders []builder.IBuilderInterface) (err error) {
 	for index := range projBuilders {
-		progress := fmt.Sprintf("(%s/%d)", strconv.Itoa(index+1), len(selectedContexts))
-		infoMsg := progress + " Building context: \"" + selectedContexts[index] + "\""
+		var infoMsg string
+		if b.Options.UseContextSet {
+			infoMsg = " Building " + b.InputFile
+		} else {
+			progress := fmt.Sprintf("(%s/%d)", strconv.Itoa(index+1), len(selectedContexts))
+			infoMsg = progress + " Building context: \"" + selectedContexts[index] + "\""
+		}
 		sep := strings.Repeat("=", len(infoMsg)+13) + "\n"
 		_, _ = log.StandardLogger().Out.Write([]byte(sep))
 		log.Info(infoMsg)
-
 		b.setBuilderOptions(&projBuilders[index], false)
 		err = projBuilders[index].Build()
 		if err != nil {
@@ -480,7 +487,7 @@ func (b CSolutionBuilder) Build() (err error) {
 
 	// clean all selected contexts when rebuild or clean are requested
 	if b.Options.Rebuild || b.Options.Clean {
-		err = b.cleanContexts(selectedContexts, projBuilders)
+		err = b.cleanContexts(projBuilders)
 		if b.Options.Clean || err != nil {
 			return err
 		}

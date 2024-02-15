@@ -79,14 +79,11 @@ func TestGetDirs(t *testing.T) {
 		builder.BuilderParams{
 			Runner:    RunnerMock{},
 			InputFile: filepath.Join(testRoot, testDir, "Hello.cbuild-idx.yml"),
-			Options: builder.Options{
-				Contexts: []string{"Hello.Debug+AVH"},
-			},
 		},
 	}
 
-	t.Run("test valid directories in cprj", func(t *testing.T) {
-		dirs, err := b.getDirs()
+	t.Run("test valid directories", func(t *testing.T) {
+		dirs, err := b.getDirs("Hello.Debug+AVH")
 		assert.Nil(err)
 		intDir, _ := filepath.Abs(filepath.Join(testRoot, testDir, "tmp"))
 		outDir, _ := filepath.Abs(filepath.Join(testRoot, testDir, "out/AVH"))
@@ -97,7 +94,7 @@ func TestGetDirs(t *testing.T) {
 	t.Run("test valid directories as arguments", func(t *testing.T) {
 		b.Options.IntDir = "cmdOptionsIntDir"
 		b.Options.OutDir = "cmdOptionsOutDir"
-		dirs, err := b.getDirs()
+		dirs, err := b.getDirs("Hello.Debug+AVH")
 		assert.Nil(err)
 		intDir, _ := filepath.Abs(filepath.Join(testRoot, testDir, "tmp"))
 		outDir, _ := filepath.Abs(b.Options.OutDir)
@@ -105,9 +102,9 @@ func TestGetDirs(t *testing.T) {
 		assert.Equal(outDir, dirs.OutDir)
 	})
 
-	t.Run("test invalid cprj", func(t *testing.T) {
+	t.Run("test invalid cbuild-idx", func(t *testing.T) {
 		b.InputFile = filepath.Join(testRoot, testDir, "invalid-file.cbuild-idx.yml")
-		_, err := b.getDirs()
+		_, err := b.getDirs("Hello.Debug+AVH")
 		assert.Error(err)
 	})
 }
@@ -173,19 +170,19 @@ func TestBuild(t *testing.T) {
 		assert.Nil(err)
 	})
 
-	t.Run("test build cprj quiet", func(t *testing.T) {
+	t.Run("test build cbuild-idx quiet", func(t *testing.T) {
 		b.Options.Quiet = true
 		err := b.Build()
 		assert.Nil(err)
 	})
 
-	t.Run("test build cprj debug", func(t *testing.T) {
+	t.Run("test build cbuild-idx debug", func(t *testing.T) {
 		b.Options.Debug = true
 		err := b.Build()
 		assert.Nil(err)
 	})
 
-	t.Run("test rebuild cprj", func(t *testing.T) {
+	t.Run("test rebuild cbuild-idx", func(t *testing.T) {
 		b.Options.Rebuild = true
 		err := b.Build()
 		assert.Nil(err)
@@ -218,7 +215,7 @@ func TestBuild(t *testing.T) {
 		assert.Nil(err)
 	})
 
-	t.Run("test clean cprj", func(t *testing.T) {
+	t.Run("test clean cbuild-idx", func(t *testing.T) {
 		b.Options.Clean = true
 		err := b.Build()
 		assert.Nil(err)

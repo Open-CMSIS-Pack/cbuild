@@ -61,14 +61,9 @@ func (b CbuildIdxBuilder) clean(dirs builder.BuildDirs, vars builder.InternalVar
 	return nil
 }
 
-func (b CbuildIdxBuilder) getDirs() (dirs builder.BuildDirs, err error) {
+func (b CbuildIdxBuilder) getDirs(context string) (dirs builder.BuildDirs, err error) {
 	if _, err := os.Stat(b.InputFile); os.IsNotExist(err) {
 		log.Error("file " + b.InputFile + " does not exist")
-		return dirs, err
-	}
-
-	if len(b.Options.Contexts) != 1 {
-		err = errors.New("error invalid context(s) process request")
 		return dirs, err
 	}
 
@@ -88,7 +83,7 @@ func (b CbuildIdxBuilder) getDirs() (dirs builder.BuildDirs, err error) {
 	if dirs.OutDir == "" {
 		// get output directory from cbuild.yml file
 		path := filepath.Dir(b.InputFile)
-		cbuildFile := filepath.Join(path, b.Options.Contexts[0]+".cbuild.yml")
+		cbuildFile := filepath.Join(path, context+".cbuild.yml")
 		_, outDir, err := GetBuildDirs(cbuildFile)
 		if err != nil {
 			log.Error("error parsing file: " + cbuildFile)
@@ -127,18 +122,28 @@ func (b CbuildIdxBuilder) Build() error {
 
 	_ = utils.UpdateEnvVars(vars.BinPath, vars.EtcPath)
 
-	dirs, err := b.getDirs()
-	if err != nil {
+	if len(b.Options.Contexts) == 0 {
+		err = errors.New("error no context(s) to process")
 		return err
 	}
 
-	if b.Options.Rebuild {
-		err = b.clean(dirs, vars)
-		if err != nil {
-			return err
+	dirs := builder.BuildDirs{
+		IntDir: filepath.Join(filepath.Dir(b.InputFile), "tmp"),
+	}
+
+	if b.Options.Clean {
+		for _, context := range b.Options.Contexts {
+			dirs, err := b.getDirs(context)
+			if err != nil {
+				return err
+			}
+
+			log.Info("Cleaning context: \"" + context + "\"")
+			if err := b.clean(dirs, vars); err != nil {
+				return err
+			}
 		}
-	} else if b.Options.Clean {
-		return b.clean(dirs, vars)
+		return nil
 	}
 
 	args := []string{b.InputFile}
@@ -151,7 +156,6 @@ func (b CbuildIdxBuilder) Build() error {
 		log.Error("error executing 'cbuild2cmake " + b.InputFile + "'")
 		return err
 	}
-
 	if _, err := os.Stat(dirs.IntDir + "/CMakeLists.txt"); errors.Is(err, os.ErrNotExist) {
 		return err
 	}
@@ -160,7 +164,6 @@ func (b CbuildIdxBuilder) Build() error {
 		log.Error("cmake was not found")
 		return err
 	}
-
 	if b.Options.Generator == "" {
 		b.Options.Generator = "Ninja"
 		if vars.NinjaBin == "" {
@@ -169,6 +172,7 @@ func (b CbuildIdxBuilder) Build() error {
 		}
 	}
 
+	// CMake configuration command
 	args = []string{"-G", b.Options.Generator, "-S", dirs.IntDir, "-B", dirs.IntDir}
 	if b.Options.Debug {
 		args = append(args, "-Wdev")
@@ -186,15 +190,13 @@ func (b CbuildIdxBuilder) Build() error {
 		return err
 	}
 
+	// CMake build target(s) command
 	args = []string{"--build", dirs.IntDir, "-j", fmt.Sprintf("%d", b.GetJobs())}
-
-	if len(b.Options.Contexts) == 1 {
-		args = append(args, "--target", b.Options.Contexts[0])
-		args = append(args, "--target", b.Options.Contexts[0]+"-database")
-	} else {
-		err = errors.New("error invalid context(s) process request")
-		return err
+	for _, context := range b.Options.Contexts {
+		args = append(args, "--target", context)
+		args = append(args, "--target", context+"-database")
 	}
+
 	if b.Options.Debug || b.Options.Verbose {
 		args = append(args, "--verbose")
 	}
