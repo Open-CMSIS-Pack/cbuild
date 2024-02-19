@@ -129,29 +129,31 @@ func NewRootCmd() *cobra.Command {
 			toolchain, _ := cmd.Flags().GetString("toolchain")
 			useContextSet, _ := cmd.Flags().GetBool("context-set")
 			frozenPacks, _ := cmd.Flags().GetBool("frozen-packs")
+			useCbuild2CMake, _ := cmd.Flags().GetBool("cbuild2cmake")
 
 			options := builder.Options{
-				IntDir:        intDir,
-				OutDir:        outDir,
-				LockFile:      lockFile,
-				LogFile:       logFile,
-				Generator:     generator,
-				Target:        target,
-				Jobs:          jobs,
-				Quiet:         quiet,
-				Debug:         debug,
-				Verbose:       verbose,
-				Clean:         clean,
-				Schema:        schema,
-				Packs:         packs,
-				Rebuild:       rebuild,
-				UpdateRte:     updateRte,
-				Contexts:      contexts,
-				UseContextSet: useContextSet,
-				Load:          load,
-				Output:        output,
-				Toolchain:     toolchain,
-				FrozenPacks:   frozenPacks,
+				IntDir:          intDir,
+				OutDir:          outDir,
+				LockFile:        lockFile,
+				LogFile:         logFile,
+				Generator:       generator,
+				Target:          target,
+				Jobs:            jobs,
+				Quiet:           quiet,
+				Debug:           debug,
+				Verbose:         verbose,
+				Clean:           clean,
+				Schema:          schema,
+				Packs:           packs,
+				Rebuild:         rebuild,
+				UpdateRte:       updateRte,
+				Contexts:        contexts,
+				UseContextSet:   useContextSet,
+				Load:            load,
+				Output:          output,
+				Toolchain:       toolchain,
+				FrozenPacks:     frozenPacks,
+				UseCbuild2CMake: useCbuild2CMake,
 			}
 
 			configs, err := utils.GetInstallConfigs()
@@ -208,6 +210,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.PersistentFlags().BoolP("schema", "s", false, "Validate project input file(s) against schema")
 	rootCmd.PersistentFlags().StringP("log", "", "", "Save output messages in a log file")
 	rootCmd.PersistentFlags().StringP("toolchain", "", "", "Input toolchain to be used")
+	rootCmd.Flags().BoolP("cbuild2cmake", "", false, "Use cbuild2cmake")
 
 	// CPRJ specific hidden flags
 	rootCmd.Flags().StringP("intdir", "i", "", "Set directory for intermediate files")
