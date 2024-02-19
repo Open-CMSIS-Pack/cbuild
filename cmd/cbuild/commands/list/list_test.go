@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Arm Limited. All rights reserved.
+ * Copyright (c) 2023-2024 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -14,6 +14,7 @@ import (
 )
 
 const testRoot = "../../../../test"
+const testDir = "command"
 
 func TestListCommand(t *testing.T) {
 	assert := assert.New(t)

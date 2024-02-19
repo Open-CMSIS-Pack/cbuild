@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Arm Limited. All rights reserved.
+ * Copyright (c) 2023-2024 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -14,36 +14,42 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"time"
 
 	cp "github.com/otiai10/copy"
 )
 
-func TestInitialization(testRoot string) {
+func TestInitialization(testRoot string, testDir string) {
+	CleanUp(testRoot, testDir)
+	testDirPath := testRoot + "/" + testDir
 	// Prepare test data
-	_ = os.RemoveAll(testRoot + "/run")
-	time.Sleep(2 * time.Second)
-	_ = cp.Copy(testRoot+"/data", testRoot+"/run")
-
-	_ = os.MkdirAll(testRoot+"/run/bin", 0755)
-	_ = os.MkdirAll(testRoot+"/run/etc", 0755)
-	_ = os.MkdirAll(testRoot+"/run/packs", 0755)
-	_ = os.MkdirAll(testRoot+"/run/IntDir", 0755)
-	_ = os.MkdirAll(testRoot+"/run/OutDir", 0755)
+	_ = cp.Copy(testRoot+"/data", testDirPath)
+	_ = os.MkdirAll(testDirPath+"/bin", 0755)
+	_ = os.MkdirAll(testDirPath+"/etc", 0755)
+	_ = os.MkdirAll(testDirPath+"/packs", 0755)
+	_ = os.MkdirAll(testDirPath+"/IntDir", 0755)
+	_ = os.MkdirAll(testDirPath+"/OutDir", 0755)
 
 	var binExtension string
 	if runtime.GOOS == "windows" {
 		binExtension = ".exe"
 	}
-	cbuildgenBin := testRoot + "/run/bin/cbuildgen" + binExtension
+	cbuildgenBin := testDirPath + "/bin/cbuildgen" + binExtension
 	file, _ := os.Create(cbuildgenBin)
 	defer file.Close()
-	csolutionBin := testRoot + "/run/bin/csolution" + binExtension
+	csolutionBin := testDirPath + "/bin/csolution" + binExtension
 	file, _ = os.Create(csolutionBin)
 	defer file.Close()
-	cpackgetBin := testRoot + "/run/bin/cpackget" + binExtension
+	cpackgetBin := testDirPath + "/bin/cpackget" + binExtension
 	file, _ = os.Create(cpackgetBin)
 	defer file.Close()
+	cbuild2cmakeBin := testDirPath + "/bin/cbuild2cmake" + binExtension
+	file, _ = os.Create(cbuild2cmakeBin)
+	defer file.Close()
+}
+
+func CleanUp(testRoot string, testDir string) {
+	testDirPath := testRoot + "/" + testDir
+	_ = os.RemoveAll(testDirPath)
 }
 
 type TestConfigs struct {
@@ -52,11 +58,11 @@ type TestConfigs struct {
 	BinExtn string
 }
 
-func GetTestConfigs(testRoot string) (configs TestConfigs) {
+func GetTestConfigs(testRoot string, testDir string) (configs TestConfigs) {
 	if runtime.GOOS == "windows" {
 		configs.BinExtn = ".exe"
 	}
-	configs.BinPath, _ = filepath.Abs(testRoot + "/run/bin")
-	configs.EtcPath, _ = filepath.Abs(testRoot + "/run/etc")
+	configs.BinPath, _ = filepath.Abs(testRoot + "/" + testDir + "/bin")
+	configs.EtcPath, _ = filepath.Abs(testRoot + "/" + testDir + "/etc")
 	return configs
 }

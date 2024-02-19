@@ -16,6 +16,7 @@ import (
 	"strings"
 
 	builder "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder"
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder/cbuildidx"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder/cproject"
 	utils "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
 	log "github.com/sirupsen/logrus"
@@ -193,74 +194,121 @@ func (b CSolutionBuilder) getSetFilePath() (string, error) {
 	return setFilePath, nil
 }
 
-func (b CSolutionBuilder) getCprjsBuilders(selectedContexts []string) (cprjBuilders []cproject.CprjBuilder, err error) {
-	for _, context := range selectedContexts {
-		infoMsg := "Retrieve build information for context: \"" + context + "\""
-		log.Info(infoMsg)
+func (b CSolutionBuilder) getProjsBuilders(selectedContexts []string) (projBuilders []builder.IBuilderInterface, err error) {
+	buildOptions := b.Options
 
-		// if --output is used, ignore provided --outdir and --intdir
-		if b.Options.Output != "" && (b.Options.OutDir != "" || b.Options.IntDir != "") {
-			log.Warn("output files are generated under: \"" +
-				b.Options.Output + "\". Options --outdir and --intdir shall be ignored.")
-		}
+	// Set XML schema check to false, when input is yml
+	if b.Options.Schema {
+		buildOptions.Schema = false
+	}
 
-		idxFile, err := b.getIdxFilePath()
-		if err != nil {
-			return cprjBuilders, err
-		}
+	idxFile, err := b.getIdxFilePath()
+	if err != nil {
+		return projBuilders, err
+	}
 
-		cprjFile, err := b.getCprjFilePath(idxFile, context)
-		if err != nil {
-			log.Error("error getting cprj file: " + err.Error())
-			return cprjBuilders, err
-		}
-
-		// get cprj builder
-		cprjBuilder := cproject.CprjBuilder{
+	var projBuilder builder.IBuilderInterface
+	if b.Options.UseCbuild2CMake {
+		buildOptions.Contexts = selectedContexts
+		// get idx builder
+		projBuilder = cbuildidx.CbuildIdxBuilder{
 			BuilderParams: builder.BuilderParams{
 				Runner:         b.Runner,
-				Options:        b.Options,
-				InputFile:      cprjFile,
+				Options:        buildOptions,
+				InputFile:      idxFile,
 				InstallConfigs: b.InstallConfigs,
 			},
 		}
+		projBuilders = append(projBuilders, projBuilder)
+	} else {
+		for _, context := range selectedContexts {
+			infoMsg := "Retrieve build information for context: \"" + context + "\""
+			log.Info(infoMsg)
 
-		// Set XML schema check to false, when input is yml
-		if b.Options.Schema {
-			cprjBuilder.Options.Schema = false
+			// if --output is used, ignore provided --outdir and --intdir
+			if b.Options.Output != "" && (b.Options.OutDir != "" || b.Options.IntDir != "") {
+				log.Warn("output files are generated under: \"" +
+					b.Options.Output + "\". Options --outdir and --intdir shall be ignored.")
+			}
+
+			cprjFile, err := b.getCprjFilePath(idxFile, context)
+			if err != nil {
+				log.Error("error getting cprj file: " + err.Error())
+				return projBuilders, err
+			}
+
+			// get cprj builder
+			projBuilder = cproject.CprjBuilder{
+				BuilderParams: builder.BuilderParams{
+					Runner:         b.Runner,
+					Options:        buildOptions,
+					InputFile:      cprjFile,
+					InstallConfigs: b.InstallConfigs,
+				},
+			}
+			projBuilders = append(projBuilders, projBuilder)
 		}
-
-		cprjBuilders = append(cprjBuilders, cprjBuilder)
 	}
-	return cprjBuilders, err
+	return projBuilders, err
 }
 
-func (b CSolutionBuilder) cleanContexts(selectedContexts []string, cprjBuilders []cproject.CprjBuilder) (err error) {
-	for index, cprjBuilder := range cprjBuilders {
-		infoMsg := "Cleaning context: \"" + selectedContexts[index] + "\""
-		log.Info(infoMsg)
+func (b CSolutionBuilder) setBuilderOptions(builder *builder.IBuilderInterface, clean bool) {
+	if b.Options.UseCbuild2CMake {
+		idxBuilder := (*builder).(cbuildidx.CbuildIdxBuilder)
+		idxBuilder.Options.Rebuild = false
+		idxBuilder.Options.Clean = clean
+		(*builder) = idxBuilder
+	} else {
+		cprjBuilder := (*builder).(cproject.CprjBuilder)
 		cprjBuilder.Options.Rebuild = false
-		cprjBuilder.Options.Clean = true
-		err = cprjBuilder.Build()
+		cprjBuilder.Options.Clean = clean
+		(*builder) = cprjBuilder
+	}
+}
+
+func (b CSolutionBuilder) getBuilderInputFile(builder builder.IBuilderInterface) string {
+	var inputFile string
+	if b.Options.UseCbuild2CMake {
+		idxBuilder := builder.(cbuildidx.CbuildIdxBuilder)
+		inputFile = idxBuilder.InputFile
+	} else {
+		cprjBuilder := builder.(cproject.CprjBuilder)
+		inputFile = cprjBuilder.InputFile
+	}
+	return inputFile
+}
+
+// func (b CSolutionBuilder) cleanContexts(selectedContexts []string, projBuilders []builder.IBuilderInterface) (err error) {
+func (b CSolutionBuilder) cleanContexts(projBuilders []builder.IBuilderInterface) (err error) {
+	for index := range projBuilders {
+		// infoMsg := "Cleaning context: \"" + selectedContexts[index] + "\""
+		// log.Info(infoMsg)
+
+		b.setBuilderOptions(&projBuilders[index], true)
+		err = projBuilders[index].Build()
 		if err != nil {
-			log.Error("error cleaning '" + cprjBuilder.InputFile + "'")
+			log.Error("error cleaning '" + b.getBuilderInputFile(projBuilders[index]) + "'")
 		}
 	}
 	return
 }
 
-func (b CSolutionBuilder) buildContexts(selectedContexts []string, cprjBuilders []cproject.CprjBuilder) (err error) {
-	for index, cprjBuilder := range cprjBuilders {
-		progress := fmt.Sprintf("(%s/%d)", strconv.Itoa(index+1), len(selectedContexts))
-		infoMsg := progress + " Building context: \"" + selectedContexts[index] + "\""
+func (b CSolutionBuilder) buildContexts(selectedContexts []string, projBuilders []builder.IBuilderInterface) (err error) {
+	for index := range projBuilders {
+		var infoMsg string
+		if b.Options.UseContextSet {
+			infoMsg = " Building " + b.InputFile
+		} else {
+			progress := fmt.Sprintf("(%s/%d)", strconv.Itoa(index+1), len(selectedContexts))
+			infoMsg = progress + " Building context: \"" + selectedContexts[index] + "\""
+		}
 		sep := strings.Repeat("=", len(infoMsg)+13) + "\n"
 		_, _ = log.StandardLogger().Out.Write([]byte(sep))
 		log.Info(infoMsg)
-		cprjBuilder.Options.Rebuild = false
-		cprjBuilder.Options.Clean = false
-		err = cprjBuilder.Build()
+		b.setBuilderOptions(&projBuilders[index], false)
+		err = projBuilders[index].Build()
 		if err != nil {
-			log.Error("error building '" + cprjBuilder.InputFile + "'")
+			log.Error("error building '" + b.getBuilderInputFile(projBuilders[index]) + "'")
 		}
 	}
 	return
@@ -431,21 +479,21 @@ func (b CSolutionBuilder) Build() (err error) {
 	totalContexts := strconv.Itoa(len(selectedContexts))
 	log.Info("Processing " + totalContexts + " context(s)")
 
-	// get cprj builder for each selected context
-	cprjsBuilders, err := b.getCprjsBuilders(selectedContexts)
+	// get builder for each selected context
+	projBuilders, err := b.getProjsBuilders(selectedContexts)
 	if err != nil {
 		return err
 	}
 
 	// clean all selected contexts when rebuild or clean are requested
 	if b.Options.Rebuild || b.Options.Clean {
-		err = b.cleanContexts(selectedContexts, cprjsBuilders)
+		err = b.cleanContexts(projBuilders)
 		if b.Options.Clean || err != nil {
 			return err
 		}
 	}
 
 	// build all selected contexts
-	err = b.buildContexts(selectedContexts, cprjsBuilders)
+	err = b.buildContexts(selectedContexts, projBuilders)
 	return err
 }

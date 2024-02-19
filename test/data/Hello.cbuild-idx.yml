@@ -1,0 +1,13 @@
+build-idx:
+  generated-by: csolution version 2.2.1
+  cdefault: ${CMSIS_COMPILER_ROOT}/cdefault.yml
+  csolution: Hello.csolution.yml
+  cprojects:
+    - cproject: Hello.cproject.yml
+  cbuilds:
+    - cbuild: Hello.Debug+AVH.cbuild.yml
+      project: Hello
+      configuration: .Debug+AVH
+    - cbuild: Hello.Release+AVH.cbuild.yml
+      project: Hello
+      configuration: .Release+AVH
