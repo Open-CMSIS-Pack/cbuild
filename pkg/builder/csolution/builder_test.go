@@ -305,6 +305,9 @@ func TestInstallMissingPacks(t *testing.T) {
 				BinExtn: configs.BinExtn,
 				EtcPath: configs.EtcPath,
 			},
+			Options: builder.Options{
+				Packs: true,
+			},
 		},
 	}
 
@@ -319,6 +322,12 @@ func TestInstallMissingPacks(t *testing.T) {
 		err := b.installMissingPacks()
 		b.InstallConfigs.BinExtn = binExtn
 		assert.Error(err)
+	})
+
+	t.Run("test install missing packs with no --pack arg", func(t *testing.T) {
+		b.Options.Packs = false
+		err := b.installMissingPacks()
+		assert.Nil(err)
 	})
 }
 
@@ -443,9 +452,8 @@ func TestFormulateArg(t *testing.T) {
 	}
 
 	t.Run("test default arg", func(t *testing.T) {
-		args, err := b.formulateArgs([]string{"convert"})
+		args := b.formulateArgs([]string{"convert"})
 		strArg := utils.NormalizePath(strings.Join(args, " "))
-		assert.Nil(err)
 		assert.Equal("convert --solution=../../../test/"+testDir+"/Test.csolution.yml --no-check-schema --no-update-rte", strArg)
 	})
 
@@ -455,9 +463,8 @@ func TestFormulateArg(t *testing.T) {
 			Contexts:      []string{"test.Debug+Target", "test.Release+Target"},
 			UseContextSet: true,
 		}
-		args, err := b.formulateArgs([]string{"convert"})
+		args := b.formulateArgs([]string{"convert"})
 		strArg := utils.NormalizePath(strings.Join(args, " "))
-		assert.Nil(err)
 		assert.Equal("convert --solution=../../../test/"+testDir+"/Test.csolution.yml --no-check-schema --no-update-rte --context=test.Debug+Target --context=test.Release+Target --context-set", strArg)
 	})
 }
@@ -474,7 +481,7 @@ func TestGetCbuildSetFilePath(t *testing.T) {
 	t.Run("test invalid input file", func(t *testing.T) {
 		b.InputFile = filepath.Join(testRoot, testDir, "TestSolution/invalid_file.yml")
 
-		path, err := b.getSetFilePath()
+		path, err := b.getCbuildSetFilePath()
 		assert.Error(err)
 		assert.Equal(path, "")
 	})
@@ -482,7 +489,7 @@ func TestGetCbuildSetFilePath(t *testing.T) {
 	t.Run("test get cbuild-set file path", func(t *testing.T) {
 		b.InputFile = filepath.Join(testRoot, testDir, "TestSolution/test.csolution.yml")
 
-		path, err := b.getSetFilePath()
+		path, err := b.getCbuildSetFilePath()
 		assert.Nil(err)
 		assert.Equal(path, utils.NormalizePath(filepath.Join(testRoot, testDir, "TestSolution/test.cbuild-set.yml")))
 	})

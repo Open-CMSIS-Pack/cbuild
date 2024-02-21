@@ -21,6 +21,7 @@ type BuilderParams struct {
 	Options        Options
 	InputFile      string
 	InstallConfigs utils.Configurations
+	Setup          bool
 }
 
 type Options struct {

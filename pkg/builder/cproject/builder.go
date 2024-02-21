@@ -105,7 +105,6 @@ func (b CprjBuilder) getDirs() (dirs builder.BuildDirs, err error) {
 }
 
 func (b CprjBuilder) Build() error {
-
 	b.InputFile, _ = filepath.Abs(b.InputFile)
 	err := b.checkCprj()
 	if err != nil {
@@ -244,6 +243,11 @@ func (b CprjBuilder) Build() error {
 	}
 
 	args = []string{"--build", dirs.IntDir, "-j", fmt.Sprintf("%d", b.GetJobs())}
+
+	if b.Setup {
+		args = append(args, "--target", "database")
+	}
+
 	if b.Options.Target != "" {
 		args = append(args, "--target", b.Options.Target)
 	}
@@ -261,6 +265,10 @@ func (b CprjBuilder) Build() error {
 		return err
 	}
 
-	log.Info("build finished successfully!")
+	operation := "build"
+	if b.Setup {
+		operation = "set up"
+	}
+	log.Info(operation + " finished successfully!")
 	return nil
 }

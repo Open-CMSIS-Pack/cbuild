@@ -26,7 +26,7 @@ type CSolutionBuilder struct {
 	builder.BuilderParams
 }
 
-func (b CSolutionBuilder) formulateArgs(command []string) (args []string, err error) {
+func (b CSolutionBuilder) formulateArgs(command []string) (args []string) {
 	// formulate csolution arguments
 	args = append(args, command...)
 
@@ -65,7 +65,6 @@ func (b CSolutionBuilder) formulateArgs(command []string) (args []string, err er
 	if b.Options.FrozenPacks {
 		args = append(args, "--frozen-packs")
 	}
-
 	return
 }
 
@@ -81,11 +80,11 @@ func (b CSolutionBuilder) runCSolution(args []string, quiet bool) (output string
 }
 
 func (b CSolutionBuilder) installMissingPacks() (err error) {
-	args, err := b.formulateArgs([]string{"list", "packs"})
-	if err != nil {
-		log.Error("error in getting list of missing packs")
-		return
+	if !b.Options.Packs {
+		return nil
 	}
+
+	args := b.formulateArgs([]string{"list", "packs"})
 	args = append(args, "-m")
 
 	// Get list of missing packs
@@ -105,7 +104,7 @@ func (b CSolutionBuilder) installMissingPacks() (err error) {
 		args = []string{"add", pack, "--force-reinstall", "--agree-embedded-license"}
 		cpackgetBin := filepath.Join(b.InstallConfigs.BinPath, "cpackget"+b.InstallConfigs.BinExtn)
 		if _, err := os.Stat(cpackgetBin); os.IsNotExist(err) {
-			log.Error("cpackget was not found")
+			log.Error("error cpackget not found")
 			return err
 		}
 
@@ -116,6 +115,53 @@ func (b CSolutionBuilder) installMissingPacks() (err error) {
 		}
 	}
 	return nil
+}
+
+func (b CSolutionBuilder) generateBuildFiles() (err error) {
+	args := b.formulateArgs([]string{"convert"})
+
+	cbuildSetFile, err := b.getCbuildSetFilePath()
+	if err != nil {
+		return err
+	}
+	_, err = os.Stat(cbuildSetFile)
+
+	// when using "cbuild setup *.csolution -S" with no existing cbuild-set file
+	// Select first target-type and the first build-type for each project
+	if b.Setup && b.Options.UseContextSet &&
+		(len(b.Options.Contexts) == 0) && errors.Is(err, os.ErrNotExist) {
+		allContexts, err := b.listContexts(true, true)
+		if err != nil {
+			log.Error("error getting list of contexts: \"" + err.Error() + "\"")
+			return err
+		}
+
+		if len(allContexts) == 0 {
+			return errors.New("error no context(s) found")
+		}
+
+		context, err := utils.ParseContext(allContexts[0])
+		if err != nil {
+			return err
+		}
+
+		buildTypePattern := context.BuildType
+		if context.BuildType == "" {
+			buildTypePattern = "*"
+		}
+		searchPattern := "." + buildTypePattern + "+" + context.TargetType
+		selectedContexts, err := utils.ResolveContexts(allContexts, []string{searchPattern})
+		if err != nil {
+			return err
+		}
+
+		for index := range selectedContexts {
+			args = append(args, "--context="+selectedContexts[index])
+		}
+	}
+
+	_, err = b.runCSolution(args, false)
+	return err
 }
 
 func (b CSolutionBuilder) getCprjFilePath(idxFile string, context string) (string, error) {
@@ -184,13 +230,13 @@ func (b CSolutionBuilder) getIdxFilePath() (string, error) {
 	return idxFilePath, nil
 }
 
-func (b CSolutionBuilder) getSetFilePath() (string, error) {
+func (b CSolutionBuilder) getCbuildSetFilePath() (string, error) {
 	projName, err := utils.GetProjectName(b.InputFile)
 	if err != nil {
 		return "", err
 	}
-
 	setFilePath := utils.NormalizePath(filepath.Join(filepath.Dir(b.InputFile), projName+".cbuild-set.yml"))
+
 	return setFilePath, nil
 }
 
@@ -217,6 +263,7 @@ func (b CSolutionBuilder) getProjsBuilders(selectedContexts []string) (projBuild
 				Options:        buildOptions,
 				InputFile:      idxFile,
 				InstallConfigs: b.InstallConfigs,
+				Setup:          b.Setup,
 			},
 		}
 		projBuilders = append(projBuilders, projBuilder)
@@ -244,6 +291,7 @@ func (b CSolutionBuilder) getProjsBuilders(selectedContexts []string) (projBuild
 					Options:        buildOptions,
 					InputFile:      cprjFile,
 					InstallConfigs: b.InstallConfigs,
+					Setup:          b.Setup,
 				},
 			}
 			projBuilders = append(projBuilders, projBuilder)
@@ -278,12 +326,8 @@ func (b CSolutionBuilder) getBuilderInputFile(builder builder.IBuilderInterface)
 	return inputFile
 }
 
-// func (b CSolutionBuilder) cleanContexts(selectedContexts []string, projBuilders []builder.IBuilderInterface) (err error) {
 func (b CSolutionBuilder) cleanContexts(projBuilders []builder.IBuilderInterface) (err error) {
 	for index := range projBuilders {
-		// infoMsg := "Cleaning context: \"" + selectedContexts[index] + "\""
-		// log.Info(infoMsg)
-
 		b.setBuilderOptions(&projBuilders[index], true)
 		err = projBuilders[index].Build()
 		if err != nil {
@@ -294,32 +338,35 @@ func (b CSolutionBuilder) cleanContexts(projBuilders []builder.IBuilderInterface
 }
 
 func (b CSolutionBuilder) buildContexts(selectedContexts []string, projBuilders []builder.IBuilderInterface) (err error) {
+	operation := "Building"
+	if b.Setup {
+		operation = "Setting up"
+	}
+
 	for index := range projBuilders {
 		var infoMsg string
 		if b.Options.UseContextSet {
-			infoMsg = " Building " + b.InputFile
+			infoMsg = operation + " \"" + selectedContexts[index] + "\""
 		} else {
 			progress := fmt.Sprintf("(%s/%d)", strconv.Itoa(index+1), len(selectedContexts))
-			infoMsg = progress + " Building context: \"" + selectedContexts[index] + "\""
+			infoMsg = progress + " " + operation + " context: \"" + selectedContexts[index] + "\""
 		}
 		sep := strings.Repeat("=", len(infoMsg)+13) + "\n"
 		_, _ = log.StandardLogger().Out.Write([]byte(sep))
 		log.Info(infoMsg)
+
 		b.setBuilderOptions(&projBuilders[index], false)
+
 		err = projBuilders[index].Build()
 		if err != nil {
-			log.Error("error building '" + b.getBuilderInputFile(projBuilders[index]) + "'")
+			log.Error("error " + strings.ToLower(operation) + " '" + b.getBuilderInputFile(projBuilders[index]) + "'")
 		}
 	}
 	return
 }
 
 func (b CSolutionBuilder) listContexts(quiet bool, ymlOrder bool) (contexts []string, err error) {
-	args, err := b.formulateArgs([]string{"list", "contexts"})
-	if err != nil {
-		return
-	}
-
+	args := b.formulateArgs([]string{"list", "contexts"})
 	if ymlOrder {
 		args = append(args, "--yml-order")
 	}
@@ -337,10 +384,7 @@ func (b CSolutionBuilder) listContexts(quiet bool, ymlOrder bool) (contexts []st
 }
 
 func (b CSolutionBuilder) listToolchains(quiet bool) (toolchains []string, err error) {
-	args, err := b.formulateArgs([]string{"list", "toolchains"})
-	if err != nil {
-		return
-	}
+	args := b.formulateArgs([]string{"list", "toolchains"})
 
 	output, err := b.runCSolution(args, quiet)
 	if err != nil {
@@ -428,30 +472,8 @@ func (b CSolutionBuilder) ListEnvironment() error {
 	return nil
 }
 
-func (b CSolutionBuilder) Build() (err error) {
-	_ = utils.UpdateEnvVars(b.InstallConfigs.BinPath, b.InstallConfigs.EtcPath)
-
-	args, err := b.formulateArgs([]string{"convert"})
-	if err != nil {
-		return
-	}
-
-	// install missing packs when --pack option is specified
-	if b.Options.Packs {
-		if err = b.installMissingPacks(); err != nil {
-			log.Error("error installing missing packs: \"" + err.Error() + "\"")
-			return err
-		}
-	}
-
-	// step1: generate cprj files
-	_, err = b.runCSolution(args, false)
-	if err != nil {
-		return err
-	}
-
+func (b CSolutionBuilder) build() (err error) {
 	var allContexts, selectedContexts []string
-
 	if len(b.Options.Contexts) != 0 && !b.Options.UseContextSet {
 		allContexts, err = b.listContexts(true, true)
 		if err != nil {
@@ -462,7 +484,7 @@ func (b CSolutionBuilder) Build() (err error) {
 	} else {
 		var filePath string
 		if b.Options.UseContextSet {
-			filePath, err = b.getSetFilePath()
+			filePath, err = b.getCbuildSetFilePath()
 		} else {
 			filePath, err = b.getIdxFilePath()
 		}
@@ -493,7 +515,28 @@ func (b CSolutionBuilder) Build() (err error) {
 		}
 	}
 
-	// build all selected contexts
 	err = b.buildContexts(selectedContexts, projBuilders)
+	return err
+}
+
+func (b CSolutionBuilder) Build() (err error) {
+	_ = utils.UpdateEnvVars(b.InstallConfigs.BinPath, b.InstallConfigs.EtcPath)
+
+	// STEP 1: Install missing pack(s)
+	if err = b.installMissingPacks(); err != nil {
+		log.Error("error installing missing packs")
+		return err
+	}
+
+	// STEP 2: Generate build file(s)
+	if err = b.generateBuildFiles(); err != nil {
+		log.Error("error generating build files")
+		return err
+	}
+
+	// STEP 3: Build project(s)
+	if err = b.build(); err != nil {
+		log.Error("error building project(s)")
+	}
 	return err
 }
