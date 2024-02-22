@@ -267,7 +267,7 @@ func (b CprjBuilder) Build() error {
 
 	operation := "build"
 	if b.Setup {
-		operation = "set up"
+		operation = "setup"
 	}
 	log.Info(operation + " finished successfully!")
 	return nil
