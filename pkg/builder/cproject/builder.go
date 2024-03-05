@@ -106,6 +106,8 @@ func (b CprjBuilder) getDirs() (dirs builder.BuildDirs, err error) {
 
 func (b CprjBuilder) Build() error {
 	b.InputFile, _ = filepath.Abs(b.InputFile)
+	b.InputFile = utils.NormalizePath(b.InputFile)
+
 	err := b.checkCprj()
 	if err != nil {
 		return err

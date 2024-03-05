@@ -110,6 +110,7 @@ func (b CbuildIdxBuilder) getDirs(context string) (dirs builder.BuildDirs, err e
 
 func (b CbuildIdxBuilder) Build() error {
 	b.InputFile, _ = filepath.Abs(b.InputFile)
+	b.InputFile = utils.NormalizePath(b.InputFile)
 	err := b.checkCbuildIdx()
 	if err != nil {
 		return err
