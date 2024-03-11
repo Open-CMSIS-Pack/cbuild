@@ -82,8 +82,19 @@ func (b CbuildIdxBuilder) getDirs(context string) (dirs builder.BuildDirs, err e
 
 	if dirs.OutDir == "" {
 		// get output directory from cbuild.yml file
+		data, err := utils.ParseCbuildIndexFile(b.InputFile)
+		if err != nil {
+			return dirs, err
+		}
+		var cbuildFile string
+		for _, cbuild := range data.BuildIdx.Cbuilds {
+			if context == cbuild.Project+cbuild.Configuration {
+				cbuildFile = cbuild.Cbuild
+				break
+			}
+		}
 		path := filepath.Dir(b.InputFile)
-		cbuildFile := filepath.Join(path, context+".cbuild.yml")
+		cbuildFile = filepath.Join(path, cbuildFile)
 		_, outDir, err := GetBuildDirs(cbuildFile)
 		if err != nil {
 			log.Error("error parsing file: " + cbuildFile)
@@ -95,7 +106,7 @@ func (b CbuildIdxBuilder) getDirs(context string) (dirs builder.BuildDirs, err e
 			dirs.OutDir = "OutDir"
 		}
 		if !filepath.IsAbs(dirs.OutDir) {
-			dirs.OutDir = filepath.Join(filepath.Dir(b.InputFile), dirs.OutDir)
+			dirs.OutDir = filepath.Join(filepath.Dir(cbuildFile), dirs.OutDir)
 		}
 	}
 
@@ -149,6 +160,7 @@ func (b CbuildIdxBuilder) Build() error {
 
 	args := []string{b.InputFile}
 	if b.Options.Debug {
+		args = append(args, "--debug")
 		log.Debug("cbuild2cmake command: " + vars.Cbuild2cmakeBin + " " + strings.Join(args, " "))
 	}
 
@@ -196,10 +208,6 @@ func (b CbuildIdxBuilder) Build() error {
 	for _, context := range b.Options.Contexts {
 		args = append(args, "--target", context)
 		args = append(args, "--target", context+"-database")
-	}
-
-	if b.Options.Debug || b.Options.Verbose {
-		args = append(args, "--verbose")
 	}
 
 	if b.Options.Debug {
