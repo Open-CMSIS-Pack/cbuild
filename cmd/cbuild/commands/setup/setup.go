@@ -35,7 +35,6 @@ func SetUpProject(cmd *cobra.Command, args []string) error {
 	target, _ := cmd.Flags().GetString("target")
 	contexts, _ := cmd.Flags().GetStringSlice("context")
 	load, _ := cmd.Flags().GetString("load")
-	output, _ := cmd.Flags().GetString("output")
 	jobs, _ := cmd.Flags().GetInt("jobs")
 	quiet, _ := cmd.Flags().GetBool("quiet")
 	debug, _ := cmd.Flags().GetBool("debug")
@@ -66,7 +65,6 @@ func SetUpProject(cmd *cobra.Command, args []string) error {
 		Contexts:        contexts,
 		UseContextSet:   useContextSet,
 		Load:            load,
-		Output:          output,
 		Toolchain:       toolchain,
 		FrozenPacks:     frozenPacks,
 		UseCbuild2CMake: useCbuild2CMake,
@@ -118,7 +116,6 @@ func init() {
 	SetUpCmd.Flags().StringP("load", "l", "", "Set policy for packs loading [latest | all | required]")
 	SetUpCmd.Flags().IntP("jobs", "j", 0, "Number of job slots for parallel execution")
 	SetUpCmd.Flags().StringP("target", "t", "", "Optional CMake target name")
-	SetUpCmd.Flags().StringP("output", "O", "", "Set directory for all output files")
 	SetUpCmd.Flags().BoolP("schema", "s", true, "Validate project input file(s) against schema")
 	SetUpCmd.Flags().StringP("log", "", "", "Save output messages in a log file")
 	SetUpCmd.Flags().StringP("toolchain", "", "", "Input toolchain to be used")

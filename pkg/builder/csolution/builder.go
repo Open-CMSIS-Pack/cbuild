@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -161,6 +162,18 @@ func (b CSolutionBuilder) generateBuildFiles() (err error) {
 	}
 
 	_, err = b.runCSolution(args, false)
+
+	// Execute this code exclusively upon invocation of the 'setup' command.
+	// Its purpose is to update layer information within the *.cbuild-idx.yml files.
+	if b.Setup {
+		if exitError, ok := err.(*exec.ExitError); ok {
+			if exitError.ExitCode() == 2 {
+				args = []string{"list", "layers", b.InputFile, "--load=all", "--update-idx"}
+				_, err = b.runCSolution(args, false)
+			}
+		}
+	}
+
 	return err
 }
 
