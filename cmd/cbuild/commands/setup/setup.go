@@ -92,7 +92,7 @@ func SetUpProject(cmd *cobra.Command, args []string) error {
 
 var SetUpCmd = &cobra.Command{
 	Use:   "setup <name>.csolution.yml [options]",
-	Short: "Initialize project",
+	Short: "Generate project data for IDE environment",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return SetUpProject(cmd, args)
@@ -109,8 +109,8 @@ func init() {
 	SetUpCmd.Flags().BoolP("packs", "p", false, "Download missing software packs with cpackget")
 	SetUpCmd.Flags().BoolP("rebuild", "r", false, "Remove intermediate and output directories and rebuild")
 	SetUpCmd.Flags().BoolP("update-rte", "", false, "Update the RTE directory and files")
-	SetUpCmd.Flags().BoolP("context-set", "S", false, "Use context set")
-	SetUpCmd.Flags().BoolP("frozen-packs", "", false, "The list of packs from cbuild-pack.yml is frozen and raises error if not up-to-date")
+	SetUpCmd.Flags().BoolP("context-set", "S", false, "Select the context names from cbuild-set.yml for generating the target application")
+	SetUpCmd.Flags().BoolP("frozen-packs", "", false, "Pack list and versions from cbuild-pack.yml are fixed and raises errors if it changes")
 	SetUpCmd.Flags().StringP("generator", "g", "Ninja", "Select build system generator")
 	SetUpCmd.Flags().StringSliceP("context", "c", []string{}, "Input context names [<project-name>][.<build-type>][+<target-type>]")
 	SetUpCmd.Flags().StringP("load", "l", "", "Set policy for packs loading [latest | all | required]")
@@ -119,5 +119,5 @@ func init() {
 	SetUpCmd.Flags().BoolP("schema", "s", true, "Validate project input file(s) against schema")
 	SetUpCmd.Flags().StringP("log", "", "", "Save output messages in a log file")
 	SetUpCmd.Flags().StringP("toolchain", "", "", "Input toolchain to be used")
-	SetUpCmd.Flags().BoolP("cbuild2cmake", "", false, "Use cbuild2cmake")
+	SetUpCmd.Flags().BoolP("cbuild2cmake", "", false, "Use build information files with cbuild2cmake interface (experimental)")
 }
