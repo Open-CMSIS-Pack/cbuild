@@ -129,35 +129,50 @@ func (b CSolutionBuilder) generateBuildFiles() (err error) {
 
 	// when using "cbuild setup *.csolution -S" with no existing cbuild-set file
 	// Select first target-type and the first build-type for each project
-	if b.Setup && b.Options.UseContextSet &&
-		(len(b.Options.Contexts) == 0) && errors.Is(err, os.ErrNotExist) {
+	if b.Setup && b.Options.UseContextSet && (len(b.Options.Contexts) == 0) && errors.Is(err, os.ErrNotExist) {
+		csolution, err := utils.ParseCSolutionFile(b.InputFile)
+		if err != nil {
+			return err
+		}
+
+		var buildType string
+		if len(csolution.Solution.BuildTypes) > 0 {
+			buildType = csolution.Solution.BuildTypes[0].Type
+		} else {
+			buildType = "*"
+		}
+
+		// Determine default context from the parsed solution file
+		context := utils.ContextItem{
+			ProjectName: "*",
+			BuildType:   buildType,
+			TargetType:  csolution.Solution.TargetTypes[0].Type,
+		}
+
+		// Create the default context
+		defaultContext := utils.CreateContext(context)
+
+		// Retrieve all available contexts in yml-order
 		allContexts, err := b.listContexts(true, true)
 		if err != nil {
 			log.Error("error getting list of contexts: \"" + err.Error() + "\"")
 			return err
 		}
 
+		// Ensure at least one context exists
 		if len(allContexts) == 0 {
 			return errors.New("error no context(s) found")
 		}
 
-		context, err := utils.ParseContext(allContexts[0])
+		// Resolve the selected contexts including the default one
+		selectedContexts, err := utils.ResolveContexts(allContexts, []string{defaultContext})
 		if err != nil {
 			return err
 		}
 
-		buildTypePattern := context.BuildType
-		if context.BuildType == "" {
-			buildTypePattern = "*"
-		}
-		searchPattern := "." + buildTypePattern + "+" + context.TargetType
-		selectedContexts, err := utils.ResolveContexts(allContexts, []string{searchPattern})
-		if err != nil {
-			return err
-		}
-
-		for index := range selectedContexts {
-			args = append(args, "--context="+selectedContexts[index])
+		// Append selected contexts to the arguments
+		for _, ctx := range selectedContexts {
+			args = append(args, "--context="+ctx)
 		}
 	}
 
