@@ -200,8 +200,8 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.Flags().BoolP("packs", "p", false, "Download missing software packs with cpackget")
 	rootCmd.Flags().BoolP("rebuild", "r", false, "Remove intermediate and output directories and rebuild")
 	rootCmd.Flags().BoolP("update-rte", "", false, "Update the RTE directory and files")
-	rootCmd.Flags().BoolP("context-set", "S", false, "Use context set")
-	rootCmd.Flags().BoolP("frozen-packs", "", false, "The list of packs from cbuild-pack.yml is frozen and raises error if not up-to-date")
+	rootCmd.Flags().BoolP("context-set", "S", false, "Select the context names from cbuild-set.yml for generating the target application")
+	rootCmd.Flags().BoolP("frozen-packs", "", false, "Pack list and versions from cbuild-pack.yml are fixed and raises errors if it changes")
 	rootCmd.Flags().StringP("generator", "g", "Ninja", "Select build system generator")
 	rootCmd.Flags().StringSliceP("context", "c", []string{}, "Input context names [<project-name>][.<build-type>][+<target-type>]")
 	rootCmd.Flags().StringP("load", "l", "", "Set policy for packs loading [latest | all | required]")
@@ -211,7 +211,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.PersistentFlags().BoolP("schema", "s", false, "Validate project input file(s) against schema")
 	rootCmd.PersistentFlags().StringP("log", "", "", "Save output messages in a log file")
 	rootCmd.PersistentFlags().StringP("toolchain", "", "", "Input toolchain to be used")
-	rootCmd.Flags().BoolP("cbuild2cmake", "", false, "Use cbuild2cmake")
+	rootCmd.Flags().BoolP("cbuild2cmake", "", false, "Use build information files with cbuild2cmake interface (experimental)")
 
 	// CPRJ specific hidden flags
 	rootCmd.Flags().StringP("intdir", "i", "", "Set directory for intermediate files")
