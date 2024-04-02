@@ -343,7 +343,7 @@ func TestParseCsolutionFile(t *testing.T) {
 	})
 
 	t.Run("test csolution file parsing", func(t *testing.T) {
-		data, err := ParseCSolutionFile(filepath.Join(testRoot, testDir, "TestSolution/Test.csolution.yml"))
+		data, err := ParseCSolutionFile(filepath.Join(testRoot, testDir, "TestSolution/test.csolution.yml"))
 		assert.Nil(err)
 		assert.Equal(len(data.Solution.BuildTypes), 1)
 		assert.Equal(len(data.Solution.TargetTypes), 2)
