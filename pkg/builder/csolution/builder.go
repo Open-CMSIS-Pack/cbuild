@@ -571,7 +571,7 @@ func (b CSolutionBuilder) Build() (err error) {
 	if err = b.installMissingPacks(); err != nil {
 		log.Error("error installing missing packs")
 		// Continue with build files generation upon setup command
-		if !b.Options.UseContextSet {
+		if !b.Setup {
 			return err
 		}
 	}
