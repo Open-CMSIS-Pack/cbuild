@@ -352,3 +352,23 @@ func TestParseCsolutionFile(t *testing.T) {
 		assert.Equal(data.Solution.TargetTypes[1].Type, "CM0")
 	})
 }
+
+func TestRemoveVersionRange(t *testing.T) {
+	assert := assert.New(t)
+
+	testCases := []struct {
+		inputString    string
+		expectedOutput string
+	}{
+		{"ARM::CMSIS@>=6.0.0", "ARM::CMSIS@6.0.0"},
+		{"ARM::CMSIS@>=6.0.0-alpha0", "ARM::CMSIS@6.0.0-alpha0"},
+		{"ARM::CMSIS@6.0.0", "ARM::CMSIS@6.0.0"},
+		{"ARM::CMSIS", "ARM::CMSIS"},
+		{"", ""},
+	}
+
+	for _, test := range testCases {
+		outString := RemoveVersionRange(test.inputString)
+		assert.Equal(test.expectedOutput, outString)
+	}
+}

@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 
@@ -324,4 +325,16 @@ func ResolveContexts(allContext []string, contextFilters []string) ([]string, er
 		}
 	}
 	return selectedContexts, nil
+}
+
+func RemoveVersionRange(str string) string {
+	// This function removes the version range specifier '>='
+	// from the pack version. for e.g. "ARM::CMSIS@>=6.0.0" is
+	// converted into "ARM::CMSIS@6.0.0"
+	re := regexp.MustCompile(`@([^0-9]*)(\d)`)
+	match := re.FindStringSubmatch(str)
+	if len(match) >= 3 {
+		return strings.Replace(str, match[1], "", 1)
+	}
+	return str
 }
