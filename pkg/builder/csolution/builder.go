@@ -125,7 +125,18 @@ func (b CSolutionBuilder) generateBuildFiles() (err error) {
 	if err != nil {
 		return err
 	}
+
+	var selectedContexts []string
+	if len(b.Options.Contexts) != 0 {
+		selectedContexts = append(selectedContexts, b.Options.Contexts...)
+	}
+
 	_, err = os.Stat(cbuildSetFile)
+
+	// Read contexts to be processed from cbuild-set file
+	if b.Options.UseContextSet && err == nil {
+		selectedContexts, _ = b.getSelectedContexts(cbuildSetFile)
+	}
 
 	// when using "cbuild setup *.csolution -S" with no existing cbuild-set file
 	// Select first target-type and the first build-type for each project
@@ -165,7 +176,7 @@ func (b CSolutionBuilder) generateBuildFiles() (err error) {
 		}
 
 		// Resolve the selected contexts including the default one
-		selectedContexts, err := utils.ResolveContexts(allContexts, []string{defaultContext})
+		selectedContexts, err = utils.ResolveContexts(allContexts, []string{defaultContext})
 		if err != nil {
 			return err
 		}
@@ -184,7 +195,13 @@ func (b CSolutionBuilder) generateBuildFiles() (err error) {
 		if exitError, ok := err.(*exec.ExitError); ok {
 			if exitError.ExitCode() == 2 {
 				args = []string{"list", "layers", b.InputFile, "--load=all", "--update-idx"}
-				_, err = b.runCSolution(args, false)
+				for _, context := range selectedContexts {
+					args = append(args, "--context="+context)
+				}
+				_, listCmdErr := b.runCSolution(args, false)
+				if listCmdErr != nil {
+					err = listCmdErr
+				}
 			}
 		}
 	}
@@ -553,7 +570,10 @@ func (b CSolutionBuilder) Build() (err error) {
 	// STEP 1: Install missing pack(s)
 	if err = b.installMissingPacks(); err != nil {
 		log.Error("error installing missing packs")
-		return err
+		// Continue with build files generation upon setup command
+		if !b.Setup {
+			return err
+		}
 	}
 
 	// STEP 2: Generate build file(s)
