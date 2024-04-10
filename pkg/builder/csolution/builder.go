@@ -107,7 +107,7 @@ func (b CSolutionBuilder) installMissingPacks() (err error) {
 		// to handle '>=' in pack version, is resolved
 		pack = utils.RemoveVersionRange(pack)
 
-		args = []string{"add", pack, "--force-reinstall", "--agree-embedded-license"}
+		args = []string{"add", pack, "--force-reinstall", "--agree-embedded-license", "--no-dependencies"}
 		cpackgetBin := filepath.Join(b.InstallConfigs.BinPath, "cpackget"+b.InstallConfigs.BinExtn)
 		if _, err := os.Stat(cpackgetBin); os.IsNotExist(err) {
 			log.Error("error cpackget not found")
