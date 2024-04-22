@@ -305,7 +305,6 @@ func (b CSolutionBuilder) getProjsBuilders(selectedContexts []string) (projBuild
 
 	var projBuilder builder.IBuilderInterface
 	if b.Options.UseCbuild2CMake {
-		buildOptions.Contexts = selectedContexts
 		// get idx builder
 		projBuilder = cbuildidx.CbuildIdxBuilder{
 			BuilderParams: builder.BuilderParams{
@@ -314,6 +313,7 @@ func (b CSolutionBuilder) getProjsBuilders(selectedContexts []string) (projBuild
 				InputFile:      idxFile,
 				InstallConfigs: b.InstallConfigs,
 				Setup:          b.Setup,
+				BuildContexts:  selectedContexts,
 			},
 		}
 		projBuilders = append(projBuilders, projBuilder)
