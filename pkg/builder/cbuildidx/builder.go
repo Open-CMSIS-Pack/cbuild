@@ -134,7 +134,7 @@ func (b CbuildIdxBuilder) Build() error {
 
 	_ = utils.UpdateEnvVars(vars.BinPath, vars.EtcPath)
 
-	if len(b.Options.Contexts) == 0 {
+	if len(b.Options.Contexts) == 0 && len(b.BuildContexts) == 0 {
 		err = errors.New("error no context(s) to process")
 		return err
 	}
@@ -144,7 +144,7 @@ func (b CbuildIdxBuilder) Build() error {
 	}
 
 	if b.Options.Clean {
-		for _, context := range b.Options.Contexts {
+		for _, context := range b.BuildContexts {
 			dirs, err := b.getDirs(context)
 			if err != nil {
 				return err
@@ -205,9 +205,19 @@ func (b CbuildIdxBuilder) Build() error {
 
 	// CMake build target(s) command
 	args = []string{"--build", dirs.IntDir, "-j", fmt.Sprintf("%d", b.GetJobs())}
-	for _, context := range b.Options.Contexts {
-		args = append(args, "--target", context)
-		args = append(args, "--target", context+"-database")
+	if b.Options.Target != "" {
+		args = append(args, "--target", b.Options.Target)
+	} else if len(b.Options.Contexts) == 0 {
+		args = append(args, "--target", "all")
+	} else {
+		for _, context := range b.BuildContexts {
+			args = append(args, "--target", context)
+		}
+	}
+	if b.Setup {
+		for _, context := range b.BuildContexts {
+			args = append(args, "--target", context+"-database")
+		}
 	}
 
 	if b.Options.Debug {

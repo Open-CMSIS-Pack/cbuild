@@ -221,3 +221,42 @@ func TestBuild(t *testing.T) {
 		assert.Nil(err)
 	})
 }
+
+func TestBuildAllContexts(t *testing.T) {
+	assert := assert.New(t)
+	configs := inittest.GetTestConfigs(testRoot, testDir)
+
+	b := CbuildIdxBuilder{
+		builder.BuilderParams{
+			Runner:    RunnerMock{},
+			InputFile: filepath.Join(testRoot, testDir, "Hello.cbuild-idx.yml"),
+			Options: builder.Options{
+				Contexts: []string{}, // = build all contexts
+				OutDir:   filepath.Join(testRoot, testDir, "OutDir"),
+				Packs:    true,
+			},
+			InstallConfigs: utils.Configurations{
+				BinPath: configs.BinPath,
+				BinExtn: configs.BinExtn,
+				EtcPath: configs.EtcPath,
+			},
+			BuildContexts: []string{"Hello.Debug+AVH"},
+		},
+	}
+	t.Run("test build cbuild-idx", func(t *testing.T) {
+		err := b.Build()
+		assert.Nil(err)
+	})
+
+	t.Run("test build target option", func(t *testing.T) {
+		b.Options.Target = "Hello.Debug+AVH"
+		err := b.Build()
+		assert.Nil(err)
+	})
+
+	t.Run("test setup", func(t *testing.T) {
+		b.Setup = true
+		err := b.Build()
+		assert.Nil(err)
+	})
+}
