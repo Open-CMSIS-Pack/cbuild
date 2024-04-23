@@ -254,6 +254,12 @@ func TestBuildAllContexts(t *testing.T) {
 		assert.Nil(err)
 	})
 
+	t.Run("test build use context set", func(t *testing.T) {
+		b.Options.UseContextSet = true
+		err := b.Build()
+		assert.Nil(err)
+	})
+
 	t.Run("test setup", func(t *testing.T) {
 		b.Setup = true
 		err := b.Build()
