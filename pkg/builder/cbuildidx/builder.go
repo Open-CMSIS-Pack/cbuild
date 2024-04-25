@@ -159,6 +159,9 @@ func (b CbuildIdxBuilder) Build() error {
 	}
 
 	args := []string{b.InputFile}
+	if b.Options.UseContextSet {
+		args = append(args, "--context-set")
+	}
 	if b.Options.Debug {
 		args = append(args, "--debug")
 		log.Debug("cbuild2cmake command: " + vars.Cbuild2cmakeBin + " " + strings.Join(args, " "))
