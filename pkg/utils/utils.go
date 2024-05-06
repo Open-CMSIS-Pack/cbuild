@@ -338,3 +338,7 @@ func RemoveVersionRange(str string) string {
 	}
 	return str
 }
+
+func LogStdMsg(msg string) {
+	_, _ = log.StandardLogger().Out.Write([]byte(msg + "\n"))
+}

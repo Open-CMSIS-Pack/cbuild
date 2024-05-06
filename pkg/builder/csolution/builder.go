@@ -66,6 +66,9 @@ func (b CSolutionBuilder) formulateArgs(command []string) (args []string) {
 	if b.Options.FrozenPacks {
 		args = append(args, "--frozen-packs")
 	}
+	if b.Options.Quiet {
+		args = append(args, "--quiet")
+	}
 	return
 }
 
@@ -192,6 +195,11 @@ func (b CSolutionBuilder) generateBuildFiles() (err error) {
 		}
 	}
 
+	// on setup command, run csolution convert command with --quiet
+	if b.Setup {
+		args = append(args, "--quiet")
+	}
+
 	_, err = b.runCSolution(args, false)
 
 	// Execute this code exclusively upon invocation of the 'setup' command.
@@ -199,13 +207,15 @@ func (b CSolutionBuilder) generateBuildFiles() (err error) {
 	if b.Setup {
 		if exitError, ok := err.(*exec.ExitError); ok {
 			if exitError.ExitCode() == 2 {
-				args = []string{"list", "layers", b.InputFile, "--load=all", "--update-idx"}
+				args = []string{"list", "layers", b.InputFile, "--load=all", "--update-idx", "--quiet"}
 				for _, context := range selectedContexts {
 					args = append(args, "--context="+context)
 				}
 				_, listCmdErr := b.runCSolution(args, false)
 				if listCmdErr != nil {
 					err = listCmdErr
+				} else {
+					utils.LogStdMsg("To resolve undefined variables, copy the settings from cbuild-idx.yml to csolution.yml")
 				}
 			}
 		}
@@ -401,8 +411,8 @@ func (b CSolutionBuilder) buildContexts(selectedContexts []string, projBuilders 
 			progress := fmt.Sprintf("(%s/%d)", strconv.Itoa(index+1), len(selectedContexts))
 			infoMsg = progress + " " + operation + " context: \"" + selectedContexts[index] + "\""
 		}
-		sep := strings.Repeat("=", len(infoMsg)+13) + "\n"
-		_, _ = log.StandardLogger().Out.Write([]byte(sep))
+		sep := strings.Repeat("=", len(infoMsg)+13)
+		utils.LogStdMsg(sep)
 		log.Info(infoMsg)
 
 		b.setBuilderOptions(&projBuilders[index], false)
@@ -517,7 +527,7 @@ func (b CSolutionBuilder) ListEnvironment() error {
 		return err
 	}
 	for _, config := range envConfigs {
-		_, _ = log.StandardLogger().Out.Write([]byte(config + "\n"))
+		utils.LogStdMsg(config)
 	}
 	return nil
 }
