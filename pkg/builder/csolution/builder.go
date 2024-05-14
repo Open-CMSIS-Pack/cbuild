@@ -27,6 +27,45 @@ type CSolutionBuilder struct {
 	builder.BuilderParams
 }
 
+// validateContexts validates the input contexts when used with -S option
+func (b CSolutionBuilder) validateContexts(contexts []string) error {
+	if len(contexts) == 0 {
+		return nil
+	}
+
+	// Store the selected target type and project build types.
+	selectedTarget := ""
+	projectBuildTypeMap := make(map[string]string)
+
+	// Store error messages for invalid contexts.
+	var errorContexts []string
+
+	for _, context := range contexts {
+		contextItem, err := utils.ParseContext(context)
+		if err != nil {
+			return err
+		}
+
+		if selectedTarget == "" {
+			selectedTarget = contextItem.TargetType
+		} else if contextItem.TargetType != selectedTarget {
+			errorContexts = append(errorContexts, fmt.Sprintf("  %s  <-- invalid selection, target-type: '%s' is already selected\n", context, selectedTarget))
+			continue
+		} else if buildType, ok := projectBuildTypeMap[contextItem.ProjectName]; ok && buildType != contextItem.BuildType {
+			errorContexts = append(errorContexts, fmt.Sprintf("  %s  <-- '%s' is selected already with build-type '%s'\n", context, contextItem.ProjectName, buildType))
+			continue
+		}
+
+		projectBuildTypeMap[contextItem.ProjectName] = contextItem.BuildType
+	}
+
+	if len(errorContexts) > 0 {
+		return errors.New("error found in context(s):\n" + strings.Join(errorContexts, ""))
+	}
+
+	return nil
+}
+
 func (b CSolutionBuilder) formulateArgs(command []string) (args []string) {
 	// formulate csolution arguments
 	args = append(args, command...)
@@ -129,6 +168,11 @@ func (b CSolutionBuilder) installMissingPacks() (err error) {
 func (b CSolutionBuilder) generateBuildFiles() (err error) {
 	args := b.formulateArgs([]string{"convert"})
 
+	if len(b.Options.Contexts) != 0 && b.Options.UseContextSet {
+		if err := b.validateContexts(b.Options.Contexts); err != nil {
+			return err
+		}
+	}
 	cbuildSetFile, err := b.getCbuildSetFilePath()
 	if err != nil {
 		return err

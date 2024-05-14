@@ -8,6 +8,7 @@ package csolution
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -492,5 +493,62 @@ func TestGetCbuildSetFilePath(t *testing.T) {
 		path, err := b.getCbuildSetFilePath()
 		assert.Nil(err)
 		assert.Equal(path, utils.NormalizePath(filepath.Join(testRoot, testDir, "TestSolution/test.cbuild-set.yml")))
+	})
+}
+
+func TestValidateContexts(t *testing.T) {
+	assert := assert.New(t)
+	b := CSolutionBuilder{
+		BuilderParams: builder.BuilderParams{
+			Runner: RunnerMock{},
+		},
+	}
+
+	testCases := []struct {
+		Input       []string
+		ExpectError bool
+		// ExpectErrMsg string
+	}{
+		// Negative tests
+		{
+			[]string{
+				"project.Debug+AVH",
+				"project.Release+AVH",
+				"project.Debug+CM3",
+			}, true,
+		},
+		{
+			[]string{
+				"project1.Debug+AVH",
+				"project1.Debug+CM3",
+				"project2.Debug+AVH",
+				"project2.Debug+CM3",
+			}, true,
+		},
+		// Positive tests
+		{
+			[]string{
+				"project1.Debug+AVH",
+				"project1.Debug+AVH",
+				"project2.Debug+AVH",
+				"project3.Release+AVH",
+			}, false,
+		},
+		{
+			[]string{},
+			false,
+		},
+	}
+
+	t.Run("test default arg", func(t *testing.T) {
+		for _, test := range testCases {
+			err := b.validateContexts(test.Input)
+			if test.ExpectError {
+				fmt.Println(err.Error())
+				assert.Error(err)
+			} else {
+				assert.Nil(err)
+			}
+		}
 	})
 }
