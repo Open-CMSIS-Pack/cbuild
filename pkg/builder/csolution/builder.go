@@ -15,6 +15,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	builder "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder/cbuildidx"
@@ -403,6 +404,8 @@ func (b CSolutionBuilder) buildContexts(selectedContexts []string, projBuilders 
 		operation = "Setting up"
 	}
 
+	buildSuccess := true
+	var totalBuildTime time.Duration
 	for index := range projBuilders {
 		var infoMsg string
 		if b.Options.UseContextSet {
@@ -411,16 +414,32 @@ func (b CSolutionBuilder) buildContexts(selectedContexts []string, projBuilders 
 			progress := fmt.Sprintf("(%s/%d)", strconv.Itoa(index+1), len(selectedContexts))
 			infoMsg = progress + " " + operation + " context: \"" + selectedContexts[index] + "\""
 		}
-		sep := strings.Repeat("=", len(infoMsg)+13)
-		utils.LogStdMsg(sep)
-		log.Info(infoMsg)
+
+		if !b.Options.UseCbuild2CMake {
+			sep := strings.Repeat("=", len(infoMsg)+13)
+			utils.LogStdMsg(sep)
+			utils.LogStdMsg(infoMsg)
+		}
 
 		b.setBuilderOptions(&projBuilders[index], false)
 
+		buildStartTime := time.Now()
 		err = projBuilders[index].Build()
 		if err != nil {
 			log.Error("error " + strings.ToLower(operation) + " '" + b.getBuilderInputFile(projBuilders[index]) + "'")
+			buildSuccess = false
 		}
+		buildEndTime := time.Now()
+		elapsedTime := buildEndTime.Sub(buildStartTime)
+		totalBuildTime += elapsedTime
+	}
+	if !b.Setup {
+		buildStatus := "Build completed successfully"
+		if !buildSuccess {
+			buildStatus = "Build failed"
+		}
+		buildSummary := fmt.Sprintf("\nBuild summary: %s - Time Elapsed: %s", buildStatus, utils.FormatTime(totalBuildTime))
+		utils.LogStdMsg(buildSummary)
 	}
 	return
 }
@@ -598,8 +617,5 @@ func (b CSolutionBuilder) Build() (err error) {
 	}
 
 	// STEP 3: Build project(s)
-	if err = b.build(); err != nil {
-		log.Error("error building project(s)")
-	}
-	return err
+	return b.build()
 }

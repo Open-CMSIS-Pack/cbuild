@@ -8,12 +8,14 @@ package utils
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
 	"runtime"
 	"strings"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
@@ -340,5 +342,12 @@ func RemoveVersionRange(str string) string {
 }
 
 func LogStdMsg(msg string) {
-	_, _ = log.StandardLogger().Out.Write([]byte(msg + "\n"))
+	if msg != "" {
+		_, _ = log.StandardLogger().Out.Write([]byte(msg + "\n"))
+	}
+}
+
+func FormatTime(time time.Duration) string {
+	// Format time in "hh:mm:ss"
+	return fmt.Sprintf("%02d:%02d:%02d", int(time.Hours()), int(time.Minutes())%60, int(time.Seconds())%60)
 }
