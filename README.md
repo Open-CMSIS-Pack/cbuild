@@ -25,7 +25,7 @@ use the command line option: `--update-rte`.
 ## Usage
 
 ```bash
-cbuild: Build Invocation 2.0.0 (C) 2024 Arm Ltd. and Contributors
+cbuild: Build Invocation 2.4.0 (C) 2024 Arm Ltd. and Contributors
 
 Usage:
   cbuild [command] <name>.csolution.yml [options]
