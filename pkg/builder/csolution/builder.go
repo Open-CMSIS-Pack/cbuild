@@ -612,7 +612,6 @@ func (b CSolutionBuilder) Build() (err error) {
 
 	// STEP 2: Generate build file(s)
 	if err = b.generateBuildFiles(); err != nil {
-		log.Error("error generating build files")
 		return err
 	}
 
