@@ -9,6 +9,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 
 	"github.com/Open-CMSIS-Pack/cbuild/v2/cmd/cbuild/commands"
 	log "github.com/sirupsen/logrus"
