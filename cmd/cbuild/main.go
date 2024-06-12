@@ -9,6 +9,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 
 	"github.com/Open-CMSIS-Pack/cbuild/v2/cmd/cbuild/commands"
 	log "github.com/sirupsen/logrus"
@@ -25,7 +26,13 @@ func main() {
 	err := cmd.Execute()
 	if err != nil {
 		log.Error(err)
-		os.Exit(-1)
+		if exitError, ok := err.(*exec.ExitError); ok {
+			os.Exit(exitError.ExitCode())
+		} else {
+			os.Exit(1)
+		}
+	} else {
+		os.Exit(0)
 	}
 }
 
