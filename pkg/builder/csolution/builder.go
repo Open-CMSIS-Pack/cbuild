@@ -95,7 +95,6 @@ func (b CSolutionBuilder) installMissingPacks() (err error) {
 	// Get list of missing packs
 	output, err := b.runCSolution(args, false)
 	if err != nil {
-		log.Error("error in getting list of missing packs")
 		return err
 	}
 
@@ -120,7 +119,6 @@ func (b CSolutionBuilder) installMissingPacks() (err error) {
 
 		_, err = b.Runner.ExecuteCommand(cpackgetBin, false, args...)
 		if err != nil {
-			log.Error("error installing pack : " + pack)
 			return err
 		}
 	}
@@ -175,7 +173,6 @@ func (b CSolutionBuilder) generateBuildFiles() (err error) {
 		// Retrieve all available contexts in yml-order
 		allContexts, err := b.listContexts(true, true)
 		if err != nil {
-			log.Error("error getting list of contexts: \"" + err.Error() + "\"")
 			return err
 		}
 
@@ -405,8 +402,8 @@ func (b CSolutionBuilder) buildContexts(selectedContexts []string, projBuilders 
 	}
 
 	printSeparator := func(delimiter string, length int) {
-		sep := strings.Repeat(delimiter, length)
-		utils.LogStdMsg(sep)
+		sep := strings.Repeat(delimiter, length-1)
+		utils.LogStdMsg("+" + sep)
 	}
 
 	buildPassCnt := 0
@@ -428,7 +425,6 @@ func (b CSolutionBuilder) buildContexts(selectedContexts []string, projBuilders 
 		buildStartTime := time.Now()
 		err = projBuilders[index].Build()
 		if err != nil {
-			log.Error("error " + strings.ToLower(operation) + " '" + b.getBuilderInputFile(projBuilders[index]) + "'")
 			buildFailCnt += 1
 		} else {
 			buildPassCnt += 1
@@ -559,7 +555,6 @@ func (b CSolutionBuilder) build() (err error) {
 	if len(b.Options.Contexts) != 0 && !b.Options.UseContextSet {
 		allContexts, err = b.listContexts(true, true)
 		if err != nil {
-			log.Error("error getting list of contexts: \"" + err.Error() + "\"")
 			return err
 		}
 		selectedContexts, err = utils.ResolveContexts(allContexts, b.Options.Contexts)
@@ -606,7 +601,6 @@ func (b CSolutionBuilder) Build() (err error) {
 
 	// STEP 1: Install missing pack(s)
 	if err = b.installMissingPacks(); err != nil {
-		log.Error("error installing missing packs")
 		// Continue with build files generation upon setup command
 		if !b.Setup {
 			return err

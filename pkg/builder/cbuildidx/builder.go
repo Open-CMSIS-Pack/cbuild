@@ -43,9 +43,6 @@ func (b CbuildIdxBuilder) clean(dirs builder.BuildDirs, vars builder.InternalVar
 		}
 		args := []string{"-E", "remove_directory", dir}
 		_, err = b.Runner.ExecuteCommand(vars.CmakeBin, false, args...)
-		if err != nil {
-			log.Error("error executing 'cmake' clean for " + dir)
-		}
 		return err
 	}
 
@@ -167,7 +164,6 @@ func (b CbuildIdxBuilder) Build() error {
 
 	_, err = b.Runner.ExecuteCommand(vars.Cbuild2cmakeBin, false, args...)
 	if err != nil {
-		log.Error("error executing 'cbuild2cmake " + b.InputFile + "'")
 		return err
 	}
 	if _, err := os.Stat(dirs.IntDir + "/CMakeLists.txt"); errors.Is(err, os.ErrNotExist) {
@@ -200,7 +196,6 @@ func (b CbuildIdxBuilder) Build() error {
 
 	_, err = b.Runner.ExecuteCommand(vars.CmakeBin, b.Options.Quiet, args...)
 	if err != nil {
-		log.Error("error executing 'cmake' configuration")
 		return err
 	}
 
@@ -223,7 +218,6 @@ func (b CbuildIdxBuilder) Build() error {
 
 	_, err = b.Runner.ExecuteCommand(vars.CmakeBin, false, args...)
 	if err != nil {
-		log.Error("error executing 'cmake' build")
 		return err
 	}
 
