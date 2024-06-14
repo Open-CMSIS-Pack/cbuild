@@ -22,7 +22,7 @@ type BuilderParams struct {
 	InputFile      string
 	InstallConfigs utils.Configurations
 	Setup          bool
-	BuildContexts  []string
+	BuildContext   string
 }
 
 type Options struct {

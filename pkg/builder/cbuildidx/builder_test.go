@@ -240,7 +240,7 @@ func TestBuildAllContexts(t *testing.T) {
 				BinExtn: configs.BinExtn,
 				EtcPath: configs.EtcPath,
 			},
-			BuildContexts: []string{"Hello.Debug+AVH"},
+			BuildContext: "Hello.Debug+AVH",
 		},
 	}
 	t.Run("test build cbuild-idx", func(t *testing.T) {

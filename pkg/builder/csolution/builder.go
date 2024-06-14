@@ -315,30 +315,30 @@ func (b CSolutionBuilder) getProjsBuilders(selectedContexts []string) (projBuild
 	}
 
 	var projBuilder builder.IBuilderInterface
-	if b.Options.UseCbuild2CMake {
-		// get idx builder
-		projBuilder = cbuildidx.CbuildIdxBuilder{
-			BuilderParams: builder.BuilderParams{
-				Runner:         b.Runner,
-				Options:        buildOptions,
-				InputFile:      idxFile,
-				InstallConfigs: b.InstallConfigs,
-				Setup:          b.Setup,
-				BuildContexts:  selectedContexts,
-			},
+	for _, context := range selectedContexts {
+		infoMsg := "Retrieve build information for context: \"" + context + "\""
+		log.Info(infoMsg)
+
+		// if --output is used, ignore provided --outdir and --intdir
+		if b.Options.Output != "" && (b.Options.OutDir != "" || b.Options.IntDir != "") {
+			log.Warn("output files are generated under: \"" +
+				b.Options.Output + "\". Options --outdir and --intdir shall be ignored.")
 		}
-		projBuilders = append(projBuilders, projBuilder)
-	} else {
-		for _, context := range selectedContexts {
-			infoMsg := "Retrieve build information for context: \"" + context + "\""
-			log.Info(infoMsg)
 
-			// if --output is used, ignore provided --outdir and --intdir
-			if b.Options.Output != "" && (b.Options.OutDir != "" || b.Options.IntDir != "") {
-				log.Warn("output files are generated under: \"" +
-					b.Options.Output + "\". Options --outdir and --intdir shall be ignored.")
+		if b.Options.UseCbuild2CMake {
+			// get idx builder
+			projBuilder = cbuildidx.CbuildIdxBuilder{
+				BuilderParams: builder.BuilderParams{
+					Runner:         b.Runner,
+					Options:        buildOptions,
+					InputFile:      idxFile,
+					InstallConfigs: b.InstallConfigs,
+					Setup:          b.Setup,
+					BuildContext:   context,
+				},
 			}
-
+			projBuilders = append(projBuilders, projBuilder)
+		} else {
 			cprjFile, err := b.getCprjFilePath(idxFile, context)
 			if err != nil {
 				log.Error("error getting cprj file: " + err.Error())
@@ -404,7 +404,8 @@ func (b CSolutionBuilder) buildContexts(selectedContexts []string, projBuilders 
 		operation = "Setting up"
 	}
 
-	buildSuccess := true
+	buildPassCnt := 0
+	buildFailCnt := 0
 	var totalBuildTime time.Duration
 	for index := range projBuilders {
 		var infoMsg string
@@ -415,11 +416,9 @@ func (b CSolutionBuilder) buildContexts(selectedContexts []string, projBuilders 
 			infoMsg = progress + " " + operation + " context: \"" + selectedContexts[index] + "\""
 		}
 
-		if !b.Options.UseCbuild2CMake {
-			sep := strings.Repeat("=", len(infoMsg)+13)
-			utils.LogStdMsg(sep)
-			utils.LogStdMsg(infoMsg)
-		}
+		sep := strings.Repeat("=", len(infoMsg)+13)
+		utils.LogStdMsg(sep)
+		utils.LogStdMsg(infoMsg)
 
 		b.setBuilderOptions(&projBuilders[index], false)
 
@@ -427,18 +426,16 @@ func (b CSolutionBuilder) buildContexts(selectedContexts []string, projBuilders 
 		err = projBuilders[index].Build()
 		if err != nil {
 			log.Error("error " + strings.ToLower(operation) + " '" + b.getBuilderInputFile(projBuilders[index]) + "'")
-			buildSuccess = false
+			buildFailCnt += 1
+		} else {
+			buildPassCnt += 1
 		}
 		buildEndTime := time.Now()
 		elapsedTime := buildEndTime.Sub(buildStartTime)
 		totalBuildTime += elapsedTime
 	}
 	if !b.Setup {
-		buildStatus := "Build completed successfully"
-		if !buildSuccess {
-			buildStatus = "Build failed"
-		}
-		buildSummary := fmt.Sprintf("\nBuild summary: %s - Time Elapsed: %s", buildStatus, utils.FormatTime(totalBuildTime))
+		buildSummary := fmt.Sprintf("\nBuild summary: %d succeeded, %d failed - Time Elapsed: %s", buildPassCnt, buildFailCnt, utils.FormatTime(totalBuildTime))
 		utils.LogStdMsg(buildSummary)
 	}
 	return
