@@ -278,7 +278,10 @@ func GetProjectName(csolutionFile string) (projectName string, err error) {
 func ResolveContexts(allContext []string, contextFilters []string) ([]string, error) {
 	var selectedContexts []string
 
-	for _, filter := range contextFilters {
+	// remove duplicates (if any)
+	filters := RemoveDuplicates(contextFilters)
+
+	for _, filter := range filters {
 		filterContextItem, err := ParseContext(filter)
 		if err != nil {
 			return nil, err
@@ -350,4 +353,23 @@ func LogStdMsg(msg string) {
 func FormatTime(time time.Duration) string {
 	// Format time in "hh:mm:ss"
 	return fmt.Sprintf("%02d:%02d:%02d", int(time.Hours()), int(time.Minutes())%60, int(time.Seconds())%60)
+}
+
+func RemoveDuplicates(input []string) []string {
+	// Create a map to track seen strings
+	seen := make(map[string]bool)
+	// Create a slice to store the unique strings
+	var result []string
+
+	// Iterate over the input slice
+	for _, str := range input {
+		// If the string is not in the map,
+		// add it to the result and mark it as seen
+		if !seen[str] {
+			result = append(result, str)
+			seen[str] = true
+		}
+	}
+
+	return result
 }

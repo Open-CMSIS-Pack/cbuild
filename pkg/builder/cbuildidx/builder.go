@@ -211,10 +211,6 @@ func (b CbuildIdxBuilder) Build() error {
 		args = append(args, "--target", b.Options.Target)
 	} else if b.BuildContext != "" {
 		args = append(args, "--target", b.BuildContext)
-	} else {
-		for _, context := range b.Options.Contexts {
-			args = append(args, "--target", context)
-		}
 	}
 
 	if b.Setup {
