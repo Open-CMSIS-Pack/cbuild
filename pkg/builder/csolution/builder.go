@@ -404,6 +404,11 @@ func (b CSolutionBuilder) buildContexts(selectedContexts []string, projBuilders 
 		operation = "Setting up"
 	}
 
+	printSeparator := func(delimiter string, length int) {
+		sep := strings.Repeat(delimiter, length)
+		utils.LogStdMsg(sep)
+	}
+
 	buildPassCnt := 0
 	buildFailCnt := 0
 	var totalBuildTime time.Duration
@@ -416,10 +421,8 @@ func (b CSolutionBuilder) buildContexts(selectedContexts []string, projBuilders 
 			infoMsg = progress + " " + operation + " context: \"" + selectedContexts[index] + "\""
 		}
 
-		sep := strings.Repeat("=", len(infoMsg)+13)
-		utils.LogStdMsg(sep)
+		printSeparator("-", len(infoMsg))
 		utils.LogStdMsg(infoMsg)
-
 		b.setBuilderOptions(&projBuilders[index], false)
 
 		buildStartTime := time.Now()
@@ -435,8 +438,11 @@ func (b CSolutionBuilder) buildContexts(selectedContexts []string, projBuilders 
 		totalBuildTime += elapsedTime
 	}
 	if !b.Setup {
-		buildSummary := fmt.Sprintf("\nBuild summary: %d succeeded, %d failed - Time Elapsed: %s", buildPassCnt, buildFailCnt, utils.FormatTime(totalBuildTime))
+		buildSummary := fmt.Sprintf("Build summary: %d succeeded, %d failed - Time Elapsed: %s", buildPassCnt, buildFailCnt, utils.FormatTime(totalBuildTime))
+		sepLen := len(buildSummary)
+		printSeparator("-", sepLen)
 		utils.LogStdMsg(buildSummary)
+		printSeparator("=", sepLen)
 	}
 	return
 }
