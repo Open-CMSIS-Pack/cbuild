@@ -43,14 +43,12 @@ func (b CprjBuilder) clean(dirs builder.BuildDirs, vars builder.InternalVars) (e
 	if _, err := os.Stat(dirs.IntDir); !os.IsNotExist(err) {
 		_, err = b.Runner.ExecuteCommand(vars.CbuildgenBin, false, "rmdir", dirs.IntDir)
 		if err != nil {
-			log.Error("error executing 'cbuildgen rmdir'")
 			return err
 		}
 	}
 	if _, err := os.Stat(dirs.OutDir); !os.IsNotExist(err) {
 		_, err = b.Runner.ExecuteCommand(vars.CbuildgenBin, false, "rmdir", dirs.OutDir)
 		if err != nil {
-			log.Error("error executing 'cbuildgen rmdir'")
 			return err
 		}
 	}
@@ -140,7 +138,6 @@ func (b CprjBuilder) Build() error {
 		} else {
 			_, err = b.Runner.ExecuteCommand(vars.XmllintBin, b.Options.Quiet, "--schema", filepath.Join(vars.EtcPath, "CPRJ.xsd"), b.InputFile, "--noout")
 			if err != nil {
-				log.Error("error executing 'xmllint'")
 				return err
 			}
 		}
@@ -163,7 +160,6 @@ func (b CprjBuilder) Build() error {
 	}
 	_, err = b.Runner.ExecuteCommand(vars.CbuildgenBin, false, args...)
 	if err != nil {
-		log.Error("error executing 'cbuildgen packlist'")
 		return err
 	}
 
@@ -181,7 +177,6 @@ func (b CprjBuilder) Build() error {
 			}
 			_, err = b.Runner.ExecuteCommand(vars.CpackgetBin, b.Options.Quiet, args...)
 			if err != nil {
-				log.Error("error executing 'cpackget add'")
 				return err
 			}
 		} else {
@@ -206,7 +201,6 @@ func (b CprjBuilder) Build() error {
 
 	_, err = b.Runner.ExecuteCommand(vars.CbuildgenBin, false, args...)
 	if err != nil {
-		log.Error("error executing 'cbuildgen cmake'")
 		return err
 	}
 
@@ -240,7 +234,6 @@ func (b CprjBuilder) Build() error {
 
 	_, err = b.Runner.ExecuteCommand(vars.CmakeBin, b.Options.Quiet, args...)
 	if err != nil {
-		log.Error("error executing 'cmake' configuration")
 		return err
 	}
 
@@ -263,7 +256,6 @@ func (b CprjBuilder) Build() error {
 
 	_, err = b.Runner.ExecuteCommand(vars.CmakeBin, false, args...)
 	if err != nil {
-		log.Error("error executing 'cmake' build")
 		return err
 	}
 

@@ -43,9 +43,6 @@ func (b CbuildIdxBuilder) clean(dirs builder.BuildDirs, vars builder.InternalVar
 		}
 		args := []string{"-E", "remove_directory", dir}
 		_, err = b.Runner.ExecuteCommand(vars.CmakeBin, false, args...)
-		if err != nil {
-			log.Error("error executing 'cmake' clean for " + dir)
-		}
 		return err
 	}
 
@@ -134,7 +131,7 @@ func (b CbuildIdxBuilder) Build() error {
 
 	_ = utils.UpdateEnvVars(vars.BinPath, vars.EtcPath)
 
-	if len(b.Options.Contexts) == 0 && len(b.BuildContexts) == 0 {
+	if len(b.Options.Contexts) == 0 && b.BuildContext == "" {
 		err = errors.New("error no context(s) to process")
 		return err
 	}
@@ -144,16 +141,14 @@ func (b CbuildIdxBuilder) Build() error {
 	}
 
 	if b.Options.Clean {
-		for _, context := range b.BuildContexts {
-			dirs, err := b.getDirs(context)
-			if err != nil {
-				return err
-			}
+		dirs, err := b.getDirs(b.BuildContext)
+		if err != nil {
+			return err
+		}
 
-			log.Info("Cleaning context: \"" + context + "\"")
-			if err := b.clean(dirs, vars); err != nil {
-				return err
-			}
+		log.Info("Cleaning context: \"" + b.BuildContext + "\"")
+		if err := b.clean(dirs, vars); err != nil {
+			return err
 		}
 		return nil
 	}
@@ -169,7 +164,6 @@ func (b CbuildIdxBuilder) Build() error {
 
 	_, err = b.Runner.ExecuteCommand(vars.Cbuild2cmakeBin, false, args...)
 	if err != nil {
-		log.Error("error executing 'cbuild2cmake " + b.InputFile + "'")
 		return err
 	}
 	if _, err := os.Stat(dirs.IntDir + "/CMakeLists.txt"); errors.Is(err, os.ErrNotExist) {
@@ -202,25 +196,20 @@ func (b CbuildIdxBuilder) Build() error {
 
 	_, err = b.Runner.ExecuteCommand(vars.CmakeBin, b.Options.Quiet, args...)
 	if err != nil {
-		log.Error("error executing 'cmake' configuration")
 		return err
 	}
 
 	// CMake build target(s) command
 	args = []string{"--build", dirs.IntDir, "-j", fmt.Sprintf("%d", b.GetJobs())}
+
 	if b.Options.Target != "" {
 		args = append(args, "--target", b.Options.Target)
-	} else if len(b.Options.Contexts) == 0 {
-		args = append(args, "--target", "all")
-	} else {
-		for _, context := range b.BuildContexts {
-			args = append(args, "--target", context)
-		}
+	} else if b.BuildContext != "" {
+		args = append(args, "--target", b.BuildContext)
 	}
+
 	if b.Setup {
-		for _, context := range b.BuildContexts {
-			args = append(args, "--target", context+"-database")
-		}
+		args = append(args, "--target", b.BuildContext+"-database")
 	}
 
 	if b.Options.Debug {
@@ -229,7 +218,6 @@ func (b CbuildIdxBuilder) Build() error {
 
 	_, err = b.Runner.ExecuteCommand(vars.CmakeBin, false, args...)
 	if err != nil {
-		log.Error("error executing 'cmake' build")
 		return err
 	}
 

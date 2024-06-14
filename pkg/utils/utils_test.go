@@ -372,3 +372,16 @@ func TestRemoveVersionRange(t *testing.T) {
 		assert.Equal(test.expectedOutput, outString)
 	}
 }
+
+func TestRemoveDuplicates(t *testing.T) {
+	assert := assert.New(t)
+
+	inputList := []string{"apple", "banana", "apple", "orange", "banana", "grape"}
+	UniqueList := []string{"apple", "banana", "orange", "grape"}
+
+	outUniqueList := RemoveDuplicates(inputList)
+	assert.Equal(UniqueList, outUniqueList)
+
+	outUniqueList = RemoveDuplicates(UniqueList)
+	assert.Equal(UniqueList, outUniqueList)
+}
