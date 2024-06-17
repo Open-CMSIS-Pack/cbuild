@@ -162,7 +162,7 @@ func (b CbuildIdxBuilder) Build() error {
 		log.Debug("cbuild2cmake command: " + vars.Cbuild2cmakeBin + " " + strings.Join(args, " "))
 	}
 
-	_, err = b.Runner.ExecuteCommand(vars.Cbuild2cmakeBin, false, args...)
+	_, err = b.Runner.ExecuteCommand(vars.Cbuild2cmakeBin, !(b.Options.Debug || b.Options.Verbose), args...)
 	if err != nil {
 		return err
 	}
@@ -194,7 +194,7 @@ func (b CbuildIdxBuilder) Build() error {
 		log.Debug("cmake configuration command: " + vars.CmakeBin + " " + strings.Join(args, " "))
 	}
 
-	_, err = b.Runner.ExecuteCommand(vars.CmakeBin, b.Options.Quiet, args...)
+	_, err = b.Runner.ExecuteCommand(vars.CmakeBin, !(b.Options.Debug || b.Options.Verbose), args...)
 	if err != nil {
 		return err
 	}
@@ -210,6 +210,10 @@ func (b CbuildIdxBuilder) Build() error {
 
 	if b.Setup {
 		args = append(args, "--target", b.BuildContext+"-database")
+	}
+
+	if b.Options.Generator == "Ninja" && !(b.Options.Debug || b.Options.Verbose) {
+		args = append(args, "--", "--quiet")
 	}
 
 	if b.Options.Debug {

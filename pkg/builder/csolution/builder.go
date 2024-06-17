@@ -198,7 +198,7 @@ func (b CSolutionBuilder) generateBuildFiles() (err error) {
 		args = append(args, "--quiet")
 	}
 
-	_, err = b.runCSolution(args, false)
+	_, err = b.runCSolution(args, !(b.Options.Debug || b.Options.Verbose))
 
 	// Execute this code exclusively upon invocation of the 'setup' command.
 	// Its purpose is to update layer information within the *.cbuild-idx.yml files.
