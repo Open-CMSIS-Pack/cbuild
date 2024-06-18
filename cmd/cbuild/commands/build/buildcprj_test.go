@@ -49,7 +49,7 @@ func TestPreLogConfiguration(t *testing.T) {
 		cmd := commands.NewRootCmd()
 		cmd.SetArgs([]string{"buildcprj", cprjFile, "-C"})
 		_ = cmd.Execute()
-		assert.Equal(log.InfoLevel, log.GetLevel())
+		assert.Equal(log.WarnLevel, log.GetLevel())
 	})
 
 	t.Run("test quiet verbosity level", func(t *testing.T) {

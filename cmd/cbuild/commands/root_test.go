@@ -83,7 +83,7 @@ func TestPreLogConfiguration(t *testing.T) {
 		cmd.SetArgs([]string{"--version"})
 		err := cmd.Execute()
 		assert.Nil(err)
-		assert.Equal(log.InfoLevel, log.GetLevel())
+		assert.Equal(log.WarnLevel, log.GetLevel())
 	})
 
 	t.Run("test quiet verbosity level", func(t *testing.T) {

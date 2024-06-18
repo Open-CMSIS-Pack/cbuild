@@ -12,6 +12,7 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/errutils"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/inittest"
 	"github.com/stretchr/testify/assert"
 )
@@ -384,4 +385,63 @@ func TestRemoveDuplicates(t *testing.T) {
 
 	outUniqueList = RemoveDuplicates(UniqueList)
 	assert.Equal(UniqueList, outUniqueList)
+}
+
+func TestFileExists(t *testing.T) {
+	testFile := testRoot + "/" + testDir + "/testfile.txt"
+
+	tests := []struct {
+		name         string
+		filePath     string
+		expectedBool bool
+		expectedErr  error
+	}{
+		{
+			name:         "Existing File",
+			filePath:     testFile,
+			expectedBool: true,
+			expectedErr:  nil,
+		},
+		{
+			name:         "Non-Existing File",
+			filePath:     "testdata/nonexistent.txt",
+			expectedBool: false,
+			expectedErr:  errutils.New(errutils.ErrFileNotExist, "testdata/nonexistent.txt"),
+		},
+		{
+			name:         "Invalid Path",
+			filePath:     "/invalid/path/here",
+			expectedBool: false,
+			expectedErr:  errutils.New(errutils.ErrFileNotExist, "/invalid/path/here"),
+		},
+	}
+
+	// Create test files
+	createTestFiles := func(testFile string) {
+		// Create a dummy test file
+		file, _ := os.Create(testFile)
+		file.Close()
+	}
+
+	removeTestFiles := func(testFile string) {
+		// Remove dummy test file
+		os.Remove(testFile)
+	}
+
+	createTestFiles(testFile)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			exists, err := FileExists(tt.filePath)
+			if exists != tt.expectedBool {
+				t.Errorf("Expected file existence %v, got %v", tt.expectedBool, exists)
+			}
+			if (err == nil && tt.expectedErr != nil) || (err != nil && err.Error() != tt.expectedErr.Error()) {
+				t.Errorf("Expected error %v, got %v", tt.expectedErr, err)
+			}
+		})
+	}
+
+	// Clean up test files
+	removeTestFiles(testFile)
 }

@@ -20,6 +20,7 @@ import (
 	builder "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder/cbuildidx"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder/cproject"
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/errutils"
 	utils "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
 	log "github.com/sirupsen/logrus"
 )
@@ -178,7 +179,7 @@ func (b CSolutionBuilder) generateBuildFiles() (err error) {
 
 		// Ensure at least one context exists
 		if len(allContexts) == 0 {
-			return errors.New("error no context(s) found")
+			return errutils.New(errutils.ErrNoContextFound)
 		}
 
 		// Resolve the selected contexts including the default one
@@ -234,7 +235,7 @@ func (b CSolutionBuilder) getCprjFilePath(idxFile string, context string) (strin
 			}
 		}
 		if path == "" {
-			err = errors.New("cprj file path not found")
+			err = errutils.New(errutils.ErrNoRefToCPRJFile, context+".cprj", idxFile)
 		} else {
 			cprjPath = filepath.Join(filepath.Dir(idxFile), filepath.Dir(path), context+".cprj")
 		}

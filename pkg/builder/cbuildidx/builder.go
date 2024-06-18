@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	builder "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder"
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/errutils"
 	utils "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
 	log "github.com/sirupsen/logrus"
 )
@@ -24,8 +25,9 @@ type CbuildIdxBuilder struct {
 
 func (b CbuildIdxBuilder) checkCbuildIdx() error {
 	fileName := filepath.Base(b.InputFile)
-	if !strings.HasSuffix(fileName, ".cbuild-idx.yml") {
-		err := errors.New(".cbuild-idx.yml file not found")
+	expectedExtension := ".cbuild-idx.yml"
+	if !strings.HasSuffix(fileName, expectedExtension) {
+		err := errutils.New(errutils.ErrInvalidFile, fileName, "<project>."+expectedExtension)
 		return err
 	} else {
 		if _, err := os.Stat(b.InputFile); os.IsNotExist(err) {
@@ -132,8 +134,7 @@ func (b CbuildIdxBuilder) Build() error {
 	_ = utils.UpdateEnvVars(vars.BinPath, vars.EtcPath)
 
 	if len(b.Options.Contexts) == 0 && b.BuildContext == "" {
-		err = errors.New("error no context(s) to process")
-		return err
+		return errutils.New(errutils.ErrNoContextFound)
 	}
 
 	dirs := builder.BuildDirs{

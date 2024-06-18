@@ -6,12 +6,12 @@
 package setup
 
 import (
-	"errors"
 	"path/filepath"
 	"strings"
 
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder/csolution"
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/errutils"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
 	"github.com/spf13/cobra"
 )
@@ -22,12 +22,14 @@ func SetUpProject(cmd *cobra.Command, args []string) error {
 		inputFile = args[0]
 	} else {
 		_ = cmd.Help()
-		return errors.New("invalid arguments")
+		return errutils.New(errutils.ErrInvalidCmdLineArg)
 	}
 
 	fileName := filepath.Base(inputFile)
-	if !strings.HasSuffix(fileName, ".csolution.yml") {
-		return errors.New("invalid file argument")
+	expectedExtension := ".csolution.yml"
+
+	if !strings.HasSuffix(fileName, expectedExtension) {
+		return errutils.New(errutils.ErrInvalidFile, fileName, "<project.>"+expectedExtension)
 	}
 
 	logFile, _ := cmd.Flags().GetString("log")

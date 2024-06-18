@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	builder "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder"
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/errutils"
 	utils "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
 	log "github.com/sirupsen/logrus"
 )
@@ -23,9 +24,10 @@ type CprjBuilder struct {
 }
 
 func (b CprjBuilder) checkCprj() error {
-	if filepath.Ext(b.InputFile) != ".cprj" {
-		err := errors.New("missing required argument <project>.cprj")
-		return err
+	fileExtension := filepath.Ext(b.InputFile)
+	expectedExtension := ".cprj"
+	if fileExtension != expectedExtension {
+		return errutils.New(errutils.ErrInvalidFileExtension, fileExtension, expectedExtension)
 	} else {
 		if _, err := os.Stat(b.InputFile); os.IsNotExist(err) {
 			log.Error("project file " + b.InputFile + " does not exist")
@@ -166,8 +168,7 @@ func (b CprjBuilder) Build() error {
 	if _, err := os.Stat(packlistFile); !os.IsNotExist(err) {
 		if b.Options.Packs {
 			if vars.CpackgetBin == "" {
-				err := errors.New("cpackget was not found, missing packs cannot be downloaded")
-				return err
+				return errutils.New(errutils.ErrBinaryNotFound, "cpackget", "missing packs cannot be downloaded")
 			}
 			args = []string{"add", "--agree-embedded-license", "--no-dependencies", "--packs-list-filename", packlistFile}
 			if b.Options.Debug {
@@ -180,7 +181,7 @@ func (b CprjBuilder) Build() error {
 				return err
 			}
 		} else {
-			err := errors.New("missing packs must be installed, rerun cbuild with the --packs option")
+			err := errutils.New(errutils.ErrMissingPacks)
 			log.Error(err)
 			return err
 		}
