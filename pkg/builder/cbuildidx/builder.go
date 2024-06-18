@@ -31,7 +31,6 @@ func (b CbuildIdxBuilder) checkCbuildIdx() error {
 		return err
 	} else {
 		if _, err := os.Stat(b.InputFile); os.IsNotExist(err) {
-			log.Error("cbuild-idx file " + b.InputFile + " does not exist")
 			return err
 		}
 	}
@@ -62,7 +61,6 @@ func (b CbuildIdxBuilder) clean(dirs builder.BuildDirs, vars builder.InternalVar
 
 func (b CbuildIdxBuilder) getDirs(context string) (dirs builder.BuildDirs, err error) {
 	if _, err := os.Stat(b.InputFile); os.IsNotExist(err) {
-		log.Error("file " + b.InputFile + " does not exist")
 		return dirs, err
 	}
 
@@ -96,7 +94,6 @@ func (b CbuildIdxBuilder) getDirs(context string) (dirs builder.BuildDirs, err e
 		cbuildFile = filepath.Join(path, cbuildFile)
 		_, outDir, err := GetBuildDirs(cbuildFile)
 		if err != nil {
-			log.Error("error parsing file: " + cbuildFile)
 			return dirs, err
 		}
 
@@ -118,7 +115,7 @@ func (b CbuildIdxBuilder) getDirs(context string) (dirs builder.BuildDirs, err e
 	return dirs, err
 }
 
-func (b CbuildIdxBuilder) Build() error {
+func (b CbuildIdxBuilder) build() error {
 	b.InputFile, _ = filepath.Abs(b.InputFile)
 	b.InputFile = utils.NormalizePath(b.InputFile)
 	err := b.checkCbuildIdx()
@@ -134,7 +131,8 @@ func (b CbuildIdxBuilder) Build() error {
 	_ = utils.UpdateEnvVars(vars.BinPath, vars.EtcPath)
 
 	if len(b.Options.Contexts) == 0 && b.BuildContext == "" {
-		return errutils.New(errutils.ErrNoContextFound)
+		err = errutils.New(errutils.ErrNoContextFound)
+		return err
 	}
 
 	dirs := builder.BuildDirs{
@@ -172,13 +170,13 @@ func (b CbuildIdxBuilder) Build() error {
 	}
 
 	if vars.CmakeBin == "" {
-		log.Error("cmake was not found")
+		err = errutils.New(errutils.ErrBinaryNotFound, "cmake", "")
 		return err
 	}
 	if b.Options.Generator == "" {
 		b.Options.Generator = "Ninja"
 		if vars.NinjaBin == "" {
-			log.Error("ninja was not found")
+			err = errutils.New(errutils.ErrBinaryNotFound, "ninja", "")
 			return err
 		}
 	}
@@ -226,4 +224,11 @@ func (b CbuildIdxBuilder) Build() error {
 
 	log.Info("build finished successfully!")
 	return nil
+}
+
+func (b CbuildIdxBuilder) Build() (err error) {
+	if err = b.build(); err != nil {
+		log.Error(err)
+	}
+	return err
 }

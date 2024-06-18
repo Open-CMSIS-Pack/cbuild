@@ -25,7 +25,6 @@ func main() {
 	cmd := commands.NewRootCmd()
 	err := cmd.Execute()
 	if err != nil {
-		log.Error(err)
 		if exitError, ok := err.(*exec.ExitError); ok {
 			os.Exit(exitError.ExitCode())
 		} else {

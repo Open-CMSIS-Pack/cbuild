@@ -66,12 +66,10 @@ func preConfiguration(cmd *cobra.Command, args []string) error {
 	verbose, _ := cmd.Flags().GetBool("verbose")
 	logFile, _ := cmd.Flags().GetString("log")
 
-	if debug {
+	if debug || verbose {
 		log.SetLevel(log.DebugLevel)
 	} else if quiet {
 		log.SetLevel(log.ErrorLevel)
-	} else if verbose {
-		log.SetLevel(log.TraceLevel)
 	}
 
 	if logFile != "" {
