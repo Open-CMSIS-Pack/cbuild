@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Arm Limited. All rights reserved.
+ * Copyright (c) 2022-2024 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -377,4 +377,19 @@ func FileExists(filePath string) (bool, error) {
 	}
 	// Return error for any other issues (permission denied, etc.)
 	return false, err
+}
+
+// Retrieves ninja version
+func GetNinjaVersion() (string, error) {
+	versionStr, err := Runner{}.ExecuteCommand("ninja", false, "--version")
+	if err != nil {
+		return "", errutils.New(errutils.ErrBinaryNotFound, "ninja", "")
+	}
+
+	re := regexp.MustCompile(`^\d+\.\d+\.\d+`)
+	version := re.FindString(versionStr)
+	if version == "" {
+		return "", errutils.New(errutils.ErrNinjaVersionNotFound)
+	}
+	return version, nil
 }

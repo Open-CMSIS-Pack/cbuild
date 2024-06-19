@@ -13,23 +13,39 @@ import (
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder/csolution"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/errutils"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
-func SetUpProject(cmd *cobra.Command, args []string) error {
+func setUpProject(cmd *cobra.Command, args []string) error {
 	var inputFile string
-	if len(args) == 1 {
+	argCnt := len(args)
+	if argCnt == 0 {
+		err := errutils.New(errutils.ErrRequireArg, "cbuild setup --help")
+		log.Error(err)
+		return err
+	} else if argCnt == 1 {
 		inputFile = args[0]
 	} else {
+		err := errutils.New(errutils.ErrInvalidCmdLineArg)
+		log.Error(err)
 		_ = cmd.Help()
-		return errutils.New(errutils.ErrInvalidCmdLineArg)
+		return err
 	}
 
 	fileName := filepath.Base(inputFile)
 	expectedExtension := ".csolution.yml"
 
 	if !strings.HasSuffix(fileName, expectedExtension) {
-		return errutils.New(errutils.ErrInvalidFileExtension, fileName, ".csolution.yml")
+		err := errutils.New(errutils.ErrInvalidFileExtension, fileName, expectedExtension)
+		log.Error(err)
+		return err
+	}
+
+	_, err := utils.FileExists(inputFile)
+	if err != nil {
+		log.Error(err)
+		return err
 	}
 
 	logFile, _ := cmd.Flags().GetString("log")
@@ -74,6 +90,7 @@ func SetUpProject(cmd *cobra.Command, args []string) error {
 
 	configs, err := utils.GetInstallConfigs()
 	if err != nil {
+		log.Error(err)
 		return err
 	}
 
@@ -95,9 +112,8 @@ func SetUpProject(cmd *cobra.Command, args []string) error {
 var SetUpCmd = &cobra.Command{
 	Use:   "setup <name>.csolution.yml [options]",
 	Short: "Generate project data for IDE environment",
-	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return SetUpProject(cmd, args)
+		return setUpProject(cmd, args)
 	},
 }
 

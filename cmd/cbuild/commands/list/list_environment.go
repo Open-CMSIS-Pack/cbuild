@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Arm Limited. All rights reserved.
+ * Copyright (c) 2023-2024 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -8,27 +8,40 @@ package list
 import (
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder/csolution"
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/errutils"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
+
+func listEnvironment(cmd *cobra.Command, args []string) error {
+	if len(args) != 0 {
+		return errutils.New(errutils.ErrAcceptNoArgs, "cbuild list environment --help")
+	}
+
+	configs, err := utils.GetInstallConfigs()
+	if err != nil {
+		return err
+	}
+
+	p := csolution.CSolutionBuilder{
+		BuilderParams: builder.BuilderParams{
+			Runner:         utils.Runner{},
+			InstallConfigs: configs,
+		},
+	}
+	return p.ListEnvironment()
+}
 
 var ListEnvironmentCmd = &cobra.Command{
 	Use:   "environment",
 	Short: "Print list of environment configurations",
-	Args:  cobra.MaximumNArgs(0),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		configs, err := utils.GetInstallConfigs()
+		err := listEnvironment(cmd, args)
 		if err != nil {
-			return err
+			log.Error(err)
 		}
-
-		p := csolution.CSolutionBuilder{
-			BuilderParams: builder.BuilderParams{
-				Runner:         utils.Runner{},
-				InstallConfigs: configs,
-			},
-		}
-		return p.ListEnvironment()
+		return err
 	},
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Arm Limited. All rights reserved.
+ * Copyright (c) 2023-2024 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -12,16 +12,24 @@ import (
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder/cproject"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/errutils"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
 func BuildCPRJ(cmd *cobra.Command, args []string) error {
 	var inputFile string
-	if len(args) == 1 {
+	argCnt := len(args)
+	if argCnt == 0 {
+		err := errutils.New(errutils.ErrRequireArg, "cbuild buildcprj --help")
+		log.Error(err)
+		return err
+	} else if argCnt == 1 {
 		inputFile = args[0]
 	} else {
+		err := errutils.New(errutils.ErrInvalidCmdLineArg)
+		log.Error(err)
 		_ = cmd.Help()
-		return errutils.New(errutils.ErrInvalidCmdLineArg)
+		return err
 	}
 
 	intDir, _ := cmd.Flags().GetString("intdir")
@@ -62,6 +70,7 @@ func BuildCPRJ(cmd *cobra.Command, args []string) error {
 
 	configs, err := utils.GetInstallConfigs()
 	if err != nil {
+		log.Error(err)
 		return err
 	}
 
@@ -78,7 +87,15 @@ func BuildCPRJ(cmd *cobra.Command, args []string) error {
 	if fileExtension == expectedExtension {
 		b = cproject.CprjBuilder{BuilderParams: params}
 	} else {
-		return errutils.New(errutils.ErrInvalidFileExtension, fileExtension, expectedExtension)
+		err := errutils.New(errutils.ErrInvalidFileExtension, fileExtension, expectedExtension)
+		log.Error(err)
+		return err
+	}
+
+	_, err = utils.FileExists(inputFile)
+	if err != nil {
+		log.Error(err)
+		return err
 	}
 
 	return b.Build()
@@ -87,7 +104,6 @@ func BuildCPRJ(cmd *cobra.Command, args []string) error {
 var BuildCPRJCmd = &cobra.Command{
 	Use:   "buildcprj <name>.cprj [options]",
 	Short: "Use a *.CPRJ file as build input",
-	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return BuildCPRJ(cmd, args)
 	},

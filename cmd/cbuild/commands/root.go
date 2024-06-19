@@ -76,11 +76,13 @@ func preConfiguration(cmd *cobra.Command, args []string) error {
 		parentLogDir := filepath.Dir(logFile)
 		if _, err := os.Stat(parentLogDir); os.IsNotExist(err) {
 			if err := os.MkdirAll(parentLogDir, 0755); err != nil {
+				log.Error(err)
 				return err
 			}
 		}
 		file, err := os.Create(logFile)
 		if err != nil {
+			log.Error(err)
 			return err
 		}
 		multiWriter := io.MultiWriter(os.Stdout, file)
@@ -108,8 +110,10 @@ func NewRootCmd() *cobra.Command {
 			if len(args) == 1 {
 				inputFile = args[0]
 			} else {
+				err := errutils.New(errutils.ErrInvalidCmdLineArg)
+				log.Error(err)
 				_ = cmd.Help()
-				return errutils.New(errutils.ErrInvalidCmdLineArg)
+				return err
 			}
 			intDir, _ := cmd.Flags().GetString("intdir")
 			outDir, _ := cmd.Flags().GetString("outdir")
@@ -161,6 +165,7 @@ func NewRootCmd() *cobra.Command {
 
 			configs, err := utils.GetInstallConfigs()
 			if err != nil {
+				log.Error(err)
 				return err
 			}
 
@@ -174,12 +179,14 @@ func NewRootCmd() *cobra.Command {
 			// get builder for supported input file
 			b, err := getBuilder(inputFile, params)
 			if err != nil {
+				log.Error(err)
 				return err
 			}
 
 			// check if input file exists
 			_, err = utils.FileExists(inputFile)
 			if err != nil {
+				log.Error(err)
 				return err
 			}
 
@@ -247,6 +254,6 @@ func getBuilder(inputFile string, params builder.BuilderParams) (builder.IBuilde
 	case strings.HasSuffix(fileName, ".cprj"):
 		return cproject.CprjBuilder{BuilderParams: params}, nil
 	default:
-		return nil, errutils.New(errutils.ErrInvalidFileExtension, fileName, ".csolution.yml & .cprj")
+		return nil, errutils.New(errutils.ErrInvalidFileExtension, fileName, ".csolution.yml or .cprj")
 	}
 }
