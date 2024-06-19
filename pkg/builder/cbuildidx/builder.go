@@ -23,20 +23,6 @@ type CbuildIdxBuilder struct {
 	builder.BuilderParams
 }
 
-func (b CbuildIdxBuilder) checkCbuildIdx() error {
-	fileName := filepath.Base(b.InputFile)
-	expectedExtension := ".cbuild-idx.yml"
-	if !strings.HasSuffix(fileName, expectedExtension) {
-		err := errutils.New(errutils.ErrInvalidFile, fileName, "<project>."+expectedExtension)
-		return err
-	} else {
-		if _, err := os.Stat(b.InputFile); os.IsNotExist(err) {
-			return err
-		}
-	}
-	return nil
-}
-
 func (b CbuildIdxBuilder) clean(dirs builder.BuildDirs, vars builder.InternalVars) (err error) {
 	removeDirectory := func(dir string) error {
 		if _, err := os.Stat(dir); os.IsNotExist(err) {
@@ -118,7 +104,8 @@ func (b CbuildIdxBuilder) getDirs(context string) (dirs builder.BuildDirs, err e
 func (b CbuildIdxBuilder) build() error {
 	b.InputFile, _ = filepath.Abs(b.InputFile)
 	b.InputFile = utils.NormalizePath(b.InputFile)
-	err := b.checkCbuildIdx()
+
+	_, err := utils.FileExists(b.InputFile)
 	if err != nil {
 		return err
 	}
@@ -152,6 +139,11 @@ func (b CbuildIdxBuilder) build() error {
 		return nil
 	}
 
+	if vars.CmakeBin == "" {
+		err = errutils.New(errutils.ErrBinaryNotFound, "cmake", "")
+		return err
+	}
+
 	args := []string{b.InputFile}
 	if b.Options.UseContextSet {
 		args = append(args, "--context-set")
@@ -169,10 +161,6 @@ func (b CbuildIdxBuilder) build() error {
 		return err
 	}
 
-	if vars.CmakeBin == "" {
-		err = errutils.New(errutils.ErrBinaryNotFound, "cmake", "")
-		return err
-	}
 	if b.Options.Generator == "" {
 		b.Options.Generator = "Ninja"
 		if vars.NinjaBin == "" {

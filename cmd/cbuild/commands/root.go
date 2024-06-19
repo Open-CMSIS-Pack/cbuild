@@ -239,17 +239,14 @@ func FlagErrorFunc(cmd *cobra.Command, err error) error {
 }
 
 func getBuilder(inputFile string, params builder.BuilderParams) (builder.IBuilderInterface, error) {
-	fileExtension := filepath.Ext(inputFile)
-	var b builder.IBuilderInterface
+	fileName := filepath.Base(inputFile)
 
-	switch fileExtension {
-	case ".cprj":
-		b = cproject.CprjBuilder{BuilderParams: params}
-	case ".yml":
-		b = csolution.CSolutionBuilder{BuilderParams: params}
+	switch {
+	case strings.HasSuffix(fileName, ".csolution.yml"):
+		return csolution.CSolutionBuilder{BuilderParams: params}, nil
+	case strings.HasSuffix(fileName, ".cprj"):
+		return cproject.CprjBuilder{BuilderParams: params}, nil
 	default:
-		return nil, errutils.New(errutils.ErrInvalidFileExtension, fileExtension, ".cprj & .yml")
+		return nil, errutils.New(errutils.ErrInvalidFileExtension, fileName, ".csolution.yml & .cprj")
 	}
-
-	return b, nil
 }

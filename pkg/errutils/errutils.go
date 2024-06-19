@@ -12,19 +12,17 @@ import (
 )
 
 const (
-	ErrInvalidFileExtension     = "unsupported file extension: %s. Supported extension(s): %s"
-	ErrInvalidCmdLineArg        = "expected only one argument specifying the input file"
-	ErrFileNotExist             = "file %s does not exist"
-	ErrNoContextFound           = "no context(s) found to process"
-	ErrBinaryNotFound           = "%s binary not found %s"
-	ErrMissingPacks             = "missing packs must be installed, rerun cbuild with the --packs option"
-	ErrPathNotFound             = "path %s not found"
-	ErrInvalidContextFormat     = "invalid context format. Expected [project][.buildType][+targetType]"
-	ErrInvalidCSolutionFileName = "invalid csolution file name format. Expected '<projectname>.csolution.yml'"
-	ErrNoFilteredContextFound   = "no suitable context matched for filter '%s'"
-	ErrNoRefToCPRJFile          = "reference to '%s' not found in '%s' file"
-	ErrInvalidCommand           = "invalid command entered. Please check your input and try again"
-	ErrInvalidFile              = "invalid file: %s. Expected '%s' file"
+	ErrInvalidFileExtension   = "invalid file extension: '%s'. Expected: '%s'"
+	ErrInvalidCmdLineArg      = "multiple input files"
+	ErrFileNotExist           = "file %s does not exist"
+	ErrNoContextFound         = "no context found to process"
+	ErrBinaryNotFound         = "%s not found %s"
+	ErrMissingPacks           = "missing packs. Use --packs option with cbuild command to install them"
+	ErrETCPathNotFound        = "couldn't locate '%s' directory relative to '%s'"
+	ErrInvalidContextFormat   = "invalid context format. Expected [<project-name>][.<build-type>][+<target-type>]"
+	ErrNoFilteredContextFound = "no valid context found for '%s'"
+	ErrInvalidCommand         = "invalid command '%s'. Run 'cbuild --help' for supported commands"
+	ErrCPRJNotFound           = "couldn't locate %s file"
 )
 
 func New(errorFormat string, args ...any) error {

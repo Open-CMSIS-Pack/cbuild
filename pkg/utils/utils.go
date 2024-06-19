@@ -266,15 +266,6 @@ func NormalizePath(path string) string {
 	return path
 }
 
-func GetProjectName(csolutionFile string) (projectName string, err error) {
-	csolutionFile = NormalizePath(csolutionFile)
-	nameTokens := strings.Split(filepath.Base(csolutionFile), ".")
-	if len(nameTokens) != 3 || nameTokens[1] != "csolution" || nameTokens[2] != "yml" {
-		return "", errutils.New(errutils.ErrInvalidCSolutionFileName)
-	}
-	return nameTokens[0], nil
-}
-
 func ResolveContexts(allContext []string, contextFilters []string) ([]string, error) {
 	var selectedContexts []string
 

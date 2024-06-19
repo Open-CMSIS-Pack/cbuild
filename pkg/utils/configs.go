@@ -35,7 +35,7 @@ func GetInstallConfigs() (configs Configurations, err error) {
 	configs.BinPath = binPath
 	etcPath := filepath.Clean(binPath + "/../etc")
 	if _, err = os.Stat(etcPath); os.IsNotExist(err) {
-		err = errutils.New(errutils.ErrPathNotFound, etcPath)
+		err = errutils.New(errutils.ErrETCPathNotFound, "../etc", configs.BinPath)
 		return Configurations{}, err
 	}
 	if etcPath != "" {

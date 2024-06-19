@@ -45,7 +45,7 @@ func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) (
 	} else if strings.Contains(program, "ninja") {
 	} else if strings.Contains(program, "xmllint") {
 	} else {
-		return "", errutils.New(errutils.ErrInvalidCommand)
+		return "", errutils.New(errutils.ErrInvalidCommand, program)
 	}
 	return "", nil
 }

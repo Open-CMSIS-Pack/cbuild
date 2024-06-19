@@ -246,27 +246,6 @@ func TestNormalizePath(t *testing.T) {
 	})
 }
 
-func TestGetProjectName(t *testing.T) {
-	assert := assert.New(t)
-	t.Run("test get project name from backslash path", func(t *testing.T) {
-		projName, err := GetProjectName("test\\input\\test.csolution.yml")
-		assert.Nil(err)
-		assert.Equal(projName, "test")
-	})
-
-	t.Run("test get project name from path", func(t *testing.T) {
-		projName, err := GetProjectName("test/input/test.csolution.yml")
-		assert.Nil(err)
-		assert.Equal(projName, "test")
-	})
-
-	t.Run("test get project name with invalid file name", func(t *testing.T) {
-		projName, err := GetProjectName("test/input/csolution.yml")
-		assert.Error(err)
-		assert.Equal(projName, "")
-	})
-}
-
 func TestResolveContexts(t *testing.T) {
 	assert := assert.New(t)
 

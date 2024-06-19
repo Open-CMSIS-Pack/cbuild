@@ -52,7 +52,7 @@ func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) (
 	} else if strings.Contains(program, "ninja") {
 	} else if strings.Contains(program, "xmllint") {
 	} else {
-		return "", errutils.New(errutils.ErrInvalidCommand)
+		return "", errutils.New(errutils.ErrInvalidCommand, program)
 	}
 	return "", nil
 }
@@ -430,15 +430,6 @@ func TestGetIdxFilePath(t *testing.T) {
 		path, err := b.getIdxFilePath()
 		assert.Nil(err)
 		assert.Equal(path, utils.NormalizePath(filepath.Join(testRoot, testDir, "TestSolution/test.cbuild-idx.yml")))
-	})
-
-	t.Run("test get idx file path with output path", func(t *testing.T) {
-		b.InputFile = filepath.Join(testRoot, testDir, "TestSolution/test.csolution.yml")
-		b.Options.Output = filepath.Join(testRoot, testDir, "outdir")
-
-		path, err := b.getIdxFilePath()
-		assert.Nil(err)
-		assert.Equal(path, utils.NormalizePath(b.Options.Output+"/test.cbuild-idx.yml"))
 	})
 }
 

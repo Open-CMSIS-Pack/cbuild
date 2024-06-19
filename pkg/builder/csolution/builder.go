@@ -234,7 +234,7 @@ func (b CSolutionBuilder) getCprjFilePath(idxFile string, context string) (strin
 			}
 		}
 		if path == "" {
-			err = errutils.New(errutils.ErrNoRefToCPRJFile, context+".cprj", idxFile)
+			err = errutils.New(errutils.ErrCPRJNotFound, context+".cprj")
 		} else {
 			cprjPath = filepath.Join(filepath.Dir(idxFile), filepath.Dir(path), context+".cprj")
 		}
@@ -273,26 +273,33 @@ func (b CSolutionBuilder) getCSolutionPath() (path string, err error) {
 }
 
 func (b CSolutionBuilder) getIdxFilePath() (string, error) {
-	projName, err := utils.GetProjectName(b.InputFile)
-	if err != nil {
-		return "", err
-	}
-
+	projName := b.getProjectName(b.InputFile)
 	outputDir := b.Options.Output
 	if outputDir == "" {
 		outputDir = filepath.Dir(b.InputFile)
 	}
 	idxFilePath := utils.NormalizePath(filepath.Join(outputDir, projName+".cbuild-idx.yml"))
-	return idxFilePath, nil
-}
-
-func (b CSolutionBuilder) getCbuildSetFilePath() (string, error) {
-	projName, err := utils.GetProjectName(b.InputFile)
+	_, err := utils.FileExists(idxFilePath)
 	if err != nil {
 		return "", err
 	}
+	return idxFilePath, nil
+}
+
+func (b CSolutionBuilder) getProjectName(csolutionFile string) (projectName string) {
+	csolutionFile = utils.NormalizePath(csolutionFile)
+	nameTokens := strings.Split(filepath.Base(csolutionFile), ".")
+	return nameTokens[0]
+}
+
+func (b CSolutionBuilder) getCbuildSetFilePath() (string, error) {
+	projName := b.getProjectName(b.InputFile)
 	setFilePath := utils.NormalizePath(filepath.Join(filepath.Dir(b.InputFile), projName+".cbuild-set.yml"))
 
+	_, err := utils.FileExists(setFilePath)
+	if err != nil {
+		return "", err
+	}
 	return setFilePath, nil
 }
 

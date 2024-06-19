@@ -167,7 +167,8 @@ func (b CprjBuilder) build() error {
 	if _, err := os.Stat(packlistFile); !os.IsNotExist(err) {
 		if b.Options.Packs {
 			if vars.CpackgetBin == "" {
-				err = errutils.New(errutils.ErrBinaryNotFound, "cpackget", "missing packs cannot be downloaded")
+				err = errutils.New(errutils.ErrBinaryNotFound,
+					"cpackget", "in "+vars.BinPath+". Missing packs cannot be installed")
 				return err
 			}
 			args = []string{"add", "--agree-embedded-license", "--no-dependencies", "--packs-list-filename", packlistFile}

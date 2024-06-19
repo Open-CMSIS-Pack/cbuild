@@ -39,37 +39,9 @@ func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) (
 	} else if strings.Contains(program, "ninja") {
 	} else if strings.Contains(program, "xmllint") {
 	} else {
-		return "", errutils.New(errutils.ErrInvalidCommand)
+		return "", errutils.New(errutils.ErrInvalidCommand, program)
 	}
 	return "", nil
-}
-
-func TestCheckCbuildIdx(t *testing.T) {
-	assert := assert.New(t)
-
-	b := CbuildIdxBuilder{
-		builder.BuilderParams{
-			Runner: RunnerMock{},
-		},
-	}
-
-	t.Run("test valid cbuild-idx", func(t *testing.T) {
-		b.InputFile = filepath.Join(testRoot, testDir, "Hello.cbuild-idx.yml")
-		err := b.checkCbuildIdx()
-		assert.Nil(err)
-	})
-
-	t.Run("test existent file, invalid extension", func(t *testing.T) {
-		b.InputFile = filepath.Join(testRoot, testDir, "main.c")
-		err := b.checkCbuildIdx()
-		assert.Error(err)
-	})
-
-	t.Run("test invalid file", func(t *testing.T) {
-		b.InputFile = filepath.Join(testRoot, testDir, "invalid-file.cbuild-idx.yml")
-		err := b.checkCbuildIdx()
-		assert.Error(err)
-	})
 }
 
 func TestGetDirs(t *testing.T) {
