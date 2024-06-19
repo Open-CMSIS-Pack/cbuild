@@ -6,11 +6,11 @@
 package build
 
 import (
-	"errors"
 	"path/filepath"
 
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder/cproject"
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/errutils"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
 	"github.com/spf13/cobra"
 )
@@ -21,7 +21,7 @@ func BuildCPRJ(cmd *cobra.Command, args []string) error {
 		inputFile = args[0]
 	} else {
 		_ = cmd.Help()
-		return errors.New("invalid arguments")
+		return errutils.New(errutils.ErrInvalidCmdLineArg)
 	}
 
 	intDir, _ := cmd.Flags().GetString("intdir")
@@ -73,11 +73,12 @@ func BuildCPRJ(cmd *cobra.Command, args []string) error {
 	}
 
 	fileExtension := filepath.Ext(inputFile)
+	expectedExtension := ".cprj"
 	var b builder.IBuilderInterface
-	if fileExtension == ".cprj" {
+	if fileExtension == expectedExtension {
 		b = cproject.CprjBuilder{BuilderParams: params}
 	} else {
-		return errors.New("invalid file argument")
+		return errutils.New(errutils.ErrInvalidFileExtension, fileExtension, expectedExtension)
 	}
 
 	return b.Build()

@@ -7,7 +7,6 @@
 package commands
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -20,6 +19,7 @@ import (
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder/cproject"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder/csolution"
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/errutils"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -60,16 +60,18 @@ Use "{{.CommandPath}} [command] --help" for more information about a command.{{e
 
 func preConfiguration(cmd *cobra.Command, args []string) error {
 	// configure log level
-	log.SetLevel(log.InfoLevel)
+	log.SetLevel(log.WarnLevel)
 	debug, _ := cmd.Flags().GetBool("debug")
 	quiet, _ := cmd.Flags().GetBool("quiet")
+	verbose, _ := cmd.Flags().GetBool("verbose")
 	logFile, _ := cmd.Flags().GetString("log")
 
-	if debug {
+	if debug || verbose {
 		log.SetLevel(log.DebugLevel)
 	} else if quiet {
 		log.SetLevel(log.ErrorLevel)
 	}
+
 	if logFile != "" {
 		parentLogDir := filepath.Dir(logFile)
 		if _, err := os.Stat(parentLogDir); os.IsNotExist(err) {
@@ -107,7 +109,7 @@ func NewRootCmd() *cobra.Command {
 				inputFile = args[0]
 			} else {
 				_ = cmd.Help()
-				return errors.New("invalid arguments")
+				return errutils.New(errutils.ErrInvalidCmdLineArg)
 			}
 			intDir, _ := cmd.Flags().GetString("intdir")
 			outDir, _ := cmd.Flags().GetString("outdir")
@@ -169,14 +171,16 @@ func NewRootCmd() *cobra.Command {
 				InstallConfigs: configs,
 			}
 
-			fileExtension := filepath.Ext(inputFile)
-			var b builder.IBuilderInterface
-			if fileExtension == ".cprj" {
-				b = cproject.CprjBuilder{BuilderParams: params}
-			} else if fileExtension == ".yml" || fileExtension == ".yaml" {
-				b = csolution.CSolutionBuilder{BuilderParams: params}
-			} else {
-				return errors.New("invalid file argument")
+			// get builder for supported input file
+			b, err := getBuilder(inputFile, params)
+			if err != nil {
+				return err
+			}
+
+			// check if input file exists
+			_, err = utils.FileExists(inputFile)
+			if err != nil {
+				return err
 			}
 
 			log.Info("Build Invocation " + Version + CopyrightNotice)
@@ -232,4 +236,17 @@ func FlagErrorFunc(cmd *cobra.Command, err error) error {
 		_ = cmd.Help()
 	}
 	return err
+}
+
+func getBuilder(inputFile string, params builder.BuilderParams) (builder.IBuilderInterface, error) {
+	fileName := filepath.Base(inputFile)
+
+	switch {
+	case strings.HasSuffix(fileName, ".csolution.yml"):
+		return csolution.CSolutionBuilder{BuilderParams: params}, nil
+	case strings.HasSuffix(fileName, ".cprj"):
+		return cproject.CprjBuilder{BuilderParams: params}, nil
+	default:
+		return nil, errutils.New(errutils.ErrInvalidFileExtension, fileName, ".csolution.yml & .cprj")
+	}
 }

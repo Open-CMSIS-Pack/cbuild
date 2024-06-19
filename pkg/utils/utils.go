@@ -7,7 +7,6 @@
 package utils
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -17,6 +16,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/errutils"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
@@ -94,7 +94,7 @@ func GetDefaultCmsisPackRoot() (root string) {
 }
 
 func ParseContext(context string) (item ContextItem, err error) {
-	parseError := errors.New("invalid context. Follow [project][.buildType][+targetType] syntax")
+	parseError := errutils.New(errutils.ErrInvalidContextFormat)
 
 	periodCount := strings.Count(context, ".")
 	plusCount := strings.Count(context, "+")
@@ -266,15 +266,6 @@ func NormalizePath(path string) string {
 	return path
 }
 
-func GetProjectName(csolutionFile string) (projectName string, err error) {
-	csolutionFile = NormalizePath(csolutionFile)
-	nameTokens := strings.Split(filepath.Base(csolutionFile), ".")
-	if len(nameTokens) != 3 {
-		return "", errors.New("invalid csolution file name")
-	}
-	return nameTokens[0], nil
-}
-
 func ResolveContexts(allContext []string, contextFilters []string) ([]string, error) {
 	var selectedContexts []string
 
@@ -326,7 +317,7 @@ func ResolveContexts(allContext []string, contextFilters []string) ([]string, er
 			}
 		}
 		if !matchFound {
-			return nil, errors.New("no suitable match found for \"" + filter + "\"")
+			return nil, errutils.New(errutils.ErrNoFilteredContextFound, filter)
 		}
 	}
 	return selectedContexts, nil
@@ -372,4 +363,18 @@ func RemoveDuplicates(input []string) []string {
 	}
 
 	return result
+}
+
+func FileExists(filePath string) (bool, error) {
+	_, err := os.Stat(filePath)
+	if err == nil {
+		// File exists
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		// File doesn't exist
+		return false, errutils.New(errutils.ErrFileNotExist, filePath)
+	}
+	// Return error for any other issues (permission denied, etc.)
+	return false, err
 }

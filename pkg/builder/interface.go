@@ -73,13 +73,11 @@ func (b BuilderParams) GetInternalVars() (vars InternalVars, err error) {
 
 	vars.CbuildgenBin = filepath.Join(vars.BinPath, "cbuildgen"+b.InstallConfigs.BinExtn)
 	if _, err := os.Stat(vars.CbuildgenBin); os.IsNotExist(err) {
-		log.Error("cbuildgen was not found")
 		return vars, err
 	}
 
 	vars.Cbuild2cmakeBin = filepath.Join(vars.BinPath, "cbuild2cmake"+b.InstallConfigs.BinExtn)
 	if _, err := os.Stat(vars.Cbuild2cmakeBin); os.IsNotExist(err) {
-		log.Error("cbuild2cmake was not found")
 		return vars, err
 	}
 

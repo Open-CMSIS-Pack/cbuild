@@ -1,0 +1,7 @@
+cbuild-set:
+  generated-by: csolution version 2.1.0
+  contexts:
+    - context: test2.Debug+CM0
+    - context: test2.Debug+CM3
+    - context: test1.Debug+CM0
+    - context: test1.Release+CM0

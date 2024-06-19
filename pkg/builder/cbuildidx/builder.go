@@ -14,26 +14,13 @@ import (
 	"strings"
 
 	builder "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder"
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/errutils"
 	utils "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
 	log "github.com/sirupsen/logrus"
 )
 
 type CbuildIdxBuilder struct {
 	builder.BuilderParams
-}
-
-func (b CbuildIdxBuilder) checkCbuildIdx() error {
-	fileName := filepath.Base(b.InputFile)
-	if !strings.HasSuffix(fileName, ".cbuild-idx.yml") {
-		err := errors.New(".cbuild-idx.yml file not found")
-		return err
-	} else {
-		if _, err := os.Stat(b.InputFile); os.IsNotExist(err) {
-			log.Error("cbuild-idx file " + b.InputFile + " does not exist")
-			return err
-		}
-	}
-	return nil
 }
 
 func (b CbuildIdxBuilder) clean(dirs builder.BuildDirs, vars builder.InternalVars) (err error) {
@@ -60,7 +47,6 @@ func (b CbuildIdxBuilder) clean(dirs builder.BuildDirs, vars builder.InternalVar
 
 func (b CbuildIdxBuilder) getDirs(context string) (dirs builder.BuildDirs, err error) {
 	if _, err := os.Stat(b.InputFile); os.IsNotExist(err) {
-		log.Error("file " + b.InputFile + " does not exist")
 		return dirs, err
 	}
 
@@ -94,7 +80,6 @@ func (b CbuildIdxBuilder) getDirs(context string) (dirs builder.BuildDirs, err e
 		cbuildFile = filepath.Join(path, cbuildFile)
 		_, outDir, err := GetBuildDirs(cbuildFile)
 		if err != nil {
-			log.Error("error parsing file: " + cbuildFile)
 			return dirs, err
 		}
 
@@ -116,10 +101,11 @@ func (b CbuildIdxBuilder) getDirs(context string) (dirs builder.BuildDirs, err e
 	return dirs, err
 }
 
-func (b CbuildIdxBuilder) Build() error {
+func (b CbuildIdxBuilder) build() error {
 	b.InputFile, _ = filepath.Abs(b.InputFile)
 	b.InputFile = utils.NormalizePath(b.InputFile)
-	err := b.checkCbuildIdx()
+
+	_, err := utils.FileExists(b.InputFile)
 	if err != nil {
 		return err
 	}
@@ -132,7 +118,7 @@ func (b CbuildIdxBuilder) Build() error {
 	_ = utils.UpdateEnvVars(vars.BinPath, vars.EtcPath)
 
 	if len(b.Options.Contexts) == 0 && b.BuildContext == "" {
-		err = errors.New("error no context(s) to process")
+		err = errutils.New(errutils.ErrNoContextFound)
 		return err
 	}
 
@@ -153,6 +139,11 @@ func (b CbuildIdxBuilder) Build() error {
 		return nil
 	}
 
+	if vars.CmakeBin == "" {
+		err = errutils.New(errutils.ErrBinaryNotFound, "cmake", "")
+		return err
+	}
+
 	args := []string{b.InputFile}
 	if b.Options.UseContextSet {
 		args = append(args, "--context-set")
@@ -170,14 +161,10 @@ func (b CbuildIdxBuilder) Build() error {
 		return err
 	}
 
-	if vars.CmakeBin == "" {
-		log.Error("cmake was not found")
-		return err
-	}
 	if b.Options.Generator == "" {
 		b.Options.Generator = "Ninja"
 		if vars.NinjaBin == "" {
-			log.Error("ninja was not found")
+			err = errutils.New(errutils.ErrBinaryNotFound, "ninja", "")
 			return err
 		}
 	}
@@ -225,4 +212,11 @@ func (b CbuildIdxBuilder) Build() error {
 
 	log.Info("build finished successfully!")
 	return nil
+}
+
+func (b CbuildIdxBuilder) Build() (err error) {
+	if err = b.build(); err != nil {
+		log.Error(err)
+	}
+	return err
 }

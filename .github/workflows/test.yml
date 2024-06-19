@@ -89,6 +89,23 @@ jobs:
     name: 'Test (${{ matrix.target }})'
     runs-on: ${{ matrix.platform }}
     steps:
+      - name: Install macos deps
+        if: ${{ startsWith(matrix.platform, 'macos') }}
+        run: |
+          brew install \
+            ninja
+
+      - name: Install linux deps
+        if: ${{ startsWith(matrix.platform, 'ubuntu') }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install \
+            ninja-build
+
+      - name: Install windows deps
+        if: ${{ startsWith(matrix.platform, 'windows') }}
+        run: choco install -y ninja
+
       - name: Check out repository code
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
@@ -166,6 +183,12 @@ jobs:
     name: 'Coverage check'
     runs-on: ubuntu-latest
     steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install \
+            ninja-build
+
       - name: Check out repository code
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 

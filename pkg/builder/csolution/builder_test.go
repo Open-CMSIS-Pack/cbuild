@@ -7,13 +7,13 @@
 package csolution
 
 import (
-	"errors"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	builder "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder"
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/errutils"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/inittest"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
 	"github.com/stretchr/testify/assert"
@@ -52,7 +52,7 @@ func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) (
 	} else if strings.Contains(program, "ninja") {
 	} else if strings.Contains(program, "xmllint") {
 	} else {
-		return "", errors.New("invalid command")
+		return "", errutils.New(errutils.ErrInvalidCommand, program)
 	}
 	return "", nil
 }
@@ -430,15 +430,6 @@ func TestGetIdxFilePath(t *testing.T) {
 		path, err := b.getIdxFilePath()
 		assert.Nil(err)
 		assert.Equal(path, utils.NormalizePath(filepath.Join(testRoot, testDir, "TestSolution/test.cbuild-idx.yml")))
-	})
-
-	t.Run("test get idx file path with output path", func(t *testing.T) {
-		b.InputFile = filepath.Join(testRoot, testDir, "TestSolution/test.csolution.yml")
-		b.Options.Output = filepath.Join(testRoot, testDir, "outdir")
-
-		path, err := b.getIdxFilePath()
-		assert.Nil(err)
-		assert.Equal(path, utils.NormalizePath(b.Options.Output+"/test.cbuild-idx.yml"))
 	})
 }
 

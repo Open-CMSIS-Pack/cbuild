@@ -7,10 +7,11 @@
 package utils
 
 import (
-	"errors"
 	"os"
 	"path/filepath"
 	"runtime"
+
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/errutils"
 )
 
 type Configurations struct {
@@ -34,7 +35,7 @@ func GetInstallConfigs() (configs Configurations, err error) {
 	configs.BinPath = binPath
 	etcPath := filepath.Clean(binPath + "/../etc")
 	if _, err = os.Stat(etcPath); os.IsNotExist(err) {
-		err = errors.New(etcPath + " path was not found")
+		err = errutils.New(errutils.ErrETCPathNotFound, "../etc", configs.BinPath)
 		return Configurations{}, err
 	}
 	if etcPath != "" {

@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	builder "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder"
+	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/errutils"
 	utils "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
 	log "github.com/sirupsen/logrus"
 )
@@ -23,12 +24,12 @@ type CprjBuilder struct {
 }
 
 func (b CprjBuilder) checkCprj() error {
-	if filepath.Ext(b.InputFile) != ".cprj" {
-		err := errors.New("missing required argument <project>.cprj")
-		return err
+	fileExtension := filepath.Ext(b.InputFile)
+	expectedExtension := ".cprj"
+	if fileExtension != expectedExtension {
+		return errutils.New(errutils.ErrInvalidFileExtension, fileExtension, expectedExtension)
 	} else {
 		if _, err := os.Stat(b.InputFile); os.IsNotExist(err) {
-			log.Error("project file " + b.InputFile + " does not exist")
 			return err
 		}
 	}
@@ -71,7 +72,6 @@ func (b CprjBuilder) getDirs() (dirs builder.BuildDirs, err error) {
 
 	intDir, outDir, err := GetCprjDirs(b.InputFile)
 	if err != nil {
-		log.Error("error parsing file: " + b.InputFile)
 		return dirs, err
 	}
 	if dirs.IntDir == "" {
@@ -102,7 +102,7 @@ func (b CprjBuilder) getDirs() (dirs builder.BuildDirs, err error) {
 	return dirs, err
 }
 
-func (b CprjBuilder) Build() error {
+func (b CprjBuilder) build() error {
 	b.InputFile, _ = filepath.Abs(b.InputFile)
 	b.InputFile = utils.NormalizePath(b.InputFile)
 
@@ -129,7 +129,8 @@ func (b CprjBuilder) Build() error {
 			return err
 		}
 	} else if b.Options.Clean {
-		return b.clean(dirs, vars)
+		err = b.clean(dirs, vars)
+		return err
 	}
 
 	if b.Options.Schema {
@@ -166,7 +167,8 @@ func (b CprjBuilder) Build() error {
 	if _, err := os.Stat(packlistFile); !os.IsNotExist(err) {
 		if b.Options.Packs {
 			if vars.CpackgetBin == "" {
-				err := errors.New("cpackget was not found, missing packs cannot be downloaded")
+				err = errutils.New(errutils.ErrBinaryNotFound,
+					"cpackget", "in "+vars.BinPath+". Missing packs cannot be installed")
 				return err
 			}
 			args = []string{"add", "--agree-embedded-license", "--no-dependencies", "--packs-list-filename", packlistFile}
@@ -180,8 +182,7 @@ func (b CprjBuilder) Build() error {
 				return err
 			}
 		} else {
-			err := errors.New("missing packs must be installed, rerun cbuild with the --packs option")
-			log.Error(err)
+			err = errutils.New(errutils.ErrMissingPacks)
 			return err
 		}
 	}
@@ -209,14 +210,14 @@ func (b CprjBuilder) Build() error {
 	}
 
 	if vars.CmakeBin == "" {
-		log.Error("cmake was not found")
+		err = errutils.New(errutils.ErrBinaryNotFound, "cmake", "")
 		return err
 	}
 
 	if b.Options.Generator == "" {
 		b.Options.Generator = "Ninja"
 		if vars.NinjaBin == "" {
-			log.Error("ninja was not found")
+			err = errutils.New(errutils.ErrBinaryNotFound, "ninja", "")
 			return err
 		}
 	}
@@ -265,4 +266,11 @@ func (b CprjBuilder) Build() error {
 	}
 	log.Info(operation + " finished successfully!")
 	return nil
+}
+
+func (b CprjBuilder) Build() (err error) {
+	if err = b.build(); err != nil {
+		log.Error(err)
+	}
+	return err
 }
