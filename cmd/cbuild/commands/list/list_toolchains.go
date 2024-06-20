@@ -25,7 +25,7 @@ func listToolchains(cmd *cobra.Command, args []string) error {
 
 		fileName := filepath.Base(inputFile)
 		expectedExtension := ".csolution.yml"
-		if !strings.HasSuffix(fileName, expectedExtension) {
+		if !strings.HasSuffix(fileName, expectedExtension) && !strings.HasSuffix(fileName, ".csolution.yaml") {
 			return errutils.New(errutils.ErrInvalidFileExtension, fileName, expectedExtension)
 		}
 

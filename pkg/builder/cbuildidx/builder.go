@@ -11,13 +11,17 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	builder "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/errutils"
 	utils "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
+	"github.com/hashicorp/go-version"
 	log "github.com/sirupsen/logrus"
 )
+
+const NinjaVersion = "1.11.1"
 
 type CbuildIdxBuilder struct {
 	builder.BuilderParams
@@ -198,7 +202,16 @@ func (b CbuildIdxBuilder) build() error {
 	}
 
 	if b.Options.Generator == "Ninja" && !(b.Options.Debug || b.Options.Verbose) {
-		args = append(args, "--", "--quiet")
+		isVersionGreaterorEqual, err := b.validateNinjaVersion(NinjaVersion)
+		if err != nil {
+			return err
+		}
+
+		if isVersionGreaterorEqual {
+			args = append(args, "--", "--quiet")
+		} else {
+			log.Warn(errutils.WarnNinjaVersion)
+		}
 	}
 
 	if b.Options.Debug {
@@ -219,4 +232,58 @@ func (b CbuildIdxBuilder) Build() (err error) {
 		log.Error(err)
 	}
 	return err
+}
+
+func (b CbuildIdxBuilder) validateNinjaVersion(refVersion string) (bool, error) {
+	// Fetch installed version of ninja
+	version, err := b.getNinjaVersion()
+	if err != nil {
+		return false, err
+	}
+
+	// Compare with fixed 1.11.1 version
+	result, err := b.compareVersions(version, refVersion)
+	if err != nil {
+		return false, err
+	}
+
+	// Installed ninja version is lesser
+	if result == -1 {
+		return false, nil
+	}
+
+	// Installed version is greater or equal
+	return true, nil
+}
+
+// Retrieves ninja version
+func (b CbuildIdxBuilder) getNinjaVersion() (string, error) {
+	versionStr, err := b.Runner.ExecuteCommand("ninja", true, "--version")
+	if err != nil {
+		return "", errutils.New(errutils.ErrBinaryNotFound, "ninja", "")
+	}
+
+	re := regexp.MustCompile(`^[\d]+.[\d+]+.[\d+]`)
+	version := re.FindString(versionStr)
+	if version == "" {
+		return "", errutils.New(errutils.ErrNinjaVersionNotFound)
+	}
+	return version, nil
+}
+
+// Compare compares this version to another version. This
+// returns -1, 0, or 1 if this version is smaller, equal,
+// or larger than the other version, respectively
+// or error when invalid input
+func (b CbuildIdxBuilder) compareVersions(v1, v2 string) (int, error) {
+	version1, err := version.NewSemver(v1)
+	if err != nil {
+		return 0, err
+	}
+	version2, err := version.NewSemver(v2)
+	if err != nil {
+		return 0, err
+	}
+
+	return version1.Compare(version2), nil
 }
