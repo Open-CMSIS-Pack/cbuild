@@ -37,6 +37,9 @@ func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) (
 	} else if strings.Contains(program, "cpackget") {
 	} else if strings.Contains(program, "cmake") {
 	} else if strings.Contains(program, "ninja") {
+		if args[0] == "--version" {
+			return "1.10.2.git.kitware.jobserver-1", nil
+		}
 	} else if strings.Contains(program, "xmllint") {
 	} else {
 		return "", errutils.New(errutils.ErrInvalidCommand, program)
@@ -237,5 +240,105 @@ func TestBuildAllContexts(t *testing.T) {
 		b.Setup = true
 		err := b.Build()
 		assert.Nil(err)
+	})
+}
+
+func TestCompareVersion(t *testing.T) {
+	const (
+		ERROR   = true
+		NOERROR = false
+	)
+
+	b := CbuildIdxBuilder{
+		builder.BuilderParams{
+			Runner: RunnerMock{},
+		},
+	}
+
+	testCases := []struct {
+		version1       string
+		version2       string
+		expectedOutput int
+		expectedError  bool
+	}{
+		{"", "1.2.3", 0, ERROR},
+		{"1.2.3", "", 0, ERROR},
+		{"1.2.beta", "1.2.3", 0, ERROR},
+		{"1.21.beta", "1.2", 0, ERROR},
+		{"foo", "1.2.3", 0, ERROR},
+		{"1.7rc2", "1.7", 0, ERROR},
+		{"1.7", "1.7rc1", 0, ERROR},
+		{"1.0-", "1.0", 0, ERROR},
+		{"1.2.3", "1.4.5", -1, NOERROR},
+		{"1.2-beta", "1.2-beta", 0, NOERROR},
+		{"1.2", "1.1.4", 1, NOERROR},
+		{"1.2", "1.2-beta", 1, NOERROR},
+		{"1.2+foo", "1.2+beta", 0, NOERROR},
+		{"1.2.0", "1.2.0-X-1.2.0+metadata~dist", 1, NOERROR},
+	}
+
+	for _, test := range testCases {
+		output, err := b.compareVersions(test.version1, test.version2)
+		if test.expectedError && err == nil {
+			t.Errorf("Expected error, got %v", err)
+		}
+
+		if !test.expectedError && err != nil {
+			t.Errorf("Expected error %v, got %v", test.expectedError, err)
+		}
+
+		if test.expectedOutput != output {
+			t.Errorf("Expected output value %v, got %v: for input %v", test.expectedOutput, output, test.version1)
+		}
+	}
+}
+
+func TestGetNinjaVersion(t *testing.T) {
+	assert := assert.New(t)
+
+	b := CbuildIdxBuilder{
+		builder.BuilderParams{
+			Runner: RunnerMock{},
+		},
+	}
+
+	t.Run("found ninja version", func(t *testing.T) {
+		version, err := b.getNinjaVersion()
+		assert.Nil(err)
+		assert.Equal("1.10.2", version)
+	})
+}
+
+func TestValidateNinjaVersion(t *testing.T) {
+	assert := assert.New(t)
+
+	b := CbuildIdxBuilder{
+		builder.BuilderParams{
+			Runner: RunnerMock{},
+		},
+	}
+
+	t.Run("validate installed ninja version with outdated", func(t *testing.T) {
+		isGreaterorEqual, err := b.validateNinjaVersion("1.11.1")
+		assert.Nil(err)
+		assert.False(isGreaterorEqual)
+	})
+
+	t.Run("validate installed ninja version is greater", func(t *testing.T) {
+		isGreaterorEqual, err := b.validateNinjaVersion("1.10.0")
+		assert.Nil(err)
+		assert.True(isGreaterorEqual)
+	})
+
+	t.Run("validate ninja version with equal version", func(t *testing.T) {
+		isGreaterorEqual, err := b.validateNinjaVersion("1.10.2")
+		assert.Nil(err)
+		assert.True(isGreaterorEqual)
+	})
+
+	t.Run("validate with invalid version", func(t *testing.T) {
+		output, err := b.validateNinjaVersion("1.10rc1")
+		assert.Error(err)
+		assert.False(output)
 	})
 }

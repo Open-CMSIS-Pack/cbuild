@@ -26,6 +26,11 @@ const (
 	ErrNinjaVersionNotFound   = "unable to find 'ninja' version"
 	ErrAcceptNoArgs           = "command does not accept any arguments. Run '%s' for more information about a command"
 	ErrRequireArg             = "command requires an input file argument. Run '%s' for more information about a command"
+	ErrInvalidVersionString   = "invalid version %s. Expected %s"
+)
+
+const (
+	WarnNinjaVersion = "Outdated Ninja version detected. Use Ninja >= 1.11.1 for cleaner, less verbose output"
 )
 
 func New(errorFormat string, args ...any) error {
