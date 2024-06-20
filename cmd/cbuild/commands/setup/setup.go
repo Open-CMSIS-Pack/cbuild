@@ -36,7 +36,7 @@ func setUpProject(cmd *cobra.Command, args []string) error {
 	fileName := filepath.Base(inputFile)
 	expectedExtension := ".csolution.yml"
 
-	if !strings.HasSuffix(fileName, expectedExtension) {
+	if !strings.HasSuffix(fileName, expectedExtension) && !strings.HasSuffix(fileName, ".csolution.yaml") {
 		err := errutils.New(errutils.ErrInvalidFileExtension, fileName, expectedExtension)
 		log.Error(err)
 		return err

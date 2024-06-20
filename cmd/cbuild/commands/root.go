@@ -249,7 +249,7 @@ func getBuilder(inputFile string, params builder.BuilderParams) (builder.IBuilde
 	fileName := filepath.Base(inputFile)
 
 	switch {
-	case strings.HasSuffix(fileName, ".csolution.yml"):
+	case strings.HasSuffix(fileName, ".csolution.yml") || strings.HasSuffix(fileName, ".csolution.yaml"):
 		return csolution.CSolutionBuilder{BuilderParams: params}, nil
 	case strings.HasSuffix(fileName, ".cprj"):
 		return cproject.CprjBuilder{BuilderParams: params}, nil

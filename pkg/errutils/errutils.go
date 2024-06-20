@@ -30,7 +30,7 @@ const (
 )
 
 const (
-	WarnNinjaVersion = "Outdated Ninja version detected. Use Ninja >= 1.11.1 for cleaner, less verbose output"
+	WarnNinjaVersion = "outdated Ninja version detected. Use Ninja >= 1.11.1 for cleaner, less verbose output"
 )
 
 func New(errorFormat string, args ...any) error {
