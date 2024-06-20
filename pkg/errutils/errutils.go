@@ -13,7 +13,7 @@ import (
 
 const (
 	ErrInvalidFileExtension   = "invalid file extension: '%s'. Expected: '%s'"
-	ErrInvalidCmdLineArg      = "multiple input files"
+	ErrInvalidCmdLineArg      = "invalid command line argument"
 	ErrFileNotExist           = "file %s does not exist"
 	ErrNoContextFound         = "no context found to process"
 	ErrBinaryNotFound         = "%s not found %s"
@@ -23,6 +23,9 @@ const (
 	ErrNoFilteredContextFound = "no valid context found for '%s'"
 	ErrInvalidCommand         = "invalid command '%s'. Run 'cbuild --help' for supported commands"
 	ErrCPRJNotFound           = "couldn't locate %s file"
+	ErrNinjaVersionNotFound   = "unable to find 'ninja' version"
+	ErrAcceptNoArgs           = "command does not accept any arguments. Run '%s' for more information about a command"
+	ErrRequireArg             = "command requires an input file argument. Run '%s' for more information about a command"
 )
 
 func New(errorFormat string, args ...any) error {

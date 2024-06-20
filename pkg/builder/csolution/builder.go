@@ -128,10 +128,7 @@ func (b CSolutionBuilder) installMissingPacks() (err error) {
 func (b CSolutionBuilder) generateBuildFiles() (err error) {
 	args := b.formulateArgs([]string{"convert"})
 
-	cbuildSetFile, err := b.getCbuildSetFilePath()
-	if err != nil {
-		return err
-	}
+	cbuildSetFile := b.getCbuildSetFilePath()
 
 	var selectedContexts []string
 	if len(b.Options.Contexts) != 0 {
@@ -292,15 +289,12 @@ func (b CSolutionBuilder) getProjectName(csolutionFile string) (projectName stri
 	return nameTokens[0]
 }
 
-func (b CSolutionBuilder) getCbuildSetFilePath() (string, error) {
+// This function merely constructs the path for the cbuild-set.yml file.
+// It is the caller's responsibility to verify if the file exists."
+func (b CSolutionBuilder) getCbuildSetFilePath() string {
 	projName := b.getProjectName(b.InputFile)
 	setFilePath := utils.NormalizePath(filepath.Join(filepath.Dir(b.InputFile), projName+".cbuild-set.yml"))
-
-	_, err := utils.FileExists(setFilePath)
-	if err != nil {
-		return "", err
-	}
-	return setFilePath, nil
+	return setFilePath
 }
 
 func (b CSolutionBuilder) getProjsBuilders(selectedContexts []string) (projBuilders []builder.IBuilderInterface, err error) {
@@ -561,23 +555,27 @@ func (b CSolutionBuilder) build() (err error) {
 	if len(b.Options.Contexts) != 0 && !b.Options.UseContextSet {
 		allContexts, err = b.listContexts(true, true)
 		if err != nil {
+			log.Error(err)
 			return err
 		}
 		selectedContexts, err = utils.ResolveContexts(allContexts, b.Options.Contexts)
 	} else {
 		var filePath string
 		if b.Options.UseContextSet {
-			filePath, err = b.getCbuildSetFilePath()
+			filePath = b.getCbuildSetFilePath()
+			_, err = utils.FileExists(filePath)
 		} else {
 			filePath, err = b.getIdxFilePath()
 		}
 		if err != nil {
+			log.Error(err)
 			return err
 		}
 		selectedContexts, err = b.getSelectedContexts(filePath)
 	}
 
 	if err != nil {
+		log.Error(err)
 		return err
 	}
 
@@ -587,6 +585,7 @@ func (b CSolutionBuilder) build() (err error) {
 	// get builder for each selected context
 	projBuilders, err := b.getProjsBuilders(selectedContexts)
 	if err != nil {
+		log.Error(err)
 		return err
 	}
 
@@ -594,6 +593,7 @@ func (b CSolutionBuilder) build() (err error) {
 	if b.Options.Rebuild || b.Options.Clean {
 		err = b.cleanContexts(projBuilders)
 		if b.Options.Clean || err != nil {
+			log.Error(err)
 			return err
 		}
 	}
