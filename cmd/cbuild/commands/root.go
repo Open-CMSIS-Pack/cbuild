@@ -228,7 +228,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.PersistentFlags().StringP("log", "", "", "Save output messages in a log file")
 	rootCmd.PersistentFlags().StringP("toolchain", "", "", "Input toolchain to be used")
 	rootCmd.Flags().BoolP("cbuildgen", "", false, "Use build information files with cbuildgen backend")
-	rootCmd.Flags().BoolP("cbuild2cmake", "", true, "Use build information files with cbuild2cmake backend (default)")
+	rootCmd.Flags().BoolP("cbuild2cmake", "", true, "Use build information files with cbuild2cmake backend")
 
 	// CPRJ specific hidden flags
 	rootCmd.Flags().StringP("intdir", "i", "", "Set directory for intermediate files")
