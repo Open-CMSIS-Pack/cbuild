@@ -136,7 +136,6 @@ func (b CbuildIdxBuilder) build() error {
 			return err
 		}
 
-		log.Info("Cleaning context: \"" + b.BuildContext + "\"")
 		if err := b.clean(dirs, vars); err != nil {
 			return err
 		}
