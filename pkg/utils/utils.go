@@ -378,3 +378,10 @@ func FileExists(filePath string) (bool, error) {
 	// Return error for any other issues (permission denied, etc.)
 	return false, err
 }
+
+func PrintSeparator(delimiter string, length int) {
+	if length > 0 {
+		sep := strings.Repeat(delimiter, length-1)
+		LogStdMsg("+" + sep)
+	}
+}

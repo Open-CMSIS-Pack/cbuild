@@ -382,14 +382,24 @@ func (b CSolutionBuilder) getBuilderInputFile(builder builder.IBuilderInterface)
 	return inputFile
 }
 
-func (b CSolutionBuilder) cleanContexts(projBuilders []builder.IBuilderInterface) (err error) {
+func (b CSolutionBuilder) cleanContexts(selectedContexts []string, projBuilders []builder.IBuilderInterface) (err error) {
+	var seplen int
 	for index := range projBuilders {
+		progress := fmt.Sprintf("(%s/%d)", strconv.Itoa(index+1), len(projBuilders))
+		cleanMsg := progress + " Cleaning context: \"" + selectedContexts[index] + "\""
+		seplen = len(cleanMsg)
+		utils.PrintSeparator("-", seplen)
+		utils.LogStdMsg(cleanMsg)
+
 		b.setBuilderOptions(&projBuilders[index], true)
 		cleanErr := projBuilders[index].Build()
-		if err != nil {
+		if cleanErr != nil {
 			err = cleanErr
 			log.Error("error cleaning '" + b.getBuilderInputFile(projBuilders[index]) + "'")
 		}
+	}
+	if b.Options.Clean {
+		utils.PrintSeparator("-", seplen)
 	}
 	return
 }
@@ -400,25 +410,15 @@ func (b CSolutionBuilder) buildContexts(selectedContexts []string, projBuilders 
 		operation = "Setting up"
 	}
 
-	printSeparator := func(delimiter string, length int) {
-		sep := strings.Repeat(delimiter, length-1)
-		utils.LogStdMsg("+" + sep)
-	}
-
 	buildPassCnt := 0
 	buildFailCnt := 0
 	var totalBuildTime time.Duration
 	for index := range projBuilders {
-		var infoMsg string
-		if b.Options.UseContextSet {
-			infoMsg = operation + " \"" + selectedContexts[index] + "\""
-		} else {
-			progress := fmt.Sprintf("(%s/%d)", strconv.Itoa(index+1), len(selectedContexts))
-			infoMsg = progress + " " + operation + " context: \"" + selectedContexts[index] + "\""
-		}
+		progress := fmt.Sprintf("(%s/%d)", strconv.Itoa(index+1), len(selectedContexts))
+		buildMsg := progress + " " + operation + " context: \"" + selectedContexts[index] + "\""
 
-		printSeparator("-", len(infoMsg))
-		utils.LogStdMsg(infoMsg)
+		utils.PrintSeparator("-", len(buildMsg))
+		utils.LogStdMsg(buildMsg)
 		b.setBuilderOptions(&projBuilders[index], false)
 
 		buildStartTime := time.Now()
@@ -436,9 +436,9 @@ func (b CSolutionBuilder) buildContexts(selectedContexts []string, projBuilders 
 	if !b.Setup {
 		buildSummary := fmt.Sprintf("Build summary: %d succeeded, %d failed - Time Elapsed: %s", buildPassCnt, buildFailCnt, utils.FormatTime(totalBuildTime))
 		sepLen := len(buildSummary)
-		printSeparator("-", sepLen)
+		utils.PrintSeparator("-", sepLen)
 		utils.LogStdMsg(buildSummary)
-		printSeparator("=", sepLen)
+		utils.PrintSeparator("=", sepLen)
 	}
 	return
 }
@@ -591,10 +591,13 @@ func (b CSolutionBuilder) build() (err error) {
 
 	// clean all selected contexts when rebuild or clean are requested
 	if b.Options.Rebuild || b.Options.Clean {
-		err = b.cleanContexts(projBuilders)
-		if b.Options.Clean || err != nil {
+		err = b.cleanContexts(selectedContexts, projBuilders)
+		if err != nil {
 			log.Error(err)
 			return err
+		}
+		if b.Options.Clean {
+			return nil
 		}
 	}
 
