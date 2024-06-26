@@ -195,6 +195,10 @@ func (b CSolutionBuilder) generateBuildFiles() (err error) {
 		args = append(args, "--quiet")
 	}
 
+	if b.Options.UseCbuild2CMake {
+		args = append(args, "--cbuild2cmake")
+	}
+
 	_, err = b.runCSolution(args, !(b.Options.Debug || b.Options.Verbose))
 
 	// Execute this code exclusively upon invocation of the 'setup' command.
