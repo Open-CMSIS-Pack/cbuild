@@ -436,6 +436,18 @@ func (b CSolutionBuilder) buildContexts(selectedContexts []string, projBuilders 
 	if !b.Setup {
 		buildSummary := fmt.Sprintf("Build summary: %d succeeded, %d failed - Time Elapsed: %s", buildPassCnt, buildFailCnt, utils.FormatTime(totalBuildTime))
 		sepLen := len(buildSummary)
+		// if no context is specified, run cmake build target 'all' to trigger 'executes' steps
+		if b.Options.UseCbuild2CMake && len(b.Options.Contexts) == 0 && projBuilders[0].(cbuildidx.CbuildIdxBuilder).HasExecutes() {
+			infoMsg := "Check all CMake targets"
+			sepLen := len(infoMsg)
+			utils.PrintSeparator("-", sepLen)
+			utils.LogStdMsg(infoMsg)
+			builder := projBuilders[0].(cbuildidx.CbuildIdxBuilder)
+			builder.Options.Target = "all"
+			if buildErr := builder.Build(); buildErr != nil {
+				err = buildErr
+			}
+		}
 		utils.PrintSeparator("-", sepLen)
 		utils.LogStdMsg(buildSummary)
 		utils.PrintSeparator("=", sepLen)
@@ -601,7 +613,12 @@ func (b CSolutionBuilder) build() (err error) {
 		}
 	}
 
-	err = b.buildContexts(selectedContexts, projBuilders)
+	if len(b.Options.Target) == 0 {
+		err = b.buildContexts(selectedContexts, projBuilders)
+	} else {
+		// build only cmake target when --target is specified
+		err = projBuilders[0].Build()
+	}
 	return err
 }
 

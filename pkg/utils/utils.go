@@ -177,6 +177,7 @@ type CbuildIndex struct {
 			Project       string `json:"project"`
 			Configuration string `json:"configuration"`
 		} `yaml:"cbuilds"`
+		Executes []interface{} `yaml:"executes"`
 	} `yaml:"build-idx"`
 }
 
