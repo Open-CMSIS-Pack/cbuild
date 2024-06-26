@@ -342,3 +342,18 @@ func TestValidateNinjaVersion(t *testing.T) {
 		assert.False(output)
 	})
 }
+
+func TestHasExecutes(t *testing.T) {
+	assert := assert.New(t)
+
+	b := CbuildIdxBuilder{
+		builder.BuilderParams{
+			Runner:    RunnerMock{},
+			InputFile: filepath.Join(testRoot, testDir, "Test.cbuild-idx.yml"),
+		},
+	}
+
+	t.Run("validate solution has executes nodes", func(t *testing.T) {
+		assert.True(b.HasExecutes())
+	})
+}
