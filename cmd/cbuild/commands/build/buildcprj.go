@@ -102,8 +102,9 @@ func BuildCPRJ(cmd *cobra.Command, args []string) error {
 }
 
 var BuildCPRJCmd = &cobra.Command{
-	Use:   "buildcprj <name>.cprj [options]",
-	Short: "Use a *.CPRJ file as build input",
+	Use:    "buildcprj <name>.cprj [options]",
+	Short:  "Use a *.CPRJ file as build input",
+	Hidden: true, // This makes the command hidden
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return BuildCPRJ(cmd, args)
 	},

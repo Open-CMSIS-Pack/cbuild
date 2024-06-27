@@ -66,8 +66,8 @@ func setUpProject(cmd *cobra.Command, args []string) error {
 	useContextSet, _ := cmd.Flags().GetBool("context-set")
 	frozenPacks, _ := cmd.Flags().GetBool("frozen-packs")
 	useCbuildgen, _ := cmd.Flags().GetBool("cbuildgen")
-	useCbuild2CMake, _ := cmd.Flags().GetBool("cbuild2cmake")
 
+	useCbuild2CMake := true
 	if useCbuildgen {
 		useCbuild2CMake = false
 	}
@@ -143,5 +143,5 @@ func init() {
 	SetUpCmd.Flags().StringP("log", "", "", "Save output messages in a log file")
 	SetUpCmd.Flags().StringP("toolchain", "", "", "Input toolchain to be used")
 	SetUpCmd.Flags().BoolP("cbuildgen", "", false, "Use build information files with cbuildgen backend")
-	SetUpCmd.Flags().BoolP("cbuild2cmake", "", true, "Use build information files with cbuild2cmake backend (default)")
+	SetUpCmd.Flags().BoolP("cbuild2cmake", "", false, "Use build information files with cbuild2cmake backend (default)")
 }

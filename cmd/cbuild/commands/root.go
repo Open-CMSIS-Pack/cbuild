@@ -137,7 +137,8 @@ func NewRootCmd() *cobra.Command {
 			useContextSet, _ := cmd.Flags().GetBool("context-set")
 			frozenPacks, _ := cmd.Flags().GetBool("frozen-packs")
 			useCbuildgen, _ := cmd.Flags().GetBool("cbuildgen")
-			useCbuild2CMake, _ := cmd.Flags().GetBool("cbuild2cmake")
+			// set cbuild2cmake as default tool
+			useCbuild2CMake := true
 
 			if useCbuildgen {
 				useCbuild2CMake = false
@@ -220,15 +221,15 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.Flags().BoolP("frozen-packs", "", false, "Pack list and versions from cbuild-pack.yml are fixed and raises errors if it changes")
 	rootCmd.Flags().StringP("generator", "g", "Ninja", "Select build system generator")
 	rootCmd.Flags().StringSliceP("context", "c", []string{}, "Input context names [<project-name>][.<build-type>][+<target-type>]")
-	rootCmd.Flags().StringP("load", "l", "", "Set policy for packs loading [latest | all | required]")
-	rootCmd.Flags().IntP("jobs", "j", 0, "Number of job slots for parallel execution")
+	rootCmd.Flags().StringP("load", "l", "required", "Set policy for packs loading [latest | all | required]")
+	rootCmd.Flags().IntP("jobs", "j", 8, "Number of job slots for parallel execution")
 	rootCmd.Flags().StringP("target", "t", "", "Optional CMake target name")
 	rootCmd.Flags().StringP("output", "O", "", "Set directory for all output files")
 	rootCmd.PersistentFlags().BoolP("schema", "s", false, "Validate project input file(s) against schema")
 	rootCmd.PersistentFlags().StringP("log", "", "", "Save output messages in a log file")
 	rootCmd.PersistentFlags().StringP("toolchain", "", "", "Input toolchain to be used")
 	rootCmd.Flags().BoolP("cbuildgen", "", false, "Use build information files with cbuildgen backend")
-	rootCmd.Flags().BoolP("cbuild2cmake", "", true, "Use build information files with cbuild2cmake backend")
+	rootCmd.Flags().BoolP("cbuild2cmake", "", false, "Use build information files with cbuild2cmake backend (default)")
 
 	// CPRJ specific hidden flags
 	rootCmd.Flags().StringP("intdir", "i", "", "Set directory for intermediate files")
