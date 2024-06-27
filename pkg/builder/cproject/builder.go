@@ -234,7 +234,7 @@ func (b CprjBuilder) build() error {
 		return err
 	}
 
-	args = []string{"--build", dirs.IntDir, "-j", fmt.Sprintf("%d", b.GetJobs())}
+	args = []string{"--build", dirs.IntDir, "-j", fmt.Sprintf("%d", b.Options.Jobs)}
 
 	if b.Setup {
 		args = append(args, "--target", "database")

@@ -10,7 +10,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
 	log "github.com/sirupsen/logrus"
@@ -99,14 +98,6 @@ func (b BuilderParams) GetInternalVars() (vars InternalVars, err error) {
 	log.Debug("vars.ninjaBin: " + vars.NinjaBin)
 
 	return vars, err
-}
-
-func (b BuilderParams) GetJobs() (jobs int) {
-	jobs = runtime.NumCPU()
-	if b.Options.Jobs > 0 {
-		jobs = b.Options.Jobs
-	}
-	return jobs
 }
 
 type IBuilderInterface interface {

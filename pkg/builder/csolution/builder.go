@@ -200,11 +200,16 @@ func (b CSolutionBuilder) generateBuildFiles() (err error) {
 	}
 
 	_, err = b.runCSolution(args, !(b.Options.Debug || b.Options.Verbose))
+	log.Debug("csolution command: csolution " + strings.Join(args, " "))
 
 	// Execute this code exclusively upon invocation of the 'setup' command.
 	// Its purpose is to update layer information within the *.cbuild-idx.yml files.
 	if b.Setup {
 		if exitError, ok := err.(*exec.ExitError); ok {
+			// Added debug log for more info
+			errCodeStr := fmt.Sprint(exitError.ExitCode())
+			log.Debug("error code received: " + errCodeStr)
+
 			if exitError.ExitCode() == 2 {
 				args = []string{"list", "layers", b.InputFile, "--load=all", "--update-idx", "--quiet"}
 				for _, context := range selectedContexts {

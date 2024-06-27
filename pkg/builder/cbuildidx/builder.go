@@ -195,7 +195,7 @@ func (b CbuildIdxBuilder) build() error {
 	}
 
 	// CMake build target(s) command
-	args = []string{"--build", dirs.IntDir, "-j", fmt.Sprintf("%d", b.GetJobs())}
+	args = []string{"--build", dirs.IntDir, "-j", fmt.Sprintf("%d", b.Options.Jobs)}
 
 	if b.Options.Target != "" {
 		args = append(args, "--target", b.Options.Target)
