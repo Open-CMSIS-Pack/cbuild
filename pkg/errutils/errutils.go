@@ -27,6 +27,7 @@ const (
 	ErrAcceptNoArgs           = "command does not accept any arguments. Run '%s' for more information about a command"
 	ErrRequireArg             = "command requires an input file argument. Run '%s' for more information about a command"
 	ErrInvalidVersionString   = "invalid version %s. Expected %s"
+	ErrInvalidNumJobs         = "invalid number of job slots specified for parallel execution. Expected: j>0"
 )
 
 const (

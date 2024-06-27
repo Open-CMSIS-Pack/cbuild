@@ -9,7 +9,6 @@ package cproject
 import (
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"testing"
 
@@ -181,33 +180,6 @@ func TestGetInternalVars(t *testing.T) {
 
 		_, err := b.GetInternalVars()
 		assert.Error(err)
-	})
-}
-
-func TestGetJobs(t *testing.T) {
-	assert := assert.New(t)
-	b := CprjBuilder{
-		builder.BuilderParams{
-			Runner: RunnerMock{},
-		},
-	}
-
-	t.Run("test get jobs = 0", func(t *testing.T) {
-		b.Options.Jobs = 0
-		jobs := b.GetJobs()
-		assert.Equal(jobs, runtime.NumCPU())
-	})
-
-	t.Run("test get jobs > 0", func(t *testing.T) {
-		b.Options.Jobs = 2
-		jobs := b.GetJobs()
-		assert.Equal(jobs, 2)
-	})
-
-	t.Run("test get jobs < 0", func(t *testing.T) {
-		b.Options.Jobs = -1
-		jobs := b.GetJobs()
-		assert.Equal(jobs, runtime.NumCPU())
 	})
 }
 

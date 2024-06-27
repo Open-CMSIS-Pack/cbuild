@@ -137,11 +137,17 @@ func NewRootCmd() *cobra.Command {
 			useContextSet, _ := cmd.Flags().GetBool("context-set")
 			frozenPacks, _ := cmd.Flags().GetBool("frozen-packs")
 			useCbuildgen, _ := cmd.Flags().GetBool("cbuildgen")
+
 			// set cbuild2cmake as default tool
 			useCbuild2CMake := true
-
 			if useCbuildgen {
 				useCbuild2CMake = false
+			}
+
+			if jobs <= 0 {
+				err := errutils.New(errutils.ErrInvalidNumJobs)
+				log.Error(err)
+				return err
 			}
 
 			options := builder.Options{
