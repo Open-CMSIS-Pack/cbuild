@@ -49,6 +49,11 @@ func (b CbuildIdxBuilder) clean(dirs builder.BuildDirs, vars builder.InternalVar
 	return nil
 }
 
+func (b CbuildIdxBuilder) HasExecutes() bool {
+	data, _ := utils.ParseCbuildIndexFile(b.InputFile)
+	return len(data.BuildIdx.Executes) > 0
+}
+
 func (b CbuildIdxBuilder) getDirs(context string) (dirs builder.BuildDirs, err error) {
 	if _, err := os.Stat(b.InputFile); os.IsNotExist(err) {
 		return dirs, err

@@ -19,3 +19,6 @@ build-idx:
     - cbuild: cm4/HelloWorld_cm4.Release+FRDM-K32L3A6.cbuild.yml
       project: HelloWorld_cm4
       configuration: .Release+FRDM-K32L3A6
+  executes:
+    - execute: Test
+      run: ${CMAKE_COMMAND} -E echo "Test"
