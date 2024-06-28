@@ -28,7 +28,7 @@ const (
 	ErrRequireArg             = "command requires an input file argument. Run '%s' for more information about a command"
 	ErrInvalidVersionString   = "invalid version %s. Expected %s"
 	ErrInvalidNumJobs         = "invalid number of job slots specified for parallel execution. Expected: j>0"
-	ErrMissingRequiredArg     = "missing required argument. Use --context-set option"
+	ErrMissingRequiredArg     = "setup command is missing mandatory option '--context-set'"
 )
 
 const (
