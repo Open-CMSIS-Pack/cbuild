@@ -72,6 +72,12 @@ func setUpProject(cmd *cobra.Command, args []string) error {
 		useCbuild2CMake = false
 	}
 
+	if !useContextSet {
+		err = errutils.New(errutils.ErrMissingRequiredArg)
+		log.Error(err)
+		return err
+	}
+
 	options := builder.Options{
 		LogFile:         logFile,
 		Generator:       generator,
@@ -137,7 +143,7 @@ func init() {
 	SetUpCmd.Flags().StringP("generator", "g", "Ninja", "Select build system generator")
 	SetUpCmd.Flags().StringSliceP("context", "c", []string{}, "Input context names [<project-name>][.<build-type>][+<target-type>]")
 	SetUpCmd.Flags().StringP("load", "l", "", "Set policy for packs loading [latest | all | required]")
-	SetUpCmd.Flags().IntP("jobs", "j", 0, "Number of job slots for parallel execution")
+	SetUpCmd.Flags().IntP("jobs", "j", 8, "Number of job slots for parallel execution")
 	SetUpCmd.Flags().StringP("target", "t", "", "Optional CMake target name")
 	SetUpCmd.Flags().BoolP("schema", "s", true, "Validate project input file(s) against schema")
 	SetUpCmd.Flags().StringP("log", "", "", "Save output messages in a log file")
