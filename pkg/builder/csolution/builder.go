@@ -7,6 +7,7 @@
 package csolution
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"os"
@@ -610,6 +611,12 @@ func (b CSolutionBuilder) build() (err error) {
 		return err
 	}
 
+	b.Options.Rebuild, err = b.needRebuild()
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
 	// clean all selected contexts when rebuild or clean are requested
 	if b.Options.Rebuild || b.Options.Clean {
 		err = b.cleanContexts(selectedContexts, projBuilders)
@@ -651,4 +658,93 @@ func (b CSolutionBuilder) Build() (err error) {
 
 	// STEP 3: Build project(s)
 	return b.build()
+}
+
+func (b CSolutionBuilder) needRebuild() (bool, error) {
+	if b.Options.Rebuild {
+		return true, nil
+	}
+
+	if !b.Options.UseCbuild2CMake {
+		return b.Options.Rebuild, nil
+	}
+
+	// Check if the project is moved or renamed or tmp dir is changed
+	if b.isProjectMoved() {
+		return true, nil
+	}
+
+	// Get cbuild-idx file path
+	idxFilePath, err := b.getIdxFilePath()
+	if err != nil {
+		return false, err
+	}
+
+	// Read .cbuild-idx.yml and check if any context is marked with "rebuild"
+	contextsRebuild, err := b.getContextsToRebuild(idxFilePath)
+	if err != nil {
+		return false, err
+	}
+	if len(contextsRebuild) > 0 {
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func (b CSolutionBuilder) isProjectMoved() bool {
+	csolutionAbsPath, _ := filepath.Abs(b.InputFile)
+	rootPath := filepath.Dir(csolutionAbsPath)
+	intDirPath := filepath.Join(rootPath, "tmp")
+	cmakeCacheFile := filepath.Join(intDirPath, "CMakeCache.txt")
+
+	// check if input file exists
+	_, err := utils.FileExists(cmakeCacheFile)
+	if err != nil {
+		// File doesn't exist, rebuild not needed
+		return false
+	}
+
+	file, err := os.Open(cmakeCacheFile)
+	if err != nil {
+		return true
+	}
+	defer file.Close()
+
+	// Initialize a scanner to read file
+	scanner := bufio.NewScanner(file)
+	prefixStr := "CMAKE_CACHEFILE_DIR:INTERNAL="
+
+	// Search for prefixStr
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.HasPrefix(line, prefixStr) {
+			path := strings.TrimPrefix(line, prefixStr)
+			equal, _ := utils.ComparePaths(path, intDirPath)
+			if equal {
+				return false // paths match, rebuild not needed
+			} else {
+				return true // paths do not match, rebuild needed
+			}
+		}
+	}
+
+	// prefixStr was not found in the file, rebuild needed
+	return true
+}
+
+func (b CSolutionBuilder) getContextsToRebuild(idxFilePath string) ([]string, error) {
+	data, err := utils.ParseCbuildIndexFile(idxFilePath)
+	if err != nil {
+		return nil, err
+	}
+
+	var rebuildContexts []string
+	for _, cbuild := range data.BuildIdx.Cbuilds {
+		if cbuild.Rebuild {
+			rebuildContexts = append(rebuildContexts, cbuild.Project+cbuild.Configuration)
+		}
+	}
+
+	return rebuildContexts, nil
 }
