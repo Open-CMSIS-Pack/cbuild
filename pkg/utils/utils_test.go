@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/errutils"
@@ -423,4 +424,39 @@ func TestFileExists(t *testing.T) {
 
 	// Clean up test files
 	removeTestFiles(testFile)
+}
+
+func TestComparePaths(t *testing.T) {
+	t.Run("Windows", func(t *testing.T) {
+		if strings.Contains(strings.ToLower(os.Getenv("OS")), "windows") {
+			// Windows-like paths (case-insensitive)
+			path1 := "C:\\Users\\Example"
+			path2 := "C:/users/example"
+			equal, err := ComparePaths(path1, path2)
+			assert.NoError(t, err, "Error should be nil")
+			assert.True(t, equal, "Paths should be considered equivalent")
+		}
+	})
+
+	t.Run("Darwin", func(t *testing.T) {
+		if strings.Contains(strings.ToLower(os.Getenv("OS")), "darwin") {
+			// macOS paths (case-insensitive)
+			path1 := "/usr/Local/bin/Test"
+			path2 := "/Usr/local/biN/tesT"
+			equal, err := ComparePaths(path1, path2)
+			assert.NoError(t, err, "Error should be nil")
+			assert.True(t, equal, "Paths should be considered equivalent")
+		}
+	})
+
+	t.Run("Linux", func(t *testing.T) {
+		if strings.Contains(strings.ToLower(os.Getenv("OS")), "linux") {
+			// Linux-like paths (case-sensitive)
+			path1 := "/home/user/file.txt"
+			path2 := "/home/User/FILE.txt"
+			equal, err := ComparePaths(path1, path2)
+			assert.NoError(t, err, "Error should be nil")
+			assert.False(t, equal, "Paths should not be considered equivalent")
+		}
+	})
 }
