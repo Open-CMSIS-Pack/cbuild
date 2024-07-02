@@ -7,6 +7,7 @@
 package csolution
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"os"
@@ -572,6 +573,10 @@ func (b CSolutionBuilder) ListEnvironment() error {
 }
 
 func (b CSolutionBuilder) build() (err error) {
+	if b.needRebuild() {
+		b.Options.Rebuild = true
+	}
+
 	var allContexts, selectedContexts []string
 	if len(b.Options.Contexts) != 0 && !b.Options.UseContextSet {
 		allContexts, err = b.listContexts(true, true)
@@ -651,4 +656,45 @@ func (b CSolutionBuilder) Build() (err error) {
 
 	// STEP 3: Build project(s)
 	return b.build()
+}
+
+func (b CSolutionBuilder) needRebuild() bool {
+	csolutionAbsPAth, _ := filepath.Abs(b.InputFile)
+	rootPath := filepath.Dir(csolutionAbsPAth)
+	intDirPath := filepath.Join(rootPath, "tmp")
+	cmakeCacheFile := filepath.Join(intDirPath, "CMakeCache.txt")
+
+	// check if input file exists
+	_, err := utils.FileExists(cmakeCacheFile)
+	if err != nil {
+		// File doesn't exist, rebuild not needed
+		return false
+	}
+
+	file, err := os.Open(cmakeCacheFile)
+	if err != nil {
+		return true
+	}
+	defer file.Close()
+
+	// Initialize a scanner to read file
+	scanner := bufio.NewScanner(file)
+	prefixStr := "CMAKE_CACHEFILE_DIR:INTERNAL="
+
+	// Search for prefixStr
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.HasPrefix(line, prefixStr) {
+			path := strings.TrimPrefix(line, prefixStr)
+			equal, _ := utils.ComparePaths(path, intDirPath)
+			if equal {
+				return false // paths match, rebuild not needed
+			} else {
+				return true // paths do not match, rebuild needed
+			}
+		}
+	}
+
+	// prefixStr was not found in the file, rebuild needed
+	return true
 }
