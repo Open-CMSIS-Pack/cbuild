@@ -68,16 +68,21 @@ func (b CbuildIdxBuilder) getDirs(context string) (dirs builder.BuildDirs, err e
 		dirs.OutDir = ""
 	}
 
-	// cbuild2cmake generates cmake files under fixed tmp directory
-	dirs.IntDir = "tmp"
-	dirs.IntDir = filepath.Join(filepath.Dir(b.InputFile), dirs.IntDir)
+	// parse cbuild-idx.yml file
+	data, err := utils.ParseCbuildIndexFile(b.InputFile)
+	if err != nil {
+		return dirs, err
+	}
+
+	// cbuild2cmake generates cmake files under solution level tmp directory
+	tmpDir := data.BuildIdx.TmpDir
+	if len(tmpDir) == 0 {
+		tmpDir = "tmp"
+	}
+	dirs.IntDir = filepath.Join(filepath.Dir(b.InputFile), tmpDir)
 
 	if dirs.OutDir == "" {
 		// get output directory from cbuild.yml file
-		data, err := utils.ParseCbuildIndexFile(b.InputFile)
-		if err != nil {
-			return dirs, err
-		}
 		var cbuildFile string
 		for _, cbuild := range data.BuildIdx.Cbuilds {
 			if context == cbuild.Project+cbuild.Configuration {

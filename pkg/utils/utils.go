@@ -168,6 +168,7 @@ type CbuildIndex struct {
 		GeneratedBy string `yaml:"generated-by"`
 		Cdefault    string `yaml:"cdefault"`
 		Csolution   string `yaml:"csolution"`
+		TmpDir      string `yaml:"tmpdir"`
 		Cprojects   []struct {
 			Cproject string `yaml:"cproject"`
 		} `yaml:"cprojects"`
