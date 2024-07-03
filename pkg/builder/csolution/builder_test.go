@@ -7,7 +7,6 @@
 package csolution
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -528,7 +527,7 @@ func TestIsProjectMoved(t *testing.T) {
 		_ = os.RemoveAll(tmpDirPath)
 		_ = os.MkdirAll(tmpDirPath, os.ModePerm)
 		cmakeCacheFile := filepath.Join(tmpDirPath, "CMakeCache.txt")
-		_ = ioutil.WriteFile(cmakeCacheFile, []byte(content), 0644)
+		_ = os.WriteFile(cmakeCacheFile, []byte(content), 0600)
 	}
 
 	t.Run("test cache file not found", func(t *testing.T) {
@@ -594,7 +593,7 @@ func TestNeedRebuild(t *testing.T) {
 		_ = os.RemoveAll(tmpDir)
 		_ = os.MkdirAll(tmpDir, os.ModePerm)
 		cmakeCacheFile := filepath.Join(tmpDir, "CMakeCache.txt")
-		_ = ioutil.WriteFile(cmakeCacheFile, []byte(content), 0644)
+		_ = os.WriteFile(cmakeCacheFile, []byte(content), 0600)
 
 		rebuild, err := b.needRebuild()
 		assert.Nil(err)
@@ -610,7 +609,7 @@ func TestNeedRebuild(t *testing.T) {
 		_ = os.RemoveAll(tmpDir)
 		_ = os.MkdirAll(tmpDir, os.ModePerm)
 		cmakeCacheFile := filepath.Join(tmpDir, "CMakeCache.txt")
-		_ = ioutil.WriteFile(cmakeCacheFile, []byte(content), 0644)
+		_ = os.WriteFile(cmakeCacheFile, []byte(content), 0600)
 
 		rebuild, err := b.needRebuild()
 		assert.Nil(err)
