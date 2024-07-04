@@ -483,31 +483,31 @@ func TestGetCbuildSetFilePath(t *testing.T) {
 	})
 }
 
-func TestGetContextsToRebuild(t *testing.T) {
+func TestHasRebuildNode(t *testing.T) {
 	assert := assert.New(t)
 
 	b := CSolutionBuilder{}
 
 	t.Run("test file not found", func(t *testing.T) {
-		contexts, err := b.getContextsToRebuild("non_existing_file")
+		rebuild, err := b.hasRebuildNode("non_existing_file")
 		assert.Error(err)
-		assert.Nil(contexts)
+		assert.False(rebuild)
 	})
 
 	t.Run("test no contexts to rebuild", func(t *testing.T) {
 		testIdxFile := filepath.Join(testRoot, testDir, "Test.cbuild-idx.yml")
 
-		contexts, err := b.getContextsToRebuild(testIdxFile)
+		rebuild, err := b.hasRebuildNode(testIdxFile)
 		assert.Nil(err)
-		assert.Equal(0, len(contexts))
+		assert.False(rebuild)
 	})
 
 	t.Run("test contexts to rebuild found", func(t *testing.T) {
 		testIdxFile := filepath.Join(testRoot, testDir, "Rebuild.cbuild-idx.yml")
 
-		contexts, err := b.getContextsToRebuild(testIdxFile)
+		rebuild, err := b.hasRebuildNode(testIdxFile)
 		assert.Nil(err)
-		assert.Equal(2, len(contexts))
+		assert.True(rebuild)
 	})
 }
 

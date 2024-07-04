@@ -175,11 +175,12 @@ type CbuildIndex struct {
 		Licenses interface{} `yaml:"licenses"`
 		Cbuilds  []struct {
 			Cbuild        string `yaml:"cbuild"`
-			Project       string `json:"project"`
-			Configuration string `json:"configuration"`
-			Rebuild       bool   `json:"rebuild"`
+			Project       string `yaml:"project"`
+			Configuration string `yaml:"configuration"`
+			Rebuild       bool   `yaml:"rebuild"`
 		} `yaml:"cbuilds"`
 		Executes []interface{} `yaml:"executes"`
+		Rebuild  bool          `yaml:"rebuild"`
 	} `yaml:"build-idx"`
 }
 

@@ -680,16 +680,12 @@ func (b CSolutionBuilder) needRebuild() (bool, error) {
 		return false, err
 	}
 
-	// Read .cbuild-idx.yml and check if any context is marked with "rebuild"
-	contextsRebuild, err := b.getContextsToRebuild(idxFilePath)
+	// Read .cbuild-idx.yml and check if "rebuild" node exist
+	rebuild, err := b.hasRebuildNode(idxFilePath)
 	if err != nil {
 		return false, err
 	}
-	if len(contextsRebuild) > 0 {
-		return true, nil
-	}
-
-	return false, nil
+	return rebuild, nil
 }
 
 func (b CSolutionBuilder) isProjectMoved() bool {
@@ -733,18 +729,26 @@ func (b CSolutionBuilder) isProjectMoved() bool {
 	return true
 }
 
-func (b CSolutionBuilder) getContextsToRebuild(idxFilePath string) ([]string, error) {
+// hasRebuildNode checks if there is any rebuild required based on the given index file path.
+// It returns true if a rebuild is needed, otherwise false.
+func (b CSolutionBuilder) hasRebuildNode(idxFilePath string) (bool, error) {
+	// Read the cbuild-idx file
 	data, err := utils.ParseCbuildIndexFile(idxFilePath)
 	if err != nil {
-		return nil, err
+		return false, err
 	}
 
-	var rebuildContexts []string
+	// Check if the main build index requires a rebuild
+	if data.BuildIdx.Rebuild {
+		return true, nil
+	}
+
+	// Check if any of the contexts requires a rebuild
 	for _, cbuild := range data.BuildIdx.Cbuilds {
 		if cbuild.Rebuild {
-			rebuildContexts = append(rebuildContexts, cbuild.Project+cbuild.Configuration)
+			return true, nil
 		}
 	}
 
-	return rebuildContexts, nil
+	return false, nil
 }
