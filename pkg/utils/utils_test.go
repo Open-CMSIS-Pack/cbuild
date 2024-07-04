@@ -315,25 +315,6 @@ func TestResolveContexts(t *testing.T) {
 	}
 }
 
-func TestParseCsolutionFile(t *testing.T) {
-	assert := assert.New(t)
-
-	t.Run("test input file not available", func(t *testing.T) {
-		_, err := ParseCSolutionFile("Unknown.csolution.yml")
-		assert.Error(err)
-	})
-
-	t.Run("test csolution file parsing", func(t *testing.T) {
-		data, err := ParseCSolutionFile(filepath.Join(testRoot, testDir, "TestSolution/test.csolution.yml"))
-		assert.Nil(err)
-		assert.Equal(len(data.Solution.BuildTypes), 1)
-		assert.Equal(len(data.Solution.TargetTypes), 2)
-		assert.Equal(data.Solution.BuildTypes[0].Type, "Debug")
-		assert.Equal(data.Solution.TargetTypes[0].Type, "CM3")
-		assert.Equal(data.Solution.TargetTypes[1].Type, "CM0")
-	})
-}
-
 func TestRemoveVersionRange(t *testing.T) {
 	assert := assert.New(t)
 
