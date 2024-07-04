@@ -2,6 +2,7 @@ build-idx:
   generated-by: csolution 1.4.0
   cdefault: HelloWorld.cdefault.yml
   csolution: HelloWorld.csolution.yml
+  tmpdir: custom/tmp/path
   cprojects:
     - cproject: cm0plus/HelloWorld_cm0plus.cproject.yml
     - cproject: cm4/HelloWorld_cm4.cproject.yml
