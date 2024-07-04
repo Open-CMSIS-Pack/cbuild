@@ -7,6 +7,7 @@
 package csolution
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"os"
@@ -580,6 +581,12 @@ func (b CSolutionBuilder) build() (err error) {
 		return err
 	}
 
+	b.Options.Rebuild, err = b.needRebuild()
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
 	// clean all selected contexts when rebuild or clean are requested
 	if b.Options.Rebuild || b.Options.Clean {
 		err = b.cleanContexts(selectedContexts, projBuilders)
@@ -621,4 +628,97 @@ func (b CSolutionBuilder) Build() (err error) {
 
 	// STEP 3: Build project(s)
 	return b.build()
+}
+
+func (b CSolutionBuilder) needRebuild() (bool, error) {
+	if b.Options.Rebuild {
+		return true, nil
+	}
+
+	if !b.Options.UseCbuild2CMake {
+		return b.Options.Rebuild, nil
+	}
+
+	// Check if the project is moved or renamed or tmp dir is changed
+	if b.isProjectMoved() {
+		return true, nil
+	}
+
+	// Get cbuild-idx file path
+	idxFilePath, err := b.getIdxFilePath()
+	if err != nil {
+		return false, err
+	}
+
+	// Read .cbuild-idx.yml and check if "rebuild" node exist
+	rebuild, err := b.hasRebuildNode(idxFilePath)
+	if err != nil {
+		return false, err
+	}
+	return rebuild, nil
+}
+
+func (b CSolutionBuilder) isProjectMoved() bool {
+	csolutionAbsPath, _ := filepath.Abs(b.InputFile)
+	rootPath := filepath.Dir(csolutionAbsPath)
+	intDirPath := filepath.Join(rootPath, "tmp")
+	cmakeCacheFile := filepath.Join(intDirPath, "CMakeCache.txt")
+
+	// check if input file exists
+	_, err := utils.FileExists(cmakeCacheFile)
+	if err != nil {
+		// File doesn't exist, rebuild not needed
+		return false
+	}
+
+	file, err := os.Open(cmakeCacheFile)
+	if err != nil {
+		return true
+	}
+	defer file.Close()
+
+	// Initialize a scanner to read file
+	scanner := bufio.NewScanner(file)
+	prefixStr := "CMAKE_CACHEFILE_DIR:INTERNAL="
+
+	// Search for prefixStr
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.HasPrefix(line, prefixStr) {
+			path := strings.TrimPrefix(line, prefixStr)
+			equal, _ := utils.ComparePaths(path, intDirPath)
+			if equal {
+				return false // paths match, rebuild not needed
+			} else {
+				return true // paths do not match, rebuild needed
+			}
+		}
+	}
+
+	// prefixStr was not found in the file, rebuild needed
+	return true
+}
+
+// hasRebuildNode checks if there is any rebuild required based on the given index file path.
+// It returns true if a rebuild is needed, otherwise false.
+func (b CSolutionBuilder) hasRebuildNode(idxFilePath string) (bool, error) {
+	// Read the cbuild-idx file
+	data, err := utils.ParseCbuildIndexFile(idxFilePath)
+	if err != nil {
+		return false, err
+	}
+
+	// Check if the main build index requires a rebuild
+	if data.BuildIdx.Rebuild {
+		return true, nil
+	}
+
+	// Check if any of the contexts requires a rebuild
+	for _, cbuild := range data.BuildIdx.Cbuilds {
+		if cbuild.Rebuild {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
