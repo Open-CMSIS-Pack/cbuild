@@ -142,52 +142,22 @@ func (b CSolutionBuilder) generateBuildFiles() (err error) {
 		selectedContexts, _ = b.getSelectedContexts(cbuildSetFile)
 	}
 
-	// when using "cbuild setup *.csolution -S" with no existing cbuild-set file
-	// Select first target-type and the first build-type for each project
+	// when using "cbuild setup *.csolution.yml -S" with no existing cbuild-set file
+	// Select first target-type and the first build-type for first listed project
 	if b.Setup && b.Options.UseContextSet && (len(b.Options.Contexts) == 0) && errors.Is(err, os.ErrNotExist) {
 		// Retrieve all available contexts in yml-order
-		allContexts, err := b.listContexts(true, true)
+		allYmlOrderedContexts, err := b.listContexts(true, true)
 		if err != nil {
 			return err
 		}
 
 		// Ensure at least one context exists
-		if len(allContexts) == 0 {
+		if len(allYmlOrderedContexts) == 0 {
 			return errutils.New(errutils.ErrNoContextFound)
 		}
 
-		csolution, err := utils.ParseCSolutionFile(b.InputFile)
-		if err != nil {
-			return err
-		}
-
-		var buildType string
-		if len(csolution.Solution.BuildTypes) > 0 {
-			buildType = csolution.Solution.BuildTypes[0].Type
-		} else {
-			buildType = "*"
-		}
-
-		// Determine default context from the parsed solution file
-		context := utils.ContextItem{
-			ProjectName: "*",
-			BuildType:   buildType,
-			TargetType:  csolution.Solution.TargetTypes[0].Type,
-		}
-
-		// Create the default context
-		defaultContext := utils.CreateContext(context)
-
-		// Resolve the selected contexts including the default one
-		selectedContexts, err = utils.ResolveContexts(allContexts, []string{defaultContext})
-		if err != nil {
-			return err
-		}
-
-		// Append selected contexts to the arguments
-		for _, ctx := range selectedContexts {
-			args = append(args, "--context="+ctx)
-		}
+		// Append first context from yml ordered context list
+		args = append(args, "--context="+allYmlOrderedContexts[0])
 	}
 
 	// on setup command, run csolution convert command with --quiet
