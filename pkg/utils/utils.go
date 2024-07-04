@@ -175,10 +175,12 @@ type CbuildIndex struct {
 		Licenses interface{} `yaml:"licenses"`
 		Cbuilds  []struct {
 			Cbuild        string `yaml:"cbuild"`
-			Project       string `json:"project"`
-			Configuration string `json:"configuration"`
+			Project       string `yaml:"project"`
+			Configuration string `yaml:"configuration"`
+			Rebuild       bool   `yaml:"rebuild"`
 		} `yaml:"cbuilds"`
 		Executes []interface{} `yaml:"executes"`
+		Rebuild  bool          `yaml:"rebuild"`
 	} `yaml:"build-idx"`
 }
 
@@ -386,4 +388,32 @@ func PrintSeparator(delimiter string, length int) {
 		sep := strings.Repeat(delimiter, length-1)
 		LogStdMsg("+" + sep)
 	}
+}
+
+// checks if two paths are equivalent
+func ComparePaths(path1, path2 string) (bool, error) {
+	cleanPath1 := filepath.Clean(path1)
+	cleanPath2 := filepath.Clean(path2)
+
+	absPath1, err := filepath.Abs(cleanPath1)
+	if err != nil {
+		return false, err
+	}
+	absPath2, err := filepath.Abs(cleanPath2)
+	if err != nil {
+		return false, err
+	}
+
+	if isFileSystemCaseInsensitive() {
+		absPath1 = strings.ToLower(absPath1)
+		absPath2 = strings.ToLower(absPath2)
+	}
+
+	return absPath1 == absPath2, nil
+}
+
+func isFileSystemCaseInsensitive() bool {
+	// On Windows and macOS, file systems are typically case insensitive
+	// On Linux, file systems are typically case sensitive
+	return filepath.Separator == '\\' || strings.Contains(strings.ToLower(os.Getenv("OS")), "darwin")
 }

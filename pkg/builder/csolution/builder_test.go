@@ -482,3 +482,139 @@ func TestGetCbuildSetFilePath(t *testing.T) {
 		assert.Equal(path, utils.NormalizePath(filepath.Join(testRoot, testDir, "TestSolution/test.cbuild-set.yml")))
 	})
 }
+
+func TestHasRebuildNode(t *testing.T) {
+	assert := assert.New(t)
+
+	b := CSolutionBuilder{}
+
+	t.Run("test file not found", func(t *testing.T) {
+		rebuild, err := b.hasRebuildNode("non_existing_file")
+		assert.Error(err)
+		assert.False(rebuild)
+	})
+
+	t.Run("test no contexts to rebuild", func(t *testing.T) {
+		testIdxFile := filepath.Join(testRoot, testDir, "Test.cbuild-idx.yml")
+
+		rebuild, err := b.hasRebuildNode(testIdxFile)
+		assert.Nil(err)
+		assert.False(rebuild)
+	})
+
+	t.Run("test contexts to rebuild found", func(t *testing.T) {
+		testIdxFile := filepath.Join(testRoot, testDir, "Rebuild.cbuild-idx.yml")
+
+		rebuild, err := b.hasRebuildNode(testIdxFile)
+		assert.Nil(err)
+		assert.True(rebuild)
+	})
+}
+
+func TestIsProjectMoved(t *testing.T) {
+	assert := assert.New(t)
+	tmpDir := filepath.Join(testRoot, testDir, "tmp")
+	_ = os.RemoveAll(tmpDir)
+
+	b := CSolutionBuilder{
+		BuilderParams: builder.BuilderParams{
+			Runner:    RunnerMock{},
+			InputFile: filepath.Join(testRoot, testDir, "Test.csolution.yml"),
+		},
+	}
+
+	writeTestCMakeCache := func(tmpDirPath, content string) {
+		_ = os.RemoveAll(tmpDirPath)
+		_ = os.MkdirAll(tmpDirPath, os.ModePerm)
+		cmakeCacheFile := filepath.Join(tmpDirPath, "CMakeCache.txt")
+		_ = os.WriteFile(cmakeCacheFile, []byte(content), 0600)
+	}
+
+	t.Run("test cache file not found", func(t *testing.T) {
+		assert.False(b.isProjectMoved())
+	})
+
+	t.Run("test project not moved", func(t *testing.T) {
+		content := "CMAKE_CACHEFILE_DIR:INTERNAL=" + tmpDir
+		writeTestCMakeCache(tmpDir, content)
+		defer os.RemoveAll(tmpDir)
+
+		assert.False(b.isProjectMoved())
+	})
+
+	t.Run("test project moved", func(t *testing.T) {
+		content := "CMAKE_CACHEFILE_DIR:INTERNAL=/home/test/tmp"
+		writeTestCMakeCache(tmpDir, content)
+		defer os.RemoveAll(tmpDir)
+
+		assert.True(b.isProjectMoved())
+	})
+}
+
+func TestNeedRebuild(t *testing.T) {
+	assert := assert.New(t)
+	tmpDir := filepath.Join(testRoot, testDir, "tmp")
+	_ = os.RemoveAll(tmpDir)
+
+	b := CSolutionBuilder{
+		BuilderParams: builder.BuilderParams{
+			Runner:    RunnerMock{},
+			InputFile: filepath.Join(testRoot, testDir, "Test.csolution.yml"),
+		},
+	}
+
+	t.Run("rebuild needed when user specifies -r", func(t *testing.T) {
+		b.Options.Rebuild = true
+		rebuild, err := b.needRebuild()
+		assert.Nil(err)
+		assert.True(rebuild)
+	})
+
+	t.Run("check rebuild only when --cbuild2cmake", func(t *testing.T) {
+		b.Options.Rebuild = false
+		b.Options.UseCbuild2CMake = false
+		rebuild, err := b.needRebuild()
+		assert.Nil(err)
+		assert.False(rebuild)
+	})
+
+	t.Run("check rebuild needed on new project", func(t *testing.T) {
+		b.Options.Rebuild = false
+		b.Options.UseCbuild2CMake = true
+		rebuild, err := b.needRebuild()
+		assert.Nil(err)
+		assert.False(rebuild)
+	})
+
+	t.Run("check rebuild needed when project moved", func(t *testing.T) {
+		b.Options.Rebuild = false
+		b.Options.UseCbuild2CMake = true
+		content := "CMAKE_CACHEFILE_DIR:INTERNAL=/home/test/tmp"
+		_ = os.RemoveAll(tmpDir)
+		_ = os.MkdirAll(tmpDir, os.ModePerm)
+		cmakeCacheFile := filepath.Join(tmpDir, "CMakeCache.txt")
+		_ = os.WriteFile(cmakeCacheFile, []byte(content), 0600)
+
+		rebuild, err := b.needRebuild()
+		assert.Nil(err)
+		assert.True(rebuild)
+
+		_ = os.RemoveAll(tmpDir)
+	})
+
+	t.Run("check rebuild needed when project not moved with no rebuild nodes in idx", func(t *testing.T) {
+		b.Options.Rebuild = false
+		b.Options.UseCbuild2CMake = true
+		content := "CMAKE_CACHEFILE_DIR:INTERNAL=" + tmpDir
+		_ = os.RemoveAll(tmpDir)
+		_ = os.MkdirAll(tmpDir, os.ModePerm)
+		cmakeCacheFile := filepath.Join(tmpDir, "CMakeCache.txt")
+		_ = os.WriteFile(cmakeCacheFile, []byte(content), 0600)
+
+		rebuild, err := b.needRebuild()
+		assert.Nil(err)
+		assert.False(rebuild)
+
+		_ = os.RemoveAll(tmpDir)
+	})
+}
