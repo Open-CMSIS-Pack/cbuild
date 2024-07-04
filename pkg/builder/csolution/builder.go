@@ -146,6 +146,17 @@ func (b CSolutionBuilder) generateBuildFiles() (err error) {
 	// when using "cbuild setup *.csolution -S" with no existing cbuild-set file
 	// Select first target-type and the first build-type for each project
 	if b.Setup && b.Options.UseContextSet && (len(b.Options.Contexts) == 0) && errors.Is(err, os.ErrNotExist) {
+		// Retrieve all available contexts in yml-order
+		allContexts, err := b.listContexts(true, true)
+		if err != nil {
+			return err
+		}
+
+		// Ensure at least one context exists
+		if len(allContexts) == 0 {
+			return errutils.New(errutils.ErrNoContextFound)
+		}
+
 		csolution, err := utils.ParseCSolutionFile(b.InputFile)
 		if err != nil {
 			return err
@@ -167,17 +178,6 @@ func (b CSolutionBuilder) generateBuildFiles() (err error) {
 
 		// Create the default context
 		defaultContext := utils.CreateContext(context)
-
-		// Retrieve all available contexts in yml-order
-		allContexts, err := b.listContexts(true, true)
-		if err != nil {
-			return err
-		}
-
-		// Ensure at least one context exists
-		if len(allContexts) == 0 {
-			return errutils.New(errutils.ErrNoContextFound)
-		}
 
 		// Resolve the selected contexts including the default one
 		selectedContexts, err = utils.ResolveContexts(allContexts, []string{defaultContext})
