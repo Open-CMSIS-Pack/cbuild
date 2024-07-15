@@ -136,16 +136,12 @@ func (b CbuildIdxBuilder) build() error {
 		return err
 	}
 
-	dirs := builder.BuildDirs{
-		IntDir: filepath.Join(filepath.Dir(b.InputFile), "tmp"),
+	dirs, err := b.getDirs(b.BuildContext)
+	if err != nil {
+		return err
 	}
 
 	if b.Options.Clean {
-		dirs, err := b.getDirs(b.BuildContext)
-		if err != nil {
-			return err
-		}
-
 		if err := b.clean(dirs, vars); err != nil {
 			return err
 		}
