@@ -315,26 +315,6 @@ func TestResolveContexts(t *testing.T) {
 	}
 }
 
-func TestRemoveVersionRange(t *testing.T) {
-	assert := assert.New(t)
-
-	testCases := []struct {
-		inputString    string
-		expectedOutput string
-	}{
-		{"ARM::CMSIS@>=6.0.0", "ARM::CMSIS@6.0.0"},
-		{"ARM::CMSIS@>=6.0.0-alpha0", "ARM::CMSIS@6.0.0-alpha0"},
-		{"ARM::CMSIS@6.0.0", "ARM::CMSIS@6.0.0"},
-		{"ARM::CMSIS", "ARM::CMSIS"},
-		{"", ""},
-	}
-
-	for _, test := range testCases {
-		outString := RemoveVersionRange(test.inputString)
-		assert.Equal(test.expectedOutput, outString)
-	}
-}
-
 func TestRemoveDuplicates(t *testing.T) {
 	assert := assert.New(t)
 
