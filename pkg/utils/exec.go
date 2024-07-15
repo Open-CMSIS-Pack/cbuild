@@ -7,6 +7,7 @@
 package utils
 
 import (
+	"bytes"
 	"os/exec"
 
 	log "github.com/sirupsen/logrus"
@@ -37,4 +38,16 @@ func (r Runner) ExecuteCommand(program string, quiet bool, args ...string) (stri
 	cmd.Stderr = log.StandardLogger().Out
 	err := cmd.Run()
 	return string(r.outBytes), err
+}
+
+// This exclusive function returns the standard output and standard error as strings
+func ExecuteCommand(program string, args ...string) (string, string, error) {
+	cmd := exec.Command(program, args...)
+
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+
+	return stdout.String(), stderr.String(), err
 }
