@@ -170,7 +170,18 @@ func (b CSolutionBuilder) generateBuildFiles() (err error) {
 		args = append(args, "--cbuild2cmake")
 	}
 
-	_, err = b.runCSolution(args, !(b.Options.Debug || b.Options.Verbose))
+	var stdErr string
+	if b.Setup {
+		var csolutionBin string
+		csolutionBin, err = b.getCSolutionPath()
+		if err != nil {
+			return
+		}
+		_, stdErr, err = utils.ExecuteCommand(csolutionBin, args...)
+	} else {
+		_, err = b.runCSolution(args, !(b.Options.Debug || b.Options.Verbose))
+	}
+
 	log.Debug("csolution command: csolution " + strings.Join(args, " "))
 
 	// Execute this code exclusively upon invocation of the 'setup' command.
@@ -190,8 +201,23 @@ func (b CSolutionBuilder) generateBuildFiles() (err error) {
 				if listCmdErr != nil {
 					err = listCmdErr
 				} else {
-					utils.LogStdMsg("To resolve undefined variables, copy the settings from cbuild-idx.yml to csolution.yml")
+					reader := strings.NewReader(stdErr)
+					scanner := bufio.NewScanner(reader)
+
+					var errMsg string
+					for scanner.Scan() {
+						line := scanner.Text()
+						if strings.Contains(line, "undefined variables in") || strings.HasSuffix(line, "-Layer$") {
+							errMsg += (line + "\n")
+						}
+					}
+					if errMsg != "" {
+						errMsg += "To resolve undefined variables, copy the settings from cbuild-idx.yml to csolution.yml"
+						utils.LogStdMsg(errMsg)
+					}
 				}
+			} else {
+				utils.LogStdMsg(stdErr)
 			}
 		}
 	}
