@@ -7,6 +7,7 @@
 package utils
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
@@ -396,4 +397,16 @@ func isFileSystemCaseInsensitive() bool {
 	// On Windows and macOS, file systems are typically case insensitive
 	// On Linux, file systems are typically case sensitive
 	return filepath.Separator == '\\' || strings.Contains(strings.ToLower(os.Getenv("OS")), "darwin")
+}
+
+// This exclusive function returns the standard output and standard error as strings
+func ExecuteCommand(program string, args ...string) (string, string, error) {
+	cmd := exec.Command(program, args...)
+
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+
+	return stdout.String(), stderr.String(), err
 }
