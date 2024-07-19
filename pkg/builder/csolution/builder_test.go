@@ -250,6 +250,13 @@ func TestBuild(t *testing.T) {
 		},
 	}
 
+	t.Run("test setup", func(t *testing.T) {
+		b.Setup = true
+		err := b.Build()
+		assert.Error(err)
+		b.Setup = false
+	})
+
 	t.Run("test build csolution without context", func(t *testing.T) {
 		err := b.Build()
 		assert.Error(err)

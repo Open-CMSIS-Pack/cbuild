@@ -125,20 +125,6 @@ func (b CSolutionBuilder) installMissingPacks() (err error) {
 func (b CSolutionBuilder) generateBuildFiles() (err error) {
 	args := b.formulateArgs([]string{"convert"})
 
-	cbuildSetFile := b.getCbuildSetFilePath()
-
-	var selectedContexts []string
-	if len(b.Options.Contexts) != 0 {
-		selectedContexts = append(selectedContexts, b.Options.Contexts...)
-	}
-
-	_, err = os.Stat(cbuildSetFile)
-
-	// Read contexts to be processed from cbuild-set file
-	if b.Options.UseContextSet && err == nil {
-		selectedContexts, _ = b.getSelectedContexts(cbuildSetFile)
-	}
-
 	// when using "cbuild setup *.csolution.yml -S" with no existing cbuild-set file
 	// Select first target-type and the first build-type for first listed project
 	if b.Setup && b.Options.UseContextSet && (len(b.Options.Contexts) == 0) && errors.Is(err, os.ErrNotExist) {
@@ -189,11 +175,9 @@ func (b CSolutionBuilder) generateBuildFiles() (err error) {
 			log.Debug("error code received: " + errCodeStr)
 
 			if exitError.ExitCode() == 2 {
-				args = []string{"list", "layers", b.InputFile, "--load=all", "--update-idx", "--quiet"}
-				for _, context := range selectedContexts {
-					args = append(args, "--context="+context)
-				}
+				args = []string{"list", "layers", b.InputFile, "--context-set", "--load=all", "--update-idx", "--quiet"}
 				_, listCmdErr := b.runCSolution(args, false)
+				log.Debug("csolution command: csolution " + strings.Join(args, " "))
 				if listCmdErr != nil {
 					err = listCmdErr
 				} else {
