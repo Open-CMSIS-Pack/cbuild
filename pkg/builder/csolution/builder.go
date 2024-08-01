@@ -95,7 +95,7 @@ func (b CSolutionBuilder) installMissingPacks() (err error) {
 	args = append(args, "-m", "-q")
 
 	// Get list of missing packs
-	output, err := b.runCSolution(args, false)
+	output, err := b.runCSolution(args, true)
 	if err != nil {
 		return err
 	}
