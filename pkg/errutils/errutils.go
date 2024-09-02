@@ -29,6 +29,7 @@ const (
 	ErrInvalidVersionString   = "invalid version %s. Expected %s"
 	ErrInvalidNumJobs         = "invalid number of job slots specified for parallel execution. Expected: j>0"
 	ErrMissingRequiredArg     = "setup command is missing mandatory option '--context-set'"
+	ErrMissingCbuildPackFile  = "Missing required '%s.cbuild-pack.yml' file when using --frozen-packs flag"
 )
 
 const (

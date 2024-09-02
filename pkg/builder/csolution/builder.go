@@ -617,7 +617,13 @@ func (b CSolutionBuilder) build() (err error) {
 func (b CSolutionBuilder) Build() (err error) {
 	_ = utils.UpdateEnvVars(b.InstallConfigs.BinPath, b.InstallConfigs.EtcPath)
 
-	// STEP 1: Install missing pack(s)
+	// STEP 1: Check Pre-requisites
+	if err = b.validatePrerequisites(); err != nil {
+		log.Error(err)
+		return err
+	}
+
+	// STEP 2: Install missing pack(s)
 	if err = b.installMissingPacks(); err != nil {
 		// Continue with build files generation upon setup command
 		if !b.Setup {
@@ -626,13 +632,13 @@ func (b CSolutionBuilder) Build() (err error) {
 		}
 	}
 
-	// STEP 2: Generate build file(s)
+	// STEP 3: Generate build file(s)
 	if err = b.generateBuildFiles(); err != nil {
 		log.Error(err)
 		return err
 	}
 
-	// STEP 3: Build project(s)
+	// STEP 4: Build project(s)
 	return b.build()
 }
 
@@ -727,4 +733,19 @@ func (b CSolutionBuilder) hasRebuildNode(idxFilePath string) (bool, error) {
 	}
 
 	return false, nil
+}
+
+func (b CSolutionBuilder) validatePrerequisites() error {
+	// Validate the presence of the cbuild-pack.yml file when --frozen-packs flag is used
+	if b.Options.FrozenPacks {
+		projName := b.getProjectName(b.InputFile)
+		parentDir := filepath.Dir(b.InputFile)
+		cbuildPackFile := filepath.Join(parentDir, projName)
+
+		if _, err := os.Stat(cbuildPackFile); os.IsNotExist(err) {
+			return errutils.New(errutils.ErrMissingCbuildPackFile, cbuildPackFile)
+		}
+	}
+
+	return nil
 }
