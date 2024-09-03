@@ -373,8 +373,10 @@ func (b CSolutionBuilder) cleanContexts(selectedContexts []string, projBuilders 
 	for index := range projBuilders {
 		progress := fmt.Sprintf("(%s/%d)", strconv.Itoa(index+1), len(projBuilders))
 		cleanMsg := progress + " Cleaning context: \"" + selectedContexts[index] + "\""
-		seplen = len(cleanMsg)
-		utils.PrintSeparator("-", seplen)
+		if seplen == 0 {
+			seplen = len(cleanMsg)
+			utils.PrintSeparator("-", seplen)
+		}
 		utils.LogStdMsg(cleanMsg)
 
 		b.setBuilderOptions(&projBuilders[index], true)
