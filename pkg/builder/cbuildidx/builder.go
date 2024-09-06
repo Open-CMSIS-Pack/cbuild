@@ -201,9 +201,9 @@ func (b CbuildIdxBuilder) build() error {
 	if b.Options.Target != "" {
 		args = append(args, "--target", b.Options.Target)
 	} else if b.Setup {
-		args = append(args, "--target", b.BuildContext+"-database")
+		args = append(args, "--target", strings.ReplaceAll(b.BuildContext, " ", "_")+"-database")
 	} else if b.BuildContext != "" {
-		args = append(args, "--target", b.BuildContext)
+		args = append(args, "--target", strings.ReplaceAll(b.BuildContext, " ", "_"))
 	}
 
 	if b.Options.Generator == "Ninja" && !(b.Options.Debug || b.Options.Verbose) {
