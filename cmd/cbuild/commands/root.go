@@ -234,7 +234,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.PersistentFlags().BoolP("schema", "s", false, "Validate project input file(s) against schema")
 	rootCmd.PersistentFlags().StringP("log", "", "", "Save output messages in a log file")
 	rootCmd.PersistentFlags().StringP("toolchain", "", "", "Input toolchain to be used")
-	rootCmd.Flags().BoolP("cbuildgen", "", false, "Generated legacy *.cprj files and use cbuildgen backend")
+	rootCmd.Flags().BoolP("cbuildgen", "", false, "Generate legacy *.cprj files and use cbuildgen backend")
 
 	// CPRJ specific hidden flags
 	rootCmd.Flags().StringP("intdir", "i", "", "Set directory for intermediate files")
