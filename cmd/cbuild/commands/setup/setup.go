@@ -148,5 +148,5 @@ func init() {
 	SetUpCmd.Flags().BoolP("schema", "s", true, "Validate project input file(s) against schema")
 	SetUpCmd.Flags().StringP("log", "", "", "Save output messages in a log file")
 	SetUpCmd.Flags().StringP("toolchain", "", "", "Input toolchain to be used")
-	SetUpCmd.Flags().BoolP("cbuildgen", "", false, "Generated legacy *.cprj files and use cbuildgen backend")
+	SetUpCmd.Flags().BoolP("cbuildgen", "", false, "Generate legacy *.cprj files and use cbuildgen backend")
 }
