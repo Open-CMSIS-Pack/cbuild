@@ -148,8 +148,8 @@ func (b CSolutionBuilder) generateBuildFiles() (err error) {
 		args = append(args, "--quiet")
 	}
 
-	if b.Options.UseCbuild2CMake {
-		args = append(args, "--cbuild2cmake")
+	if !b.Options.UseCbuild2CMake {
+		args = append(args, "--cbuildgen")
 	}
 
 	var stdErr string
