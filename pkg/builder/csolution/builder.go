@@ -454,7 +454,6 @@ func (b CSolutionBuilder) listContexts(quiet bool, ymlOrder bool) (contexts []st
 		return
 	}
 
-	output = strings.ReplaceAll(output, " ", "")
 	if output != "" {
 		contexts = strings.Split(strings.ReplaceAll(strings.TrimSpace(output), "\r\n", "\n"), "\n")
 	}
