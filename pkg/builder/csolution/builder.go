@@ -279,8 +279,13 @@ func (b CSolutionBuilder) getProjectName(csolutionFile string) (projectName stri
 // It is the caller's responsibility to verify if the file exists."
 func (b CSolutionBuilder) getCbuildSetFilePath() string {
 	projName := b.getProjectName(b.InputFile)
-	setFilePath := utils.NormalizePath(filepath.Join(filepath.Dir(b.InputFile), projName+".cbuild-set.yml"))
-	return setFilePath
+	var cbuildSetDir string
+	if len(b.Options.Output) > 0 {
+		cbuildSetDir = b.Options.Output
+	} else {
+		cbuildSetDir = filepath.Dir(b.InputFile)
+	}
+	return utils.NormalizePath(filepath.Join(cbuildSetDir, projName+".cbuild-set.yml"))
 }
 
 func (b CSolutionBuilder) getProjsBuilders(selectedContexts []string) (projBuilders []builder.IBuilderInterface, err error) {
