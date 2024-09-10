@@ -488,6 +488,13 @@ func TestGetCbuildSetFilePath(t *testing.T) {
 		path := b.getCbuildSetFilePath()
 		assert.Equal(path, utils.NormalizePath(filepath.Join(testRoot, testDir, "TestSolution/test.cbuild-set.yml")))
 	})
+
+	t.Run("test get cbuild-set file path with output option", func(t *testing.T) {
+		b.InputFile = filepath.Join(testRoot, testDir, "TestSolution/test.csolution.yml")
+		b.Options.Output = "OutOfTree"
+		path := b.getCbuildSetFilePath()
+		assert.Equal(path, utils.NormalizePath("OutOfTree/test.cbuild-set.yml"))
+	})
 }
 
 func TestHasRebuildNode(t *testing.T) {
