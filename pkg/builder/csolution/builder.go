@@ -175,7 +175,11 @@ func (b CSolutionBuilder) generateBuildFiles() (err error) {
 			log.Debug("error code received: " + errCodeStr)
 
 			if exitError.ExitCode() == 2 {
-				args = []string{"list", "layers", b.InputFile, "--context-set", "--load=all", "--update-idx", "--quiet"}
+				args = b.formulateArgs([]string{"list", "layers", "--update-idx"})
+				if !b.Options.Quiet {
+					// force --quiet
+					args = append(args, "--quiet")
+				}
 				_, listCmdErr := b.runCSolution(args, false)
 				log.Debug("csolution command: csolution " + strings.Join(args, " "))
 				if listCmdErr != nil {
