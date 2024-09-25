@@ -11,8 +11,8 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	log "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/logger"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
-	log "github.com/sirupsen/logrus"
 )
 
 type BuilderParams struct {

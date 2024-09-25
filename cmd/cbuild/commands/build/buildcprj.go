@@ -11,8 +11,8 @@ import (
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder/cproject"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/errutils"
+	log "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/logger"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
