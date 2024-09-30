@@ -7,15 +7,13 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/Open-CMSIS-Pack/cbuild/v2/cmd/cbuild/commands"
-	log "github.com/sirupsen/logrus"
+	log "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/logger"
 )
 
 func main() {
-	log.SetFormatter(new(LogFormatter))
 	log.SetOutput(os.Stdout)
 
 	commands.Version = version
@@ -28,11 +26,4 @@ func main() {
 	} else {
 		os.Exit(0)
 	}
-}
-
-type LogFormatter struct{}
-
-func (s *LogFormatter) Format(entry *log.Entry) ([]byte, error) {
-	msg := fmt.Sprintf("%s cbuild: %s\n", entry.Level.String(), entry.Message)
-	return []byte(msg), nil
 }

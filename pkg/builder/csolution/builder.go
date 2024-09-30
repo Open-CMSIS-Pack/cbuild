@@ -22,8 +22,8 @@ import (
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder/cbuildidx"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder/cproject"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/errutils"
+	log "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/logger"
 	utils "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
-	log "github.com/sirupsen/logrus"
 )
 
 type CSolutionBuilder struct {

@@ -10,7 +10,7 @@ import (
 	"bytes"
 	"os/exec"
 
-	log "github.com/sirupsen/logrus"
+	log "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/logger"
 )
 
 type RunnerInterface interface {

@@ -21,7 +21,9 @@ import (
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder/csolution"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/errutils"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
+
+	log "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/logger"
 	"github.com/spf13/cobra"
 )
 
@@ -60,18 +62,18 @@ Use "{{.CommandPath}} [command] --help" for more information about a command.{{e
 
 func preConfiguration(cmd *cobra.Command, args []string) error {
 	// configure log level
-	log.SetLevel(log.WarnLevel)
+	log.SetLevel(logrus.WarnLevel)
 	debug, _ := cmd.Flags().GetBool("debug")
 	quiet, _ := cmd.Flags().GetBool("quiet")
 	verbose, _ := cmd.Flags().GetBool("verbose")
 	logFile, _ := cmd.Flags().GetString("log")
 
 	if debug {
-		log.SetLevel(log.DebugLevel)
+		log.SetLevel(logrus.DebugLevel)
 	} else if verbose {
-		log.SetLevel(log.InfoLevel)
+		log.SetLevel(logrus.InfoLevel)
 	} else if quiet {
-		log.SetLevel(log.ErrorLevel)
+		log.SetLevel(logrus.ErrorLevel)
 	}
 
 	if logFile != "" {

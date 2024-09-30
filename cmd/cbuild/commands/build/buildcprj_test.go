@@ -12,7 +12,8 @@ import (
 	"testing"
 
 	"github.com/Open-CMSIS-Pack/cbuild/v2/cmd/cbuild/commands"
-	log "github.com/sirupsen/logrus"
+	log "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/logger"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -49,21 +50,21 @@ func TestPreLogConfiguration(t *testing.T) {
 		cmd := commands.NewRootCmd()
 		cmd.SetArgs([]string{"buildcprj", cprjFile, "-C"})
 		_ = cmd.Execute()
-		assert.Equal(log.WarnLevel, log.GetLevel())
+		assert.Equal(logrus.WarnLevel, log.GetLevel())
 	})
 
 	t.Run("test quiet verbosity level", func(t *testing.T) {
 		cmd := commands.NewRootCmd()
 		cmd.SetArgs([]string{"buildcprj", cprjFile, "--quiet", "-C"})
 		_ = cmd.Execute()
-		assert.Equal(log.ErrorLevel, log.GetLevel())
+		assert.Equal(logrus.ErrorLevel, log.GetLevel())
 	})
 
 	t.Run("test debug debug level", func(t *testing.T) {
 		cmd := commands.NewRootCmd()
 		cmd.SetArgs([]string{"buildcprj", cprjFile, "--debug", "-C"})
 		_ = cmd.Execute()
-		assert.Equal(log.DebugLevel, log.GetLevel())
+		assert.Equal(logrus.DebugLevel, log.GetLevel())
 	})
 
 	t.Run("test path generation to log file", func(t *testing.T) {

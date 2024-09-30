@@ -16,9 +16,9 @@ import (
 
 	builder "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/errutils"
+	log "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/logger"
 	utils "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
 	"github.com/hashicorp/go-version"
-	log "github.com/sirupsen/logrus"
 )
 
 const NinjaVersion = "1.11.1"
