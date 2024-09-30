@@ -14,7 +14,6 @@ import (
 )
 
 func main() {
-	// log.SetFormatter(new(LogFormatter))
 	log.SetOutput(os.Stdout)
 
 	commands.Version = version
@@ -28,10 +27,3 @@ func main() {
 		os.Exit(0)
 	}
 }
-
-// type LogFormatter struct{}
-
-// func (s *LogFormatter) Format(entry *log.Entry) ([]byte, error) {
-// 	msg := fmt.Sprintf("%s cbuild: %s\n", entry.Level.String(), entry.Message)
-// 	return []byte(msg), nil
-// }
