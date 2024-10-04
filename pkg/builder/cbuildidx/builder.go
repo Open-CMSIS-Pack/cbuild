@@ -148,9 +148,14 @@ func (b CbuildIdxBuilder) build() error {
 		return nil
 	}
 
+	operation := "build"
+	if b.Setup {
+		operation = "setup"
+	}
+
 	// no CMake orchestration needed
 	if b.Options.NoDatabase {
-		log.Info("build finished successfully!")
+		log.Info(operation + " finished successfully!")
 		return nil
 	}
 
@@ -234,7 +239,7 @@ func (b CbuildIdxBuilder) build() error {
 		return err
 	}
 
-	log.Info("build finished successfully!")
+	log.Info(operation + " finished successfully!")
 	return nil
 }
 

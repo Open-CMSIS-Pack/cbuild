@@ -154,5 +154,5 @@ func init() {
 	SetUpCmd.Flags().StringP("log", "", "", "Save output messages in a log file")
 	SetUpCmd.Flags().StringP("toolchain", "", "", "Input toolchain to be used")
 	SetUpCmd.Flags().BoolP("cbuildgen", "", false, "Generate legacy *.cprj files and use cbuildgen backend")
-	SetUpCmd.Flags().BoolP("no-database", "", false, "Do not generate compilation database")
+	SetUpCmd.Flags().BoolP("no-database", "", false, "Skip the generation of compile_commands.json files")
 }
