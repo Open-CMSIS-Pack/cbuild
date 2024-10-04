@@ -603,6 +603,8 @@ func (b CSolutionBuilder) build() (err error) {
 		return err
 	}
 
+	b.Options.Rebuild = b.Options.Rebuild && !b.Options.NoDatabase
+
 	// clean all selected contexts when rebuild or clean are requested
 	if b.Options.Rebuild || b.Options.Clean {
 		err = b.cleanContexts(selectedContexts, projBuilders)
