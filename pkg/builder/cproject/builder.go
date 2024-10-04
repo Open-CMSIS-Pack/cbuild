@@ -183,6 +183,12 @@ func (b CprjBuilder) build() error {
 		}
 	}
 
+	// no CMake orchestration needed
+	if b.Options.NoDatabase {
+		log.Info("setup finished successfully!")
+		return nil
+	}
+
 	args = []string{"cmake", b.InputFile, "--outdir=" + dirs.OutDir, "--intdir=" + dirs.IntDir}
 	if b.Options.Quiet {
 		args = append(args, "--quiet")

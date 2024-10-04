@@ -67,6 +67,7 @@ func setUpProject(cmd *cobra.Command, args []string) error {
 	useContextSet, _ := cmd.Flags().GetBool("context-set")
 	frozenPacks, _ := cmd.Flags().GetBool("frozen-packs")
 	useCbuildgen, _ := cmd.Flags().GetBool("cbuildgen")
+	noDatabase, _ := cmd.Flags().GetBool("no-database")
 
 	useCbuild2CMake := true
 	if useCbuildgen {
@@ -99,6 +100,7 @@ func setUpProject(cmd *cobra.Command, args []string) error {
 		Toolchain:       toolchain,
 		FrozenPacks:     frozenPacks,
 		UseCbuild2CMake: useCbuild2CMake,
+		NoDatabase:      noDatabase,
 	}
 
 	configs, err := utils.GetInstallConfigs()
@@ -152,4 +154,5 @@ func init() {
 	SetUpCmd.Flags().StringP("log", "", "", "Save output messages in a log file")
 	SetUpCmd.Flags().StringP("toolchain", "", "", "Input toolchain to be used")
 	SetUpCmd.Flags().BoolP("cbuildgen", "", false, "Generate legacy *.cprj files and use cbuildgen backend")
+	SetUpCmd.Flags().BoolP("no-database", "", false, "Skip the generation of compile_commands.json files")
 }

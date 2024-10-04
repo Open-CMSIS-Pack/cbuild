@@ -148,6 +148,12 @@ func (b CbuildIdxBuilder) build() error {
 		return nil
 	}
 
+	// no CMake orchestration needed
+	if b.Options.NoDatabase {
+		log.Info("setup finished successfully!")
+		return nil
+	}
+
 	if vars.CmakeBin == "" {
 		err = errutils.New(errutils.ErrBinaryNotFound, "cmake", "")
 		return err
