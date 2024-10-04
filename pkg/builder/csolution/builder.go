@@ -597,10 +597,12 @@ func (b CSolutionBuilder) build() (err error) {
 		return err
 	}
 
-	b.Options.Rebuild, err = b.needRebuild()
-	if err != nil {
-		log.Error(err)
-		return err
+	if !b.Options.NoDatabase {
+		b.Options.Rebuild, err = b.needRebuild()
+		if err != nil {
+			log.Error(err)
+			return err
+		}
 	}
 
 	// clean all selected contexts when rebuild or clean are requested
