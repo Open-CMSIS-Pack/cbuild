@@ -48,6 +48,7 @@ type Options struct {
 	UseContextSet   bool
 	FrozenPacks     bool
 	UseCbuild2CMake bool
+	NoDatabase      bool
 }
 
 type InternalVars struct {
