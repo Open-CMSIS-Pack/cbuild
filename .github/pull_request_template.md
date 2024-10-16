@@ -15,5 +15,4 @@
 - [ ] 🤹 All required manual testing has been performed.
 - [ ] 🛡️ Security impacts have been considered.
 - [ ] 📖 All documentation updates are complete.
-- [ ] 📝 The [changelog](../CHANGELOG.md) has been updated, or this change is not user facing.
-- [ ] 🧠 The this change does not change third party dependencies
+- [ ] 🧠 This change does not change third-party dependencies
