@@ -57,7 +57,7 @@ To make a successful contribution, please follow these steps:
 
 4. **Push to Your Fork**: Push your changes to your forked repository.
 
-5. **Submit a Pull Request (PR)**: Open a pull request against the main repository.
+5. **Submit a Pull Request (PR)**: Open a pull request against the main repository's main branch.
 
 ### Review Process
 
