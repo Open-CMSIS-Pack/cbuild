@@ -59,7 +59,7 @@ func setUpProject(cmd *cobra.Command, args []string) error {
 	debug, _ := cmd.Flags().GetBool("debug")
 	verbose, _ := cmd.Flags().GetBool("verbose")
 	clean, _ := cmd.Flags().GetBool("clean")
-	schema, _ := cmd.Flags().GetBool("schema")
+	schemaChk, _ := cmd.Flags().GetBool("no-schema-check")
 	packs, _ := cmd.Flags().GetBool("packs")
 	rebuild, _ := cmd.Flags().GetBool("rebuild")
 	updateRte, _ := cmd.Flags().GetBool("update-rte")
@@ -89,7 +89,7 @@ func setUpProject(cmd *cobra.Command, args []string) error {
 		Debug:           debug,
 		Verbose:         verbose,
 		Clean:           clean,
-		Schema:          schema,
+		SchemaChk:       !schemaChk,
 		Packs:           packs,
 		Rebuild:         rebuild,
 		UpdateRte:       updateRte,
@@ -150,7 +150,8 @@ func init() {
 	SetUpCmd.Flags().IntP("jobs", "j", 8, "Number of job slots for parallel execution")
 	SetUpCmd.Flags().StringP("target", "t", "", "Optional CMake target name")
 	SetUpCmd.Flags().StringP("output", "O", "", "Add prefix to 'outdir' and 'tmpdir'")
-	SetUpCmd.Flags().BoolP("schema", "s", true, "Validate project input file(s) against schema")
+	SetUpCmd.Flags().BoolP("schema", "s", true, "Validate project input file(s) against schema [deprecated]")
+	SetUpCmd.Flags().BoolP("no-schema-check", "n", false, "Skip schema check")
 	SetUpCmd.Flags().StringP("log", "", "", "Save output messages in a log file")
 	SetUpCmd.Flags().StringP("toolchain", "", "", "Input toolchain to be used")
 	SetUpCmd.Flags().BoolP("cbuildgen", "", false, "Generate legacy *.cprj files and use cbuildgen backend")

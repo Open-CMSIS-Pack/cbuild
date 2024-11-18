@@ -41,7 +41,7 @@ type Options struct {
 	Debug           bool
 	Verbose         bool
 	Clean           bool
-	Schema          bool
+	SchemaChk       bool
 	Packs           bool
 	Rebuild         bool
 	UpdateRte       bool

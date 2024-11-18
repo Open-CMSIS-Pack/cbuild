@@ -43,7 +43,7 @@ func (b CSolutionBuilder) formulateArgs(command []string) (args []string) {
 	if b.Options.Load != "" {
 		args = append(args, "--load="+b.Options.Load)
 	}
-	if !b.Options.Schema {
+	if !b.Options.SchemaChk {
 		args = append(args, "--no-check-schema")
 	}
 	if !b.Options.UpdateRte {
@@ -296,8 +296,8 @@ func (b CSolutionBuilder) getProjsBuilders(selectedContexts []string) (projBuild
 	buildOptions := b.Options
 
 	// Set XML schema check to false, when input is yml
-	if b.Options.Schema {
-		buildOptions.Schema = false
+	if b.Options.SchemaChk {
+		buildOptions.SchemaChk = false
 	}
 
 	idxFile, err := b.getIdxFilePath()
