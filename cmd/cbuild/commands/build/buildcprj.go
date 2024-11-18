@@ -43,7 +43,7 @@ func BuildCPRJ(cmd *cobra.Command, args []string) error {
 	debug, _ := cmd.Flags().GetBool("debug")
 	verbose, _ := cmd.Flags().GetBool("verbose")
 	clean, _ := cmd.Flags().GetBool("clean")
-	schema, _ := cmd.Flags().GetBool("schema")
+	schemaChk, _ := cmd.Flags().GetBool("no-schema-check")
 	packs, _ := cmd.Flags().GetBool("packs")
 	rebuild, _ := cmd.Flags().GetBool("rebuild")
 	updateRte, _ := cmd.Flags().GetBool("update-rte")
@@ -61,7 +61,7 @@ func BuildCPRJ(cmd *cobra.Command, args []string) error {
 		Debug:     debug,
 		Verbose:   verbose,
 		Clean:     clean,
-		Schema:    schema,
+		SchemaChk: !schemaChk,
 		Packs:     packs,
 		Rebuild:   rebuild,
 		UpdateRte: updateRte,
@@ -121,7 +121,8 @@ func init() {
 	BuildCPRJCmd.Flags().BoolP("packs", "p", false, "Download missing software packs with cpackget")
 	BuildCPRJCmd.Flags().BoolP("rebuild", "r", false, "Remove intermediate and output directories and rebuild")
 	BuildCPRJCmd.Flags().BoolP("update-rte", "", false, "Update the RTE directory and files")
-	BuildCPRJCmd.Flags().BoolP("schema", "s", false, "Validate project input file(s) against schema")
+	BuildCPRJCmd.Flags().BoolP("schema", "s", false, "Validate project input file(s) against schema [deprecated]")
+	BuildCPRJCmd.Flags().BoolP("no-schema-check", "n", false, "Skip schema check")
 	BuildCPRJCmd.Flags().StringP("target", "t", "", "Optional CMake target name")
 	BuildCPRJCmd.Flags().StringP("log", "", "", "Save output messages in a log file")
 	BuildCPRJCmd.Flags().StringP("toolchain", "", "", "Input toolchain to be used")

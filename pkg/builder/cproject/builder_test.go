@@ -210,7 +210,6 @@ func TestBuild(t *testing.T) {
 	})
 
 	t.Run("test build cprj schema check", func(t *testing.T) {
-		b.Options.Schema = true
 		err := b.Build()
 		assert.Nil(err)
 	})

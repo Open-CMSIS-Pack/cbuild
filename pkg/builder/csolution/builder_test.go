@@ -110,7 +110,6 @@ func TestListContexts(t *testing.T) {
 	})
 
 	t.Run("test list contexts with schema check", func(t *testing.T) {
-		b.Options.Schema = true
 		contexts, err := b.listContexts(true, false)
 		assert.Nil(err)
 		assert.Equal(len(contexts), 2)
@@ -176,7 +175,6 @@ func TestListToolchians(t *testing.T) {
 	})
 
 	t.Run("test list toochains with schema check", func(t *testing.T) {
-		b.Options.Schema = true
 		toolchains, err := b.listToolchains(true)
 		assert.Nil(err)
 		assert.Equal(len(toolchains), 4)

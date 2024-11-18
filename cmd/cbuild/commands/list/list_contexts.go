@@ -47,14 +47,14 @@ func listContexts(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	schemaCheck, _ := cmd.Flags().GetBool("schema")
+	schemaChk, _ := cmd.Flags().GetBool("no-schema-check")
 	filter, _ := cmd.Flags().GetString("filter")
 	p := csolution.CSolutionBuilder{
 		BuilderParams: builder.BuilderParams{
 			Runner: utils.Runner{},
 			Options: builder.Options{
-				Schema: schemaCheck,
-				Filter: filter,
+				SchemaChk: !schemaChk,
+				Filter:    filter,
 			},
 			InputFile:      args[0],
 			InstallConfigs: configs,

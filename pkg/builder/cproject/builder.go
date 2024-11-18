@@ -129,7 +129,7 @@ func (b CprjBuilder) build() error {
 		return err
 	}
 
-	if b.Options.Schema {
+	if b.Options.SchemaChk {
 		if vars.XmllintBin == "" {
 			log.Warn("xmllint was not found, proceed without xml validation")
 		} else {
