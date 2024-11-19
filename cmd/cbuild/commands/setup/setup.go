@@ -59,7 +59,7 @@ func setUpProject(cmd *cobra.Command, args []string) error {
 	debug, _ := cmd.Flags().GetBool("debug")
 	verbose, _ := cmd.Flags().GetBool("verbose")
 	clean, _ := cmd.Flags().GetBool("clean")
-	schemaChk, _ := cmd.Flags().GetBool("no-schema-check")
+	noSchemaChk, _ := cmd.Flags().GetBool("no-schema-check")
 	packs, _ := cmd.Flags().GetBool("packs")
 	rebuild, _ := cmd.Flags().GetBool("rebuild")
 	updateRte, _ := cmd.Flags().GetBool("update-rte")
@@ -89,7 +89,7 @@ func setUpProject(cmd *cobra.Command, args []string) error {
 		Debug:           debug,
 		Verbose:         verbose,
 		Clean:           clean,
-		SchemaChk:       !schemaChk,
+		SchemaChk:       !noSchemaChk,
 		Packs:           packs,
 		Rebuild:         rebuild,
 		UpdateRte:       updateRte,

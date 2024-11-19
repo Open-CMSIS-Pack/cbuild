@@ -94,6 +94,13 @@ func (b CSolutionBuilder) installMissingPacks() (err error) {
 	args := b.formulateArgs([]string{"list", "packs"})
 	args = append(args, "-m", "-q")
 
+	if b.Setup {
+		// If the setup command is triggered, skip the schema check when retrieving the list of missing packs.
+		// This is because the schema check will be performed later during the YAML generation step.
+		// Skipping it here avoids redundant checks and prevents potential double schema check errors.
+		args = append(args, "-n")
+	}
+
 	// Get list of missing packs
 	output, err := b.runCSolution(args, true)
 	if err != nil {
