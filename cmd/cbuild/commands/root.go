@@ -133,7 +133,7 @@ func NewRootCmd() *cobra.Command {
 			debug, _ := cmd.Flags().GetBool("debug")
 			verbose, _ := cmd.Flags().GetBool("verbose")
 			clean, _ := cmd.Flags().GetBool("clean")
-			noSchemaChk, _ := cmd.Flags().GetBool("noSchemaCheck")
+			noSchemaChk, _ := cmd.Flags().GetBool("no-schema-check")
 			packs, _ := cmd.Flags().GetBool("packs")
 			rebuild, _ := cmd.Flags().GetBool("rebuild")
 			updateRte, _ := cmd.Flags().GetBool("update-rte")
