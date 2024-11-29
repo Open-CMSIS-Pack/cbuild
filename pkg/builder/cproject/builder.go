@@ -276,3 +276,7 @@ func (b CprjBuilder) Build() (err error) {
 	}
 	return err
 }
+
+func (b CprjBuilder) Clean() (err error) {
+	return b.Build()
+}

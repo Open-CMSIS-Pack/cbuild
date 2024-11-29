@@ -41,6 +41,3 @@ solution:
       for-type: +CM3
     - project: ./TestProject2/test2.cproject.yml
       for-type: +CM0
-
-  output-dirs:
-    tmpdir: ./tmpdir

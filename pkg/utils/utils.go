@@ -7,6 +7,7 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -193,22 +194,58 @@ type CbuildSet struct {
 	} `yaml:"cbuild-set"`
 }
 
-func ParseCbuildIndexFile(cbuildIndexFile string) (data CbuildIndex, err error) {
-	yfile, err := os.ReadFile(cbuildIndexFile)
-	if err != nil {
-		return
-	}
-	err = yaml.Unmarshal(yfile, &data)
-	return
+type Csolution struct {
+	Solution struct {
+		OutputDirs struct {
+			Tmpdir string `yaml:"tmpdir"`
+		} `yaml:"output-dirs"`
+	} `yaml:"solution"`
 }
 
-func ParseCbuildSetFile(cbuildSetFile string) (data CbuildSet, err error) {
-	yfile, err := os.ReadFile(cbuildSetFile)
+type Cbuild struct {
+	Build struct {
+		OutputDirs struct {
+			Intdir string `yaml:"intdir"`
+			Outdir string `yaml:"outdir"`
+		} `yaml:"output-dirs"`
+	} `yaml:"build"`
+}
+
+func ParseYAMLFile(filePath string, out interface{}) error {
+	// Read the file
+	yfile, err := os.ReadFile(filePath)
 	if err != nil {
-		return
+		return err
 	}
-	err = yaml.Unmarshal(yfile, &data)
-	return
+
+	// Unmarshal the YAML into the provided structure
+	err = yaml.Unmarshal(yfile, out)
+	return err
+}
+
+// Wrapper functions for specific types
+func ParseCbuildIndexFile(cbuildIndexFile string) (CbuildIndex, error) {
+	var data CbuildIndex
+	err := ParseYAMLFile(cbuildIndexFile, &data)
+	return data, err
+}
+
+func ParseCbuildSetFile(cbuildSetFile string) (CbuildSet, error) {
+	var data CbuildSet
+	err := ParseYAMLFile(cbuildSetFile, &data)
+	return data, err
+}
+
+func ParseCsolutionFile(csolutionFile string) (Csolution, error) {
+	var data Csolution
+	err := ParseYAMLFile(csolutionFile, &data)
+	return data, err
+}
+
+func ParseCbuildFile(cbuildFile string) (Cbuild, error) {
+	var data Cbuild
+	err := ParseYAMLFile(cbuildFile, &data)
+	return data, err
 }
 
 func AppendUnique[T comparable](slice []T, elems ...T) []T {
@@ -383,4 +420,78 @@ func isFileSystemCaseInsensitive() bool {
 	// On Windows and macOS, file systems are typically case insensitive
 	// On Linux, file systems are typically case sensitive
 	return filepath.Separator == '\\' || strings.Contains(strings.ToLower(os.Getenv("OS")), "darwin")
+}
+
+func GetTmpDir(cbuildIdxFile string) (string, error) {
+	defaultTmpDir := "tmp"
+	basePath := filepath.Dir(cbuildIdxFile)
+
+	// Parse the csolution file
+	data, err := ParseCbuildIndexFile(cbuildIdxFile)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			// File not found, return the error
+			return "", err
+		}
+
+		// If parsing failed for other reasons, fallback to the default tmp directory
+		return filepath.Join(basePath, defaultTmpDir), nil
+	}
+
+	// Use the tmpdir value from the parsed file, or fallback to default if it's empty
+	if data.BuildIdx.TmpDir == "" {
+		return filepath.Join(basePath, defaultTmpDir), nil
+	}
+
+	return filepath.Join(basePath, data.BuildIdx.TmpDir), nil
+}
+
+func GetOutDir(cbuildIdxFile string, context string) (string, error) {
+	basePath := filepath.Dir(cbuildIdxFile)
+	defaultOutPath := filepath.Join(basePath, "out")
+
+	// Check if the cbuild index file exists
+	if _, err := os.Stat(cbuildIdxFile); os.IsNotExist(err) {
+		return defaultOutPath, nil
+	}
+
+	// Parse the cbuild index file
+	data, err := ParseCbuildIndexFile(cbuildIdxFile)
+	if err != nil {
+		return "", err
+	}
+
+	// Locate the cbuild file based on the provided context
+	var cbuildFile string
+	for _, cbuild := range data.BuildIdx.Cbuilds {
+		if context == cbuild.Project+cbuild.Configuration {
+			cbuildFile = cbuild.Cbuild
+			break
+		}
+	}
+
+	if cbuildFile == "" {
+		return defaultOutPath, nil // Fallback to default if no match found
+	}
+
+	cbuildFilePath := filepath.Join(basePath, cbuildFile)
+
+	// Parse the cbuild file
+	cbuildData, err := ParseCbuildFile(cbuildFilePath)
+	if err != nil {
+		return "", err
+	}
+
+	// Determine the output directory
+	outDir := cbuildData.Build.OutputDirs.Outdir
+	if outDir == "" {
+		return defaultOutPath, nil
+	}
+
+	// Resolve relative paths to absolute
+	if !filepath.IsAbs(outDir) {
+		return filepath.Join(filepath.Dir(cbuildFilePath), outDir), nil
+	}
+
+	return outDir, nil
 }

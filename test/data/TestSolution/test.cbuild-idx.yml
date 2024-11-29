@@ -1,20 +1,41 @@
 build-idx:
-  generated-by: csolution version 1.1.1
-  description: test description string
-  csolution: ../data/TestSolution/test.csolution.yml
+  generated-by: csolution version 0.0.0+g5aff765a
+  csolution: test.csolution.yml
+  tmpdir: tmpdir
   cprojects:
-    - cproject: ../data/TestSolution/TestProject2/test2.cproject.yml
-    - cproject: ../data/TestSolution/TestProject1/test1.cproject.yml
+    - cproject: TestProject1/test1.cproject.yml
+    - cproject: TestProject2/test2.cproject.yml
   cbuilds:
-    - cbuild: test2.Debug+CM0.cbuild.yml
-      project: test2
-      configuration: .Debug+CM0
-    - cbuild: test2.Debug+CM3.cbuild.yml
-      project: test2
+    - cbuild: TestProject1/test1.Debug+CM3.cbuild.yml
+      project: test1
       configuration: .Debug+CM3
-    - cbuild: test1.Debug+CM0.cbuild.yml
-      project: test1
+      errors: true
+      messages:
+        errors:
+          - "specified device 'ARMCM3' was not found among the installed packs.\nuse 'cpackget' utility to install software packs."
+          - processing context 'test1.Debug+CM3' failed
+        warnings:
+          - "test1.cproject.yml - 'device: Dname' is deprecated at this level and accepted in *.csolution.yml only"
+          - "test2.cproject.yml - 'device: Dname' is deprecated at this level and accepted in *.csolution.yml only"
+        info:
+          - test.cbuild-pack.yml - file is already up-to-date
+          - test1.Debug+CM3.cbuild.yml - file generated successfully
+      packs-unused:
+        - pack: ARM::CMSIS@6.1.0
+    - cbuild: TestProject2/test2.Debug+CM0.cbuild.yml
+      project: test2
       configuration: .Debug+CM0
-    - cbuild: test1.Release+CM0.cbuild.yml
-      project: test1
-      configuration: .Release+CM0
+      errors: true
+      messages:
+        errors:
+          - "specified device 'ARMCM0' was not found among the installed packs.\nuse 'cpackget' utility to install software packs."
+          - processing context 'test2.Debug+CM0' failed
+        warnings:
+          - "test1.cproject.yml - 'device: Dname' is deprecated at this level and accepted in *.csolution.yml only"
+          - "test2.cproject.yml - 'device: Dname' is deprecated at this level and accepted in *.csolution.yml only"
+        info:
+          - test.cbuild-pack.yml - file is already up-to-date
+          - test2.Debug+CM0.cbuild.yml - file is already up-to-date
+      packs-unused:
+        - pack: ARM::CMSIS@6.1.0
+  rebuild: true

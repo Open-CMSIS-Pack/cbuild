@@ -103,4 +103,5 @@ func (b BuilderParams) GetInternalVars() (vars InternalVars, err error) {
 
 type IBuilderInterface interface {
 	Build() error
+	Clean() error
 }

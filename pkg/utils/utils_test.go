@@ -421,3 +421,49 @@ func TestComparePaths(t *testing.T) {
 		}
 	})
 }
+
+func TestGetTmpDir(t *testing.T) {
+	t.Run("File exists with specified tmpdir", func(t *testing.T) {
+		cbuildIdxFile := filepath.Join(testRoot, testDir, "TestSolution/test.cbuild-idx.yml")
+		tmpDir, err := GetTmpDir(cbuildIdxFile)
+
+		assert.NoError(t, err)
+		assert.Equal(t, filepath.Join(filepath.Dir(cbuildIdxFile), "tmpdir"), tmpDir)
+	})
+
+	t.Run("File does not exist", func(t *testing.T) {
+		csolutionFile := filepath.Join(testRoot, testDir, "TestSolution/non_existing.csolution.yml")
+		tmpDir, err := GetTmpDir(csolutionFile)
+
+		assert.ErrorIs(t, err, os.ErrNotExist)
+		assert.Equal(t, "", tmpDir)
+	})
+}
+
+func TestGetOutDir(t *testing.T) {
+	t.Run("Index file does not exist", func(t *testing.T) {
+		cbuildIdxFile := filepath.Join(testRoot, testDir, "TestSolution/non_existing.csolution.yml")
+		defaultOutPath := filepath.Join(filepath.Dir(cbuildIdxFile), "out")
+		outDir, err := GetOutDir(cbuildIdxFile, "test1.Debug+CM0")
+
+		assert.NoError(t, err)
+		assert.Equal(t, defaultOutPath, outDir)
+	})
+
+	t.Run("Context not found in index file", func(t *testing.T) {
+		cbuildIdxFile := filepath.Join(testRoot, testDir, "TestSolution/test.cbuild-idx.yml")
+		defaultOutPath := filepath.Join(filepath.Dir(cbuildIdxFile), "out")
+
+		outDir, err := GetOutDir(cbuildIdxFile, "NonexistentContext.Debug+CM0")
+		assert.NoError(t, err)
+		assert.Equal(t, defaultOutPath, outDir)
+	})
+
+	t.Run("Cbuild file does not exist", func(t *testing.T) {
+		cbuildIdxFile := filepath.Join(testRoot, testDir, "TestSolution/test.cbuild-idx.yml")
+
+		outDir, err := GetOutDir(cbuildIdxFile, "test2.Debug+CM0")
+		assert.Error(t, err)
+		assert.Empty(t, outDir)
+	})
+}
