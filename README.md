@@ -25,32 +25,34 @@ use the command line option: `--update-rte`.
 ## Usage
 
 ```bash
-cbuild: Build Invocation 2.4.0 (C) 2024 Arm Ltd. and Contributors
+cbuild: Build Invocation 2.6.1 (C) 2024 Arm Ltd. and Contributors
 
 Usage:
   cbuild [command] <name>.csolution.yml [options]
 
 Commands:
-  buildcprj   Use a *.CPRJ file as build input
   help        Help about any command
   list        List information about environment, toolchains, and contexts
+  setup       Generate project data for IDE environment
 
 Options:
+      --cbuildgen          Generate legacy *.cprj files and use cbuildgen backend
   -C, --clean              Remove intermediate and output directories
   -c, --context arg [...]  Input context names [<project-name>][.<build-type>][+<target-type>]
-  -S, --context-set        Use context set
+  -S, --context-set        Select the context names from cbuild-set.yml for generating the target application
   -d, --debug              Enable debug messages
-      --frozen-packs       The list of packs from cbuild-pack.yml is frozen and raises error if not up-to-date
+      --frozen-packs       Pack list and versions from cbuild-pack.yml are fixed and raises errors if it changes
   -g, --generator arg      Select build system generator (default "Ninja")
   -h, --help               Print usage
-  -j, --jobs int           Number of job slots for parallel execution
-  -l, --load arg           Set policy for packs loading [latest | all | required]
+  -j, --jobs int           Number of job slots for parallel execution (default 8)
+  -l, --load arg           Set policy for packs loading [latest | all | required] (default "required")
       --log arg            Save output messages in a log file
-  -O, --output arg         Set directory for all output files
+  -n, --no-schema-check    Skip schema check
+  -O, --output arg         Add prefix to 'outdir' and 'tmpdir'
   -p, --packs              Download missing software packs with cpackget
   -q, --quiet              Suppress output messages except build invocations
   -r, --rebuild            Remove intermediate and output directories and rebuild
-  -s, --schema             Validate project input file(s) against schema
+  -s, --schema             Validate project input file(s) against schema [deprecated]
   -t, --target arg         Optional CMake target name
       --toolchain arg      Input toolchain to be used
       --update-rte         Update the RTE directory and files
