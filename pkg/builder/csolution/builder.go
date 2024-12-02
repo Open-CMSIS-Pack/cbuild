@@ -764,8 +764,9 @@ func (b CSolutionBuilder) Clean() (err error) {
 
 func (b *CSolutionBuilder) getContextsToClean() (contexts []string, err error) {
 	// Retrieve all available contexts
-
-	allContexts, err := b.listContexts(true, true)
+	builder := b
+	builder.Options.SchemaChk = false
+	allContexts, err := builder.listContexts(true, true)
 	if err != nil {
 		return nil, err
 	}
