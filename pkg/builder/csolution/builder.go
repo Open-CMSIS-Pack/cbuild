@@ -698,16 +698,12 @@ func (b CSolutionBuilder) Clean() (err error) {
 		return err
 	}
 
-	idxFile, err := b.getIdxFilePath()
-	if err != nil {
-		return err
-	}
-
 	var tmpDir string
 	if !b.Options.UseCbuild2CMake {
+		// Use default path when --cbuildgen option is used
 		tmpDir = filepath.Join(filepath.Dir(b.InputFile), "tmp")
 	} else {
-		tmpDir, err = utils.GetTmpDir(idxFile)
+		tmpDir, err = utils.GetTmpDir(b.InputFile)
 		if err != nil {
 			return err
 		}
@@ -745,13 +741,15 @@ func (b CSolutionBuilder) Clean() (err error) {
 		}
 		utils.LogStdMsg(cleanMsg)
 
-		outDir, err := utils.GetOutDir(idxFile, context)
-		if err != nil {
-			log.Error("error cleaning '" + context + "'")
-			//return err
-		}
-		if err = removeDirectory(outDir); err != nil {
-			return err
+		idxFile, err := b.getIdxFilePath()
+		if err == nil {
+			outDir, err := utils.GetOutDir(idxFile, context)
+			if err != nil {
+				log.Error("error cleaning '" + context + "'")
+			}
+			if err = removeDirectory(outDir); err != nil {
+				return err
+			}
 		}
 	}
 

@@ -422,12 +422,12 @@ func isFileSystemCaseInsensitive() bool {
 	return filepath.Separator == '\\' || strings.Contains(strings.ToLower(os.Getenv("OS")), "darwin")
 }
 
-func GetTmpDir(cbuildIdxFile string) (string, error) {
+func GetTmpDir(csolutionFile string) (string, error) {
 	defaultTmpDir := "tmp"
-	basePath := filepath.Dir(cbuildIdxFile)
+	basePath := filepath.Dir(csolutionFile)
 
 	// Parse the csolution file
-	data, err := ParseCbuildIndexFile(cbuildIdxFile)
+	data, err := ParseCsolutionFile(csolutionFile)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			// File not found, return the error
@@ -439,11 +439,11 @@ func GetTmpDir(cbuildIdxFile string) (string, error) {
 	}
 
 	// Use the tmpdir value from the parsed file, or fallback to default if it's empty
-	if data.BuildIdx.TmpDir == "" {
+	if data.Solution.OutputDirs.Tmpdir == "" {
 		return filepath.Join(basePath, defaultTmpDir), nil
 	}
 
-	return filepath.Join(basePath, data.BuildIdx.TmpDir), nil
+	return filepath.Join(basePath, data.Solution.OutputDirs.Tmpdir), nil
 }
 
 func GetOutDir(cbuildIdxFile string, context string) (string, error) {

@@ -424,11 +424,11 @@ func TestComparePaths(t *testing.T) {
 
 func TestGetTmpDir(t *testing.T) {
 	t.Run("File exists with specified tmpdir", func(t *testing.T) {
-		cbuildIdxFile := filepath.Join(testRoot, testDir, "TestSolution/test.cbuild-idx.yml")
-		tmpDir, err := GetTmpDir(cbuildIdxFile)
+		csolutionFile := filepath.Join(testRoot, testDir, "TestSolution/test.csolution.yml")
+		tmpDir, err := GetTmpDir(csolutionFile)
 
 		assert.NoError(t, err)
-		assert.Equal(t, filepath.Join(filepath.Dir(cbuildIdxFile), "tmpdir"), tmpDir)
+		assert.Equal(t, filepath.Join(filepath.Dir(csolutionFile), "tmpdir"), tmpDir)
 	})
 
 	t.Run("File does not exist", func(t *testing.T) {
