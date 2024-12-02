@@ -698,12 +698,14 @@ func (b CSolutionBuilder) Clean() (err error) {
 		return err
 	}
 
+	outputDir := b.Options.Output
+
 	var tmpDir string
 	if !b.Options.UseCbuild2CMake {
 		// Use default path when --cbuildgen option is used
-		tmpDir = filepath.Join(filepath.Dir(b.InputFile), "tmp")
+		tmpDir = filepath.Join(filepath.Dir(b.InputFile), outputDir, "tmp")
 	} else {
-		tmpDir, err = utils.GetTmpDir(b.InputFile)
+		tmpDir, err = utils.GetTmpDir(b.InputFile, outputDir)
 		if err != nil {
 			return err
 		}
@@ -762,6 +764,7 @@ func (b CSolutionBuilder) Clean() (err error) {
 
 func (b *CSolutionBuilder) getContextsToClean() (contexts []string, err error) {
 	// Retrieve all available contexts
+
 	allContexts, err := b.listContexts(true, true)
 	if err != nil {
 		return nil, err

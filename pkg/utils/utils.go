@@ -422,28 +422,33 @@ func isFileSystemCaseInsensitive() bool {
 	return filepath.Separator == '\\' || strings.Contains(strings.ToLower(os.Getenv("OS")), "darwin")
 }
 
-func GetTmpDir(csolutionFile string) (string, error) {
-	defaultTmpDir := "tmp"
+func GetTmpDir(csolutionFile string, outputDir string) (string, error) {
+	// Default temporary directory name
+	const defaultTmpDir = "tmp"
+
+	// Get the base directory of the csolution file
 	basePath := filepath.Dir(csolutionFile)
 
 	// Parse the csolution file
 	data, err := ParseCsolutionFile(csolutionFile)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			// File not found, return the error
+			// Return an error if the csolution file does not exist
 			return "", err
 		}
 
-		// If parsing failed for other reasons, fallback to the default tmp directory
-		return filepath.Join(basePath, defaultTmpDir), nil
+		// For other parsing errors, fallback to the default tmp directory
+		tmpPath := filepath.Join(basePath, outputDir, defaultTmpDir)
+		return NormalizePath(tmpPath), nil
 	}
 
-	// Use the tmpdir value from the parsed file, or fallback to default if it's empty
-	if data.Solution.OutputDirs.Tmpdir == "" {
-		return filepath.Join(basePath, defaultTmpDir), nil
+	tmpDir := data.Solution.OutputDirs.Tmpdir
+	if tmpDir == "" {
+		tmpDir = defaultTmpDir
 	}
 
-	return filepath.Join(basePath, data.Solution.OutputDirs.Tmpdir), nil
+	tmpPath := filepath.Join(basePath, outputDir, tmpDir)
+	return NormalizePath(tmpPath), nil
 }
 
 func GetOutDir(cbuildIdxFile string, context string) (string, error) {
