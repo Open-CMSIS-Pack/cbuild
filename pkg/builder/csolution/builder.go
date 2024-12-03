@@ -711,24 +711,8 @@ func (b CSolutionBuilder) Clean() (err error) {
 		}
 	}
 
-	// Retrieve internal variables
-	vars, err := b.GetInternalVars()
-	if err != nil {
-		return err
-	}
-
-	// lambda function to remove dir using cmake
-	removeDirectory := func(dir string) error {
-		if _, err := os.Stat(dir); os.IsNotExist(err) {
-			return nil
-		}
-		args := []string{"-E", "remove_directory", dir}
-		_, err = b.Runner.ExecuteCommand(vars.CmakeBin, false, args...)
-		return err
-	}
-
 	// Clean tmp dir
-	if err := removeDirectory(tmpDir); err != nil {
+	if err := utils.DeleteDir(tmpDir); err != nil {
 		return err
 	}
 
@@ -749,7 +733,7 @@ func (b CSolutionBuilder) Clean() (err error) {
 			if err != nil {
 				log.Error("error cleaning '" + context + "'")
 			}
-			if err = removeDirectory(outDir); err != nil {
+			if err = utils.DeleteDir(outDir); err != nil {
 				return err
 			}
 		}

@@ -10,54 +10,30 @@
 
 # cbuild: Open-CMSIS-Pack Build Invocation Utility
 
-This utility allows embedded developers to build **CPRJ** and **csolution** projects by orchestrating the following tools:
+**cbuild** is a command-line tool for orchestrating the build steps for CMSIS-based projects.
+It is part of the CMSIS Toolbox, designed to streamline development workflows for embedded systems.
 
-- `cbuildgen`
-- `csolution`
-- `cpackget`
-- `cmake`
-- `ninja`
+## Features
 
-By default, `cbuild` expects a fully configured solution (*.csolution.yml) or context (*.cprj).
-As such, it will not create, copy or update any files in the RTE directories. In case such modifications are required,
-use the command line option: `--update-rte`.
+- Build and manage CMSIS-based projects efficiently.
+- Generate and process project configurations in standard CMSIS formats.
+- Seamlessly integrate with other CMSIS tools.
 
-## Usage
+## Documentation
 
-```bash
-cbuild: Build Invocation 2.6.1 (C) 2024 Arm Ltd. and Contributors
+For detailed usage instructions, options, and examples, please refer to the comprehensive documentation
+available in the [CMSIS Toolbox repository](https://github.com/Open-CMSIS-Pack/cmsis-toolbox).
 
-Usage:
-  cbuild [command] <name>.csolution.yml [options]
+### Key Documentation Section
 
-Commands:
-  help        Help about any command
-  list        List information about environment, toolchains, and contexts
-  setup       Generate project data for IDE environment
+- **cbuild Invocation**: Learn how to invoke and use `cbuild` effectively, with command-line options.
+[cbuild Invocation Documentation](https://github.com/Open-CMSIS-Pack/cmsis-toolbox/blob/main/docs/build-tools.md#cbuild-invocation)
 
-Options:
-      --cbuildgen          Generate legacy *.cprj files and use cbuildgen backend
-  -C, --clean              Remove intermediate and output directories
-  -c, --context arg [...]  Input context names [<project-name>][.<build-type>][+<target-type>]
-  -S, --context-set        Select the context names from cbuild-set.yml for generating the target application
-  -d, --debug              Enable debug messages
-      --frozen-packs       Pack list and versions from cbuild-pack.yml are fixed and raises errors if it changes
-  -g, --generator arg      Select build system generator (default "Ninja")
-  -h, --help               Print usage
-  -j, --jobs int           Number of job slots for parallel execution (default 8)
-  -l, --load arg           Set policy for packs loading [latest | all | required] (default "required")
-      --log arg            Save output messages in a log file
-  -n, --no-schema-check    Skip schema check
-  -O, --output arg         Add prefix to 'outdir' and 'tmpdir'
-  -p, --packs              Download missing software packs with cpackget
-  -q, --quiet              Suppress output messages except build invocations
-  -r, --rebuild            Remove intermediate and output directories and rebuild
-  -s, --schema             Validate project input file(s) against schema [deprecated]
-  -t, --target arg         Optional CMake target name
-      --toolchain arg      Input toolchain to be used
-      --update-rte         Update the RTE directory and files
-  -v, --verbose            Enable verbose messages from toolchain builds
-  -V, --version            Print version
+## Contributing
 
-Use "cbuild [command] --help" for more information about a command.
-```
+We welcome contributions to improve **cbuild**! Please follow the guidelines in our
+[CONTRIBUTING.md](./CONTRIBUTING.md) file for details on how to participate.
+
+## License
+
+This project is licensed under the Apache License 2.0. See the [LICENSE](./LICENSE) file for details.

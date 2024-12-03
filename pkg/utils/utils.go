@@ -500,3 +500,28 @@ func GetOutDir(cbuildIdxFile string, context string) (string, error) {
 
 	return outDir, nil
 }
+
+// DeleteDir deletes a directory and all its contents.
+func DeleteDir(dirPath string) error {
+	// Check if the path exists
+	info, err := os.Stat(dirPath)
+	if os.IsNotExist(err) {
+		return errutils.New(errutils.ErrPathNotExist, dirPath)
+	}
+	if err != nil {
+		return errutils.New(errutils.ErrNoPathInfoFound, dirPath, err.Error())
+	}
+
+	// Ensure the path is a directory
+	if !info.IsDir() {
+		return errutils.New(errutils.ErrInvalidPath, dirPath, "path is not a directory")
+	}
+
+	// Remove the directory and its contents
+	err = os.RemoveAll(dirPath)
+	if err != nil {
+		return errutils.New(errutils.ErrDeleteDirFailed, dirPath, err.Error())
+	}
+
+	return nil
+}
