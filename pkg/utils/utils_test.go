@@ -475,8 +475,8 @@ func TestDeleteDir(t *testing.T) {
 		delDir := filepath.Join(testDir, "test_dir")
 		subDir := filepath.Join(delDir, "sub_dir")
 		filePath := filepath.Join(delDir, "test_file.txt")
-		os.MkdirAll(subDir, 0755)
-		os.WriteFile(filePath, []byte("test content"), 0644)
+		_ = os.MkdirAll(subDir, 0755)
+		_ = os.WriteFile(filePath, []byte("test content"), 0600)
 
 		// Ensure directory exists before deletion
 		if _, err := os.Stat(delDir); os.IsNotExist(err) {
@@ -512,7 +512,7 @@ func TestDeleteDir(t *testing.T) {
 	t.Run("DeleteEmptyDirectory", func(t *testing.T) {
 		// Create an empty test directory
 		emptyDir := filepath.Join(testDir, "empty_dir")
-		os.Mkdir(emptyDir, 0755)
+		_ = os.Mkdir(emptyDir, 0755)
 
 		// Ensure directory exists before deletion
 		if _, err := os.Stat(emptyDir); os.IsNotExist(err) {
@@ -534,7 +534,7 @@ func TestDeleteDir(t *testing.T) {
 	t.Run("DeleteFileInsteadOfDirectory", func(t *testing.T) {
 		// Create a test file
 		testFile := filepath.Join(testDir, "test_file.txt")
-		os.WriteFile(testFile, []byte("test content"), 0644)
+		_ = os.WriteFile(testFile, []byte("test content"), 0600)
 
 		// Ensure file exists before deletion
 		if _, err := os.Stat(testFile); os.IsNotExist(err) {
