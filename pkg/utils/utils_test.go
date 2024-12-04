@@ -468,9 +468,9 @@ func TestGetOutDir(t *testing.T) {
 	})
 }
 
-func TestDeleteDir(t *testing.T) {
+func TestDeleteAll(t *testing.T) {
 	testDir := filepath.Join(testRoot, testDir)
-	t.Run("DeleteExistingDirectory", func(t *testing.T) {
+	t.Run("Delete Existing Directory", func(t *testing.T) {
 		// Create a test directory with files and subdirectories
 		delDir := filepath.Join(testDir, "test_dir")
 		subDir := filepath.Join(delDir, "sub_dir")
@@ -483,8 +483,8 @@ func TestDeleteDir(t *testing.T) {
 			t.Fatalf("Test setup failed: %s does not exist", delDir)
 		}
 
-		// Call the DeleteDir function
-		err := DeleteDir(delDir)
+		// Call the DeleteAll function
+		err := DeleteAll(delDir)
 		if err != nil {
 			t.Fatalf("Unexpected error: %v", err)
 		}
@@ -495,21 +495,16 @@ func TestDeleteDir(t *testing.T) {
 		}
 	})
 
-	t.Run("DeleteNonExistentDirectory", func(t *testing.T) {
+	t.Run("Delete NonExistent Directory", func(t *testing.T) {
 		// Test deleting a non-existent directory
 		nonExistentDir := filepath.Join(testDir, "non_existent_dir")
-		err := DeleteDir(nonExistentDir)
+		err := DeleteAll(nonExistentDir)
 
-		// Verify the error is correct
-		if err == nil {
-			t.Fatalf("Expected an error but got none")
-		}
-		if !strings.Contains(err.Error(), "path does not exist") {
-			t.Fatalf("Unexpected error message: %v", err)
-		}
+		// Verify no error
+		assert.Error(t, err)
 	})
 
-	t.Run("DeleteEmptyDirectory", func(t *testing.T) {
+	t.Run("Delete Empty Directory", func(t *testing.T) {
 		// Create an empty test directory
 		emptyDir := filepath.Join(testDir, "empty_dir")
 		_ = os.Mkdir(emptyDir, 0755)
@@ -519,8 +514,8 @@ func TestDeleteDir(t *testing.T) {
 			t.Fatalf("Test setup failed: %s does not exist", emptyDir)
 		}
 
-		// Call the DeleteDir function
-		err := DeleteDir(emptyDir)
+		// Call the DeleteAll function
+		err := DeleteAll(emptyDir)
 		if err != nil {
 			t.Fatalf("Unexpected error: %v", err)
 		}
@@ -531,7 +526,7 @@ func TestDeleteDir(t *testing.T) {
 		}
 	})
 
-	t.Run("DeleteFileInsteadOfDirectory", func(t *testing.T) {
+	t.Run("Delete File Instead Of Directory", func(t *testing.T) {
 		// Create a test file
 		testFile := filepath.Join(testDir, "test_file.txt")
 		_ = os.WriteFile(testFile, []byte("test content"), 0600)
@@ -541,16 +536,9 @@ func TestDeleteDir(t *testing.T) {
 			t.Fatalf("Test setup failed: %s does not exist", testFile)
 		}
 
-		// Call the DeleteDir function
-		err := DeleteDir(testFile)
-		if err == nil {
-			t.Fatalf("Expected an error but got none")
-		}
-
-		// Verify the error message
-		if !strings.Contains(err.Error(), "test_file.txt', path is not a directory") {
-			t.Fatalf("Unexpected error message: %v", err)
-		}
+		// Call the DeleteAll function
+		err := DeleteAll(testFile)
+		assert.NoError(t, err)
 
 		// Clean up
 		os.Remove(testFile)

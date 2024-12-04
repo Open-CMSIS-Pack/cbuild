@@ -29,10 +29,8 @@ const (
 	ErrInvalidVersionString   = "invalid version %s. Expected %s"
 	ErrInvalidNumJobs         = "invalid number of job slots specified for parallel execution. Expected: j>0"
 	ErrMissingRequiredArg     = "setup command is missing mandatory option '--context-set'"
+	ErrDeleteFailed           = "failed to delete: '%s'"
 	ErrPathNotExist           = "path does not exist: '%s'"
-	ErrDeleteDirFailed        = "failed to delete directory: '%s', %s"
-	ErrInvalidPath            = "invalid path: '%s', %s"
-	ErrNoPathInfoFound        = "unable to retrieve information for path: '%s', %s"
 )
 
 const (

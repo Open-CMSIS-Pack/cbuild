@@ -712,8 +712,10 @@ func (b CSolutionBuilder) Clean() (err error) {
 	}
 
 	// Clean tmp dir
-	if err := utils.DeleteDir(tmpDir); err != nil {
-		return err
+	if err := utils.DeleteAll(tmpDir); err != nil {
+		if !b.Options.Clean {
+			log.Warn(err.Error())
+		}
 	}
 
 	// Clean out dir
@@ -733,8 +735,10 @@ func (b CSolutionBuilder) Clean() (err error) {
 			if err != nil {
 				log.Error("error cleaning '" + context + "'")
 			}
-			if err = utils.DeleteDir(outDir); err != nil {
-				return err
+			if err = utils.DeleteAll(outDir); err != nil {
+				if !b.Options.Clean {
+					log.Warn(err.Error())
+				}
 			}
 		}
 	}
