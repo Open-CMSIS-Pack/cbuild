@@ -84,42 +84,6 @@ func TestGetDirs(t *testing.T) {
 	})
 }
 
-func TestClean(t *testing.T) {
-	assert := assert.New(t)
-
-	b := CbuildIdxBuilder{
-		builder.BuilderParams{
-			Runner: RunnerMock{},
-		},
-	}
-	var dirs builder.BuildDirs
-	var vars builder.InternalVars
-
-	t.Run("test clean directories, invalid tool", func(t *testing.T) {
-		vars.CmakeBin = testRoot + "/bin/invalid-tool"
-
-		dirs.OutDir = filepath.Join(testRoot, testDir, "OutDir")
-		_ = os.MkdirAll(dirs.OutDir, 0755)
-		err := b.clean(dirs, vars)
-		assert.Error(err)
-
-		dirs.IntDir = filepath.Join(testRoot, testDir, "IntDir")
-		_ = os.MkdirAll(dirs.IntDir, 0755)
-		err = b.clean(dirs, vars)
-		assert.Error(err)
-	})
-
-	t.Run("test clean directories", func(t *testing.T) {
-		vars.CmakeBin = testRoot + "/bin/cmake"
-		dirs.IntDir = filepath.Join(testRoot, testDir, "tmp")
-		dirs.OutDir = filepath.Join(testRoot, testDir, "OutDir")
-		_ = os.MkdirAll(dirs.IntDir, 0755)
-		_ = os.MkdirAll(dirs.OutDir, 0755)
-		err := b.clean(dirs, vars)
-		assert.Nil(err)
-	})
-}
-
 func TestBuild(t *testing.T) {
 	assert := assert.New(t)
 	configs := inittest.GetTestConfigs(testRoot, testDir)

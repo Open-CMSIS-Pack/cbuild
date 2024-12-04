@@ -27,28 +27,6 @@ type CbuildIdxBuilder struct {
 	builder.BuilderParams
 }
 
-func (b CbuildIdxBuilder) clean(dirs builder.BuildDirs, vars builder.InternalVars) (err error) {
-	removeDirectory := func(dir string) error {
-		if _, err := os.Stat(dir); os.IsNotExist(err) {
-			return nil
-		}
-		args := []string{"-E", "remove_directory", dir}
-		_, err = b.Runner.ExecuteCommand(vars.CmakeBin, false, args...)
-		return err
-	}
-
-	if err := removeDirectory(dirs.IntDir); err != nil {
-		return err
-	}
-
-	if err := removeDirectory(dirs.OutDir); err != nil {
-		return err
-	}
-
-	log.Info("clean finished successfully!")
-	return nil
-}
-
 func (b CbuildIdxBuilder) HasExecutes() bool {
 	data, _ := utils.ParseCbuildIndexFile(b.InputFile)
 	return len(data.BuildIdx.Executes) > 0
@@ -139,13 +117,6 @@ func (b CbuildIdxBuilder) build() error {
 	dirs, err := b.getDirs(b.BuildContext)
 	if err != nil {
 		return err
-	}
-
-	if b.Options.Clean {
-		if err := b.clean(dirs, vars); err != nil {
-			return err
-		}
-		return nil
 	}
 
 	// no CMake orchestration needed
@@ -243,6 +214,11 @@ func (b CbuildIdxBuilder) Build() (err error) {
 		log.Error(err)
 	}
 	return err
+}
+
+func (b CbuildIdxBuilder) Clean() error {
+	// dummy method
+	return nil
 }
 
 func (b CbuildIdxBuilder) validateNinjaVersion(refVersion string) (bool, error) {

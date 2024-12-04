@@ -421,3 +421,126 @@ func TestComparePaths(t *testing.T) {
 		}
 	})
 }
+
+func TestGetTmpDir(t *testing.T) {
+	t.Run("File exists with specified tmpdir", func(t *testing.T) {
+		csolutionFile := filepath.Join(testRoot, testDir, "TestSolution/test.csolution.yml")
+		tmpDir, err := GetTmpDir(csolutionFile, "")
+
+		assert.NoError(t, err)
+		assert.Equal(t, NormalizePath(filepath.Join(filepath.Dir(csolutionFile), "tmpdir")), tmpDir)
+	})
+
+	t.Run("File does not exist", func(t *testing.T) {
+		csolutionFile := filepath.Join(testRoot, testDir, "TestSolution/non_existing.csolution.yml")
+		tmpDir, err := GetTmpDir(csolutionFile, "")
+
+		assert.ErrorIs(t, err, os.ErrNotExist)
+		assert.Equal(t, "", tmpDir)
+	})
+}
+
+func TestGetOutDir(t *testing.T) {
+	t.Run("Index file does not exist", func(t *testing.T) {
+		cbuildIdxFile := filepath.Join(testRoot, testDir, "TestSolution/non_existing.csolution.yml")
+		defaultOutPath := filepath.Join(filepath.Dir(cbuildIdxFile), "out")
+		outDir, err := GetOutDir(cbuildIdxFile, "test1.Debug+CM0")
+
+		assert.NoError(t, err)
+		assert.Equal(t, defaultOutPath, outDir)
+	})
+
+	t.Run("Context not found in index file", func(t *testing.T) {
+		cbuildIdxFile := filepath.Join(testRoot, testDir, "TestSolution/test.cbuild-idx.yml")
+		defaultOutPath := filepath.Join(filepath.Dir(cbuildIdxFile), "out")
+
+		outDir, err := GetOutDir(cbuildIdxFile, "NonexistentContext.Debug+CM0")
+		assert.NoError(t, err)
+		assert.Equal(t, defaultOutPath, outDir)
+	})
+
+	t.Run("Cbuild file does not exist", func(t *testing.T) {
+		cbuildIdxFile := filepath.Join(testRoot, testDir, "TestSolution/test.cbuild-idx.yml")
+
+		outDir, err := GetOutDir(cbuildIdxFile, "test2.Debug+CM0")
+		assert.Error(t, err)
+		assert.Empty(t, outDir)
+	})
+}
+
+func TestDeleteAll(t *testing.T) {
+	testDir := filepath.Join(testRoot, testDir)
+	t.Run("Delete Existing Directory", func(t *testing.T) {
+		// Create a test directory with files and subdirectories
+		delDir := filepath.Join(testDir, "test_dir")
+		subDir := filepath.Join(delDir, "sub_dir")
+		filePath := filepath.Join(delDir, "test_file.txt")
+		_ = os.MkdirAll(subDir, 0755)
+		_ = os.WriteFile(filePath, []byte("test content"), 0600)
+
+		// Ensure directory exists before deletion
+		if _, err := os.Stat(delDir); os.IsNotExist(err) {
+			t.Fatalf("Test setup failed: %s does not exist", delDir)
+		}
+
+		// Call the DeleteAll function
+		err := DeleteAll(delDir)
+		if err != nil {
+			t.Fatalf("Unexpected error: %v", err)
+		}
+
+		// Verify directory has been deleted
+		if _, err := os.Stat(delDir); !os.IsNotExist(err) {
+			t.Fatalf("Directory was not deleted: %s", delDir)
+		}
+	})
+
+	t.Run("Delete NonExistent Directory", func(t *testing.T) {
+		// Test deleting a non-existent directory
+		nonExistentDir := filepath.Join(testDir, "non_existent_dir")
+		err := DeleteAll(nonExistentDir)
+
+		// Verify no error
+		assert.Error(t, err)
+	})
+
+	t.Run("Delete Empty Directory", func(t *testing.T) {
+		// Create an empty test directory
+		emptyDir := filepath.Join(testDir, "empty_dir")
+		_ = os.Mkdir(emptyDir, 0755)
+
+		// Ensure directory exists before deletion
+		if _, err := os.Stat(emptyDir); os.IsNotExist(err) {
+			t.Fatalf("Test setup failed: %s does not exist", emptyDir)
+		}
+
+		// Call the DeleteAll function
+		err := DeleteAll(emptyDir)
+		if err != nil {
+			t.Fatalf("Unexpected error: %v", err)
+		}
+
+		// Verify directory has been deleted
+		if _, err := os.Stat(emptyDir); !os.IsNotExist(err) {
+			t.Fatalf("Directory was not deleted: %s", emptyDir)
+		}
+	})
+
+	t.Run("Delete File Instead Of Directory", func(t *testing.T) {
+		// Create a test file
+		testFile := filepath.Join(testDir, "test_file.txt")
+		_ = os.WriteFile(testFile, []byte("test content"), 0600)
+
+		// Ensure file exists before deletion
+		if _, err := os.Stat(testFile); os.IsNotExist(err) {
+			t.Fatalf("Test setup failed: %s does not exist", testFile)
+		}
+
+		// Call the DeleteAll function
+		err := DeleteAll(testFile)
+		assert.NoError(t, err)
+
+		// Clean up
+		os.Remove(testFile)
+	})
+}

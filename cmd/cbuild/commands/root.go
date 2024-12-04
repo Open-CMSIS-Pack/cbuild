@@ -207,6 +207,23 @@ func NewRootCmd() *cobra.Command {
 			}
 
 			log.Info("Build Invocation " + Version + CopyrightNotice)
+
+			// Check if the user only wants to clean the project
+			if rebuild || clean {
+				// Perform the clean operation
+				err := b.Clean()
+				if err != nil {
+					log.Error(err)
+					return err
+				}
+
+				// If it's a clean-only operation, return after cleaning
+				if clean {
+					return nil
+				}
+			}
+
+			// Perform the build operation and return its result
 			return b.Build()
 		},
 	}

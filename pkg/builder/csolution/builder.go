@@ -302,14 +302,15 @@ func (b CSolutionBuilder) getCbuildSetFilePath() string {
 func (b CSolutionBuilder) getProjsBuilders(selectedContexts []string) (projBuilders []builder.IBuilderInterface, err error) {
 	buildOptions := b.Options
 
-	// Set XML schema check to false, when input is yml
+	// Disable XML schema check if the input is YAML
 	if b.Options.SchemaChk {
 		buildOptions.SchemaChk = false
 	}
 
+	// Get the index file path
 	idxFile, err := b.getIdxFilePath()
 	if err != nil {
-		return projBuilders, err
+		return nil, err
 	}
 
 	var projBuilder builder.IBuilderInterface
@@ -317,14 +318,14 @@ func (b CSolutionBuilder) getProjsBuilders(selectedContexts []string) (projBuild
 		infoMsg := "Retrieve build information for context: \"" + context + "\""
 		log.Info(infoMsg)
 
-		// if --output is used, ignore provided --outdir and --intdir
+		// Warn if --output is used along with --outdir or --intdir
 		if b.Options.Output != "" && (b.Options.OutDir != "" || b.Options.IntDir != "") {
 			log.Warn("output files are generated under: \"" +
 				b.Options.Output + "\". Options --outdir and --intdir shall be ignored.")
 		}
 
 		if b.Options.UseCbuild2CMake {
-			// get idx builder
+			// Create a builder for cbuild2CMake
 			projBuilder = cbuildidx.CbuildIdxBuilder{
 				BuilderParams: builder.BuilderParams{
 					Runner:         b.Runner,
@@ -335,14 +336,14 @@ func (b CSolutionBuilder) getProjsBuilders(selectedContexts []string) (projBuild
 					BuildContext:   context,
 				},
 			}
-			projBuilders = append(projBuilders, projBuilder)
 		} else {
+			// Get the .cprj file path for the current context
 			cprjFile, err := b.getCprjFilePath(idxFile, context)
 			if err != nil {
 				return projBuilders, err
 			}
 
-			// get cprj builder
+			// Create a builder for cproject
 			projBuilder = cproject.CprjBuilder{
 				BuilderParams: builder.BuilderParams{
 					Runner:         b.Runner,
@@ -352,10 +353,12 @@ func (b CSolutionBuilder) getProjsBuilders(selectedContexts []string) (projBuild
 					Setup:          b.Setup,
 				},
 			}
-			projBuilders = append(projBuilders, projBuilder)
 		}
+
+		// Append the created builder to the list
+		projBuilders = append(projBuilders, projBuilder)
 	}
-	return projBuilders, err
+	return projBuilders, nil
 }
 
 func (b CSolutionBuilder) setBuilderOptions(builder *builder.IBuilderInterface, clean bool) {
@@ -370,42 +373,6 @@ func (b CSolutionBuilder) setBuilderOptions(builder *builder.IBuilderInterface, 
 		cprjBuilder.Options.Clean = clean
 		(*builder) = cprjBuilder
 	}
-}
-
-func (b CSolutionBuilder) getBuilderInputFile(builder builder.IBuilderInterface) string {
-	var inputFile string
-	if b.Options.UseCbuild2CMake {
-		idxBuilder := builder.(cbuildidx.CbuildIdxBuilder)
-		inputFile = idxBuilder.InputFile
-	} else {
-		cprjBuilder := builder.(cproject.CprjBuilder)
-		inputFile = cprjBuilder.InputFile
-	}
-	return inputFile
-}
-
-func (b CSolutionBuilder) cleanContexts(selectedContexts []string, projBuilders []builder.IBuilderInterface) (err error) {
-	var seplen int
-	for index := range projBuilders {
-		progress := fmt.Sprintf("(%s/%d)", strconv.Itoa(index+1), len(projBuilders))
-		cleanMsg := progress + " Cleaning context: \"" + selectedContexts[index] + "\""
-		if seplen == 0 {
-			seplen = len(cleanMsg)
-			utils.PrintSeparator("-", seplen)
-		}
-		utils.LogStdMsg(cleanMsg)
-
-		b.setBuilderOptions(&projBuilders[index], true)
-		cleanErr := projBuilders[index].Build()
-		if cleanErr != nil {
-			err = cleanErr
-			log.Error("error cleaning '" + b.getBuilderInputFile(projBuilders[index]) + "'")
-		}
-	}
-	if b.Options.Clean {
-		utils.PrintSeparator("-", seplen)
-	}
-	return
 }
 
 func (b CSolutionBuilder) buildContexts(selectedContexts []string, projBuilders []builder.IBuilderInterface) (err error) {
@@ -600,18 +567,6 @@ func (b CSolutionBuilder) build() (err error) {
 		}
 	}
 
-	// clean all selected contexts when rebuild or clean are requested
-	if b.Options.Rebuild || b.Options.Clean {
-		err = b.cleanContexts(selectedContexts, projBuilders)
-		if err != nil {
-			log.Error(err)
-			return err
-		}
-		if b.Options.Clean {
-			return nil
-		}
-	}
-
 	if len(b.Options.Target) == 0 {
 		err = b.buildContexts(selectedContexts, projBuilders)
 	} else {
@@ -734,4 +689,100 @@ func (b CSolutionBuilder) hasRebuildNode(idxFilePath string) (bool, error) {
 	}
 
 	return false, nil
+}
+
+func (b CSolutionBuilder) Clean() (err error) {
+	// Get list of cleanable contexts
+	cleanableContexts, err := b.getContextsToClean()
+	if err != nil {
+		return err
+	}
+
+	outputDir := b.Options.Output
+
+	var tmpDir string
+	if !b.Options.UseCbuild2CMake {
+		// Use default path when --cbuildgen option is used
+		tmpDir = filepath.Join(filepath.Dir(b.InputFile), outputDir, "tmp")
+	} else {
+		tmpDir, err = utils.GetTmpDir(b.InputFile, outputDir)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Clean tmp dir
+	if err := utils.DeleteAll(tmpDir); err != nil {
+		if !b.Options.Clean {
+			log.Warn(err.Error())
+		}
+	}
+
+	// Clean out dir
+	var seplen int
+	for index, context := range cleanableContexts {
+		progress := fmt.Sprintf("(%s/%d)", strconv.Itoa(index+1), len(cleanableContexts))
+		cleanMsg := progress + " Cleaning context: \"" + cleanableContexts[index] + "\""
+		if seplen == 0 {
+			seplen = len(cleanMsg)
+			utils.PrintSeparator("-", seplen)
+		}
+		utils.LogStdMsg(cleanMsg)
+
+		idxFile, err := b.getIdxFilePath()
+		if err == nil {
+			outDir, err := utils.GetOutDir(idxFile, context)
+			if err != nil {
+				log.Error("error cleaning '" + context + "'")
+			}
+			if err = utils.DeleteAll(outDir); err != nil {
+				if !b.Options.Clean {
+					log.Warn(err.Error())
+				}
+			}
+		}
+	}
+
+	if b.Options.Clean {
+		utils.PrintSeparator("-", seplen)
+	}
+	log.Info("clean finished successfully!")
+	return nil
+}
+
+func (b *CSolutionBuilder) getContextsToClean() (contexts []string, err error) {
+	// Retrieve all available contexts
+	builder := b
+	builder.Options.SchemaChk = false
+	allContexts, err := builder.listContexts(true, true)
+	if err != nil {
+		return nil, err
+	}
+
+	// Determine contexts based on options
+	if len(b.Options.Contexts) > 0 && !b.Options.UseContextSet {
+		// Resolve specific contexts from the provided options
+		contexts, err = utils.ResolveContexts(allContexts, b.Options.Contexts)
+		if err != nil {
+			return nil, err
+		}
+		return contexts, nil
+	}
+
+	// Handle context selection from a cbuild set file
+	if b.Options.UseContextSet {
+		filePath := b.getCbuildSetFilePath()
+		if exists, err := utils.FileExists(filePath); err != nil || !exists {
+			return nil, err
+		}
+
+		contexts, err = b.getSelectedContexts(filePath)
+		if err != nil {
+			return nil, err
+		}
+		return contexts, nil
+	}
+
+	// Default to using all available contexts
+	return allContexts, nil
 }
