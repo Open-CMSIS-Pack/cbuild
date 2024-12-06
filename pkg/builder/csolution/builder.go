@@ -559,8 +559,14 @@ func (b CSolutionBuilder) build() (err error) {
 		return err
 	}
 
-	if !b.Options.NoDatabase {
-		b.Options.Rebuild, err = b.needRebuild()
+	needRebuild, err := b.needRebuild()
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	if needRebuild {
+		// Perform the clean operation
+		err := b.Clean()
 		if err != nil {
 			log.Error(err)
 			return err
@@ -599,12 +605,9 @@ func (b CSolutionBuilder) Build() (err error) {
 }
 
 func (b CSolutionBuilder) needRebuild() (bool, error) {
-	if b.Options.Rebuild {
-		return true, nil
-	}
-
-	if !b.Options.UseCbuild2CMake {
-		return b.Options.Rebuild, nil
+	// Rebuild was already requested by user
+	if b.Options.Rebuild || !b.Options.UseCbuild2CMake {
+		return false, nil
 	}
 
 	// Check if the project is moved or renamed or tmp dir is changed
