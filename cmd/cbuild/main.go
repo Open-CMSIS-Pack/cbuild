@@ -27,10 +27,12 @@ func main() {
 	cmd := commands.NewRootCmd()
 	err := cmd.Execute()
 	if err != nil {
-		errCode := err.(*exec.ExitError).ExitCode()
-		if errCode == VariableNotDefined || errCode == CompilerNotDefined {
-			// forward csolution error code
-			os.Exit(errCode)
+		if exitError, ok := err.(*exec.ExitError); ok {
+			errCode := exitError.ExitCode()
+			if errCode == VariableNotDefined || errCode == CompilerNotDefined {
+				// forward csolution error code
+				os.Exit(errCode)
+			}
 		}
 		os.Exit(1)
 	} else {
