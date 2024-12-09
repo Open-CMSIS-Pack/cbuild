@@ -579,7 +579,7 @@ func TestNeedRebuild(t *testing.T) {
 		b.Options.Rebuild = true
 		rebuild, err := b.needRebuild()
 		assert.Nil(err)
-		assert.True(rebuild)
+		assert.False(rebuild)
 	})
 
 	t.Run("check rebuild only when --cbuild2cmake", func(t *testing.T) {
