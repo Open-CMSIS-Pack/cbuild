@@ -175,12 +175,15 @@ func (b CbuildIdxBuilder) build() error {
 	// CMake build target(s) command
 	args = []string{"--build", dirs.IntDir, "-j", fmt.Sprintf("%d", b.Options.Jobs)}
 
+	var buildTarget string
 	if b.Options.Target != "" {
-		args = append(args, "--target", b.Options.Target)
+		buildTarget = b.Options.Target
+		args = append(args, "--target", buildTarget)
 	} else if b.Setup {
 		args = append(args, "--target", strings.ReplaceAll(b.BuildContext, " ", "_")+"-database")
 	} else if b.BuildContext != "" {
-		args = append(args, "--target", strings.ReplaceAll(b.BuildContext, " ", "_"))
+		buildTarget = strings.ReplaceAll(b.BuildContext, " ", "_")
+		args = append(args, "--target", buildTarget)
 	}
 
 	if b.Options.Generator == "Ninja" && !(b.Options.Debug || b.Options.Verbose) {
@@ -193,6 +196,17 @@ func (b CbuildIdxBuilder) build() error {
 			args = append(args, "--", "--quiet")
 		} else {
 			log.Warn(errutils.WarnNinjaVersion)
+		}
+	}
+
+	if !b.Setup {
+		// Get selected toolchain info from context specific toolchain.cmake
+		toolchainFilePath := filepath.Join(dirs.IntDir, buildTarget, "toolchain.cmake")
+		usedToolchainInfo := utils.ParseAndFetchToolchainInfo(toolchainFilePath)
+
+		if usedToolchainInfo != "" {
+			// Show selected toolchain info used for build process
+			utils.LogStdMsg(usedToolchainInfo)
 		}
 	}
 

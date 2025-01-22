@@ -544,3 +544,90 @@ func TestDeleteAll(t *testing.T) {
 		os.Remove(testFile)
 	})
 }
+
+func TestParseAndFetchToolchainInfo(t *testing.T) {
+	// Helper function to create a temporary toolchain file
+	createTempFile := func(content string) string {
+		tmpFile, err := os.CreateTemp("", "toolchain_*.cmake")
+		if err != nil {
+			t.Fatalf("Failed to create temporary file: %v", err)
+		}
+		defer tmpFile.Close()
+
+		_, err = tmpFile.WriteString(content)
+		if err != nil {
+			t.Fatalf("Failed to write to temporary file: %v", err)
+		}
+
+		return tmpFile.Name()
+	}
+
+	// Test cases
+	tests := []struct {
+		name     string
+		content  string
+		expected string
+	}{
+		{
+			name: "Valid Toolchain File",
+			content: `
+set(REGISTERED_TOOLCHAIN_ROOT "C:/test/ArmCompilerforEmbedded6.22/bin")
+set(REGISTERED_TOOLCHAIN_VERSION "6.22.0")
+include("${CMSIS_COMPILER_ROOT}/AC6.6.12.1.cmake")
+`,
+			expected: "Using AC6 V6.22.0 compiler, from: 'C:/test/ArmCompilerforEmbedded6.22/bin'",
+		},
+		{
+			name: "Missing Info",
+			content: `
+set(REGISTERED_TOOLCHAIN_VERSION "6.22.0")
+include("${CMSIS_COMPILER_ROOT}/AC6.6.12.1.cmake")
+`,
+			expected: "",
+		},
+		{
+			name: "Missing Version",
+			content: `
+set(REGISTERED_TOOLCHAIN_ROOT "C:/tools/ArmCompilerforEmbedded6.22/bin")
+include("${CMSIS_COMPILER_ROOT}/AC6.6.12.1.cmake")
+`,
+			expected: "",
+		},
+		{
+			name: "Missing Compiler Name",
+			content: `
+set(REGISTERED_TOOLCHAIN_ROOT "C:/tools/ArmCompilerforEmbedded6.22/bin")
+set(REGISTERED_TOOLCHAIN_VERSION "6.22.0")
+`,
+			expected: "",
+		},
+		{
+			name: "Different Compiler Name",
+			content: `
+set(REGISTERED_TOOLCHAIN_ROOT "C:/tools/GCCCompiler/bin")
+set(REGISTERED_TOOLCHAIN_VERSION "10.3.1")
+include("${CMSIS_COMPILER_ROOT}/GCC.10.3.1.cmake")
+`,
+			expected: "Using GCC V10.3.1 compiler, from: 'C:/tools/GCCCompiler/bin'",
+		},
+		{
+			name:     "Empty File",
+			content:  ``,
+			expected: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Create a temporary file with test content
+			tempFile := createTempFile(tt.content)
+			defer os.Remove(tempFile)
+
+			result := ParseAndFetchToolchainInfo(tempFile)
+			assert.Equal(t, result, tt.expected)
+			if result != tt.expected {
+				t.Errorf("Expected %q, got %q", tt.expected, result)
+			}
+		})
+	}
+}
