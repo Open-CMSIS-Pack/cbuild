@@ -7,11 +7,13 @@
 package utils
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"time"
@@ -512,4 +514,47 @@ func DeleteAll(path string) error {
 		return errutils.New(errutils.ErrDeleteFailed, path)
 	}
 	return nil
+}
+
+func ParseAndFetchToolchainInfo(toolchainFile string) string {
+	// Open the toolchain.cmake file
+	file, err := os.Open(toolchainFile)
+	if err != nil {
+		return ""
+	}
+	defer file.Close()
+
+	// regex patterns to extract the required information
+	rootPattern := `set\(REGISTERED_TOOLCHAIN_ROOT\s+"([^"]+)"\)`
+	versionPattern := `set\(REGISTERED_TOOLCHAIN_VERSION\s+"([^"]+)"\)`
+	compilerPattern := `include\("\${CMSIS_COMPILER_ROOT}/(.*)\.\d+\.\d+\.\d+\.cmake"\)`
+
+	var toolchainRoot, toolchainVersion, compilerName string
+	// Scan toolchain.cmake file
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		// Get toolchain root
+		if matches := regexp.MustCompile(rootPattern).FindStringSubmatch(line); len(matches) > 1 {
+			toolchainRoot = matches[1]
+		}
+
+		// Get matched toolchain version
+		if matches := regexp.MustCompile(versionPattern).FindStringSubmatch(line); len(matches) > 1 {
+			toolchainVersion = matches[1]
+		}
+
+		// Get matched toolchain name
+		if matches := regexp.MustCompile(compilerPattern).FindStringSubmatch(line); len(matches) > 1 {
+			compilerName = strings.Split(matches[1], ".")[0]
+		}
+	}
+
+	// Check all required values were found
+	if toolchainRoot == "" || toolchainVersion == "" || compilerName == "" {
+		return ""
+	}
+
+	return fmt.Sprintf("Using %s V%s compiler, from: '%s'", compilerName, toolchainVersion, toolchainRoot)
 }
