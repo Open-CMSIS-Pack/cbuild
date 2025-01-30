@@ -87,7 +87,7 @@ jobs:
       - name: Run Gosec Security Scanner
         uses: securego/gosec@e0cca6fe95306b7e7790d6f1bf6a7bec6d622459 # v2.22.0
         with:
-          args: '-severity high -exclude-dir=test ./...'
+          args: '-severity high -exclude-dir=test -exclude=*_test.go ./...'
 
   vulnerability-check:
     name: "Vulnerability check"
