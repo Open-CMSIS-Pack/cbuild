@@ -251,7 +251,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.Flags().StringP("load", "l", "required", "Set policy for packs loading [latest | all | required]")
 	rootCmd.Flags().IntP("jobs", "j", 8, "Number of job slots for parallel execution")
 	rootCmd.Flags().StringP("target", "t", "", "Optional CMake target name")
-	rootCmd.Flags().StringP("output", "O", "./", "Base folder for output files, 'outdir' and 'tmpdir'")
+	rootCmd.Flags().StringP("output", "O", "", "Base folder for output files, 'outdir' and 'tmpdir' (default \"Same as '*.csolution.yml'\")")
 	rootCmd.PersistentFlags().BoolP("schema", "s", false, "Validate project input file(s) against schema [deprecated]")
 	rootCmd.PersistentFlags().BoolP("no-schema-check", "n", false, "Skip schema check")
 	rootCmd.PersistentFlags().StringP("log", "", "", "Save output messages in a log file")
