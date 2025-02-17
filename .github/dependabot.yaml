@@ -1,5 +1,6 @@
 version: 2
 updates:
+  # GitHub Actions updates (weekly)
   - package-ecosystem: github-actions
     directory: "/.github/"
     schedule:
@@ -13,6 +14,7 @@ updates:
     reviewers:
       - "soumeh01"
 
+  # Go modules updates (weekly)
   - package-ecosystem: gomod
     directory: "/"
     schedule:
@@ -43,15 +45,3 @@ updates:
       - "soumeh01"
     commit-message:
       prefix: "fix(security)"
-
-  # Trigger Dependabot before a release
-  - package-ecosystem: gomod
-    directory: "/"
-    schedule:
-      interval: "event"
-    target-branch: "main"
-    labels:
-      - "dependencies"
-      - "pre-release-check"
-    commit-message:
-      prefix: "chore(pre-release)"
