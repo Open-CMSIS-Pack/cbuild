@@ -5,10 +5,37 @@ updates:
     schedule:
       interval: "weekly"
       day: "sunday"
-    open-pull-requests-limit: 10
+      time: "08:00"
+    open-pull-requests-limit: 5 # Reduce PR noise
     rebase-strategy: disabled
+    labels:
+      - "dependencies"
+      - "automated"
 
   - package-ecosystem: gomod
-    directory: /
+    directory: "/"
     schedule:
-      interval: daily
+      interval: "weekly"
+      day: "sunday"
+      time: "08:00"
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch-updates:
+        patterns:
+          - "*"
+        update-types: ["minor", "patch"]
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "chore(deps)"
+
+  # Security updates (keep immediate security fixes)
+  - package-ecosystem: gomod
+    directory: "/"
+    schedule:
+      interval: "daily"
+    labels:
+      - "security"
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "fix(security)"
