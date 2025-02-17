@@ -1,12 +1,11 @@
 version: 2
 updates:
   - package-ecosystem: github-actions
-    directory: "/"
+    directory: "/.github/"
     schedule:
       interval: "weekly"
       day: "sunday"
       time: "08:00"
-    open-pull-requests-limit: 5 # Reduce PR noise
     rebase-strategy: disabled
     labels:
       - "dependencies"
@@ -44,3 +43,15 @@ updates:
       - "soumeh01"
     commit-message:
       prefix: "fix(security)"
+
+  # Trigger Dependabot before a release
+  - package-ecosystem: gomod
+    directory: "/"
+    schedule:
+      interval: "event"
+    target-branch: "main"
+    labels:
+      - "dependencies"
+      - "pre-release-check"
+    commit-message:
+      prefix: "chore(pre-release)"
