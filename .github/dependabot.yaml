@@ -11,6 +11,8 @@ updates:
     labels:
       - "dependencies"
       - "automated"
+    reviewers:
+      - "soumeh01"
 
   - package-ecosystem: gomod
     directory: "/"
@@ -26,6 +28,8 @@ updates:
         update-types: ["minor", "patch"]
     labels:
       - "dependencies"
+    reviewers:
+      - "soumeh01"
     commit-message:
       prefix: "chore(deps)"
 
@@ -36,6 +40,7 @@ updates:
       interval: "daily"
     labels:
       - "security"
-    open-pull-requests-limit: 3
+    reviewers:
+      - "soumeh01"
     commit-message:
       prefix: "fix(security)"
