@@ -14,14 +14,11 @@ updates:
     reviewers:
       - "soumeh01"
 
-  # Go modules updates (weekly)
+  # Go modules updates (daily)
   - package-ecosystem: gomod
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "sunday"
-      time: "08:00"
-    open-pull-requests-limit: 5
+      interval: "daily"
     groups:
       minor-and-patch-updates:
         patterns:
