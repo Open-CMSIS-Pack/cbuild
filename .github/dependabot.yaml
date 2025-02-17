@@ -33,4 +33,5 @@ updates:
       - "soumeh01"
     commit-message:
       prefix: "chore(deps)"
-    security-updates: true
+    allow:
+      - dependency-type: "direct"
