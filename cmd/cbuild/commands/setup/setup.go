@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Arm Limited. All rights reserved.
+ * Copyright (c) 2024-2025 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -143,7 +143,20 @@ var SetUpCmd = &cobra.Command{
 	Use:   "setup <name>.csolution.yml [options]",
 	Short: "Generate project data for IDE environment",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return setUpProject(cmd, args)
+		perf_result_file, _ := cmd.Flags().GetString("perf-report")
+		tracker := utils.GetTrackerInstance(perf_result_file)
+		if tracker != nil {
+			tracker.StartTracking("cbuild", "setup "+strings.Join(args, " "))
+		}
+
+		err := setUpProject(cmd, args)
+
+		if tracker != nil {
+			tracker.StopTracking()
+			tracker.SaveResults()
+		}
+
+		return err
 	},
 }
 
@@ -171,4 +184,7 @@ func init() {
 	SetUpCmd.Flags().StringP("toolchain", "", "", "Input toolchain to be used")
 	SetUpCmd.Flags().BoolP("cbuildgen", "", false, "Generate legacy *.cprj files and use cbuildgen backend")
 	SetUpCmd.Flags().BoolP("no-database", "", false, "Skip the generation of compile_commands.json files")
+
+	SetUpCmd.Flags().StringP("perf-report", "", "perf-report.json", "output performance report file")
+	_ = SetUpCmd.Flags().MarkHidden("perf-report")
 }
