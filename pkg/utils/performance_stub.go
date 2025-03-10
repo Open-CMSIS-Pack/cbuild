@@ -11,6 +11,8 @@ package utils
 // PerformanceTracker is a no-op version used in normal mode
 type PerformanceTracker struct{}
 
+func SetExample(name string) {}
+
 // GetTrackerInstance returns nil in normal mode
 func GetTrackerInstance(outputPath string) *PerformanceTracker {
 	return nil

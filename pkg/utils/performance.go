@@ -10,7 +10,9 @@ package utils
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"os"
+	"runtime"
 	"sync"
 	"time"
 
@@ -21,6 +23,7 @@ import (
 var (
 	once     sync.Once
 	instance *PerformanceTracker
+	example  string
 )
 
 type PerfResult struct {
@@ -29,26 +32,32 @@ type PerfResult struct {
 	TimeMS int64  `json:"time_ms"`
 }
 
+type PerformanceEntry struct {
+	Example     string       `json:"Example"`
+	OS          string       `json:"OS"`
+	Arch        string       `json:"Arch"`
+	Performance []PerfResult `json:"performance"`
+}
+
 // PerformanceTracker is enabled only in performance mode
 type PerformanceTracker struct {
 	startTime time.Time
 	tool      string
 	args      string
 	results   []PerfResult
-	file      *os.File
+	filePath  string
 	mutex     sync.Mutex
 }
 
-// GetTrackerInstance ensures a singleton instance of PerformanceTracker
+// set the example name
+func SetExample(name string) {
+	example = name
+}
+
 func GetTrackerInstance(outputPath string) *PerformanceTracker {
 	once.Do(func() {
-		file, err := os.OpenFile(outputPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			log.Error("error opening file: %v\n", err)
-			return
-		}
 		instance = &PerformanceTracker{
-			file: file,
+			filePath: outputPath,
 		}
 	})
 	return instance
@@ -67,10 +76,6 @@ func (pt *PerformanceTracker) StartTracking(tool string, args string) {
 func (pt *PerformanceTracker) StopTracking() {
 	pt.mutex.Lock()
 	defer pt.mutex.Unlock()
-	if pt.file == nil {
-		return
-	}
-
 	elapsed := time.Since(pt.startTime).Milliseconds()
 	pt.results = append(pt.results, PerfResult{
 		Tool:   pt.tool,
@@ -83,12 +88,34 @@ func (pt *PerformanceTracker) StopTracking() {
 func (pt *PerformanceTracker) SaveResults() {
 	pt.mutex.Lock()
 	defer pt.mutex.Unlock()
-	if pt.file == nil {
+
+	// Read existing data if the file exists
+	var existingEntries []PerformanceEntry
+	if _, err := os.Stat(pt.filePath); err == nil {
+		fileData, err := ioutil.ReadFile(pt.filePath)
+		if err == nil {
+			json.Unmarshal(fileData, &existingEntries)
+		}
+	}
+
+	// Append new entry
+	newEntry := PerformanceEntry{
+		Example:     example,
+		OS:          runtime.GOOS,
+		Arch:        runtime.GOARCH,
+		Performance: pt.results,
+	}
+	existingEntries = append(existingEntries, newEntry)
+
+	// Write updated data back to the file
+	jsonData, err := json.MarshalIndent(existingEntries, "", "  ")
+	if err != nil {
+		log.Errorf("error marshaling JSON: %v", err)
 		return
 	}
 
-	jsonData, _ := json.MarshalIndent(pt.results, "", "  ")
-	_, _ = pt.file.Write(jsonData)
-	_, _ = pt.file.Write([]byte("\n"))
-	pt.file.Close()
+	err = ioutil.WriteFile(pt.filePath, jsonData, 0644)
+	if err != nil {
+		log.Errorf("error writing to file: %v", err)
+	}
 }

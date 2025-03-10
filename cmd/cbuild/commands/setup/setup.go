@@ -143,9 +143,14 @@ var SetUpCmd = &cobra.Command{
 	Use:   "setup <name>.csolution.yml [options]",
 	Short: "Generate project data for IDE environment",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		perf_result_file, _ := cmd.Flags().GetString("perf-report")
-		tracker := utils.GetTrackerInstance(perf_result_file)
+		perfResultFile, _ := cmd.Flags().GetString("perf-report")
+		tracker := utils.GetTrackerInstance(perfResultFile)
 		if tracker != nil {
+			exampleDir, err := utils.GetParentFolder(args[0])
+			if err != nil {
+				return err
+			}
+			utils.SetExample(exampleDir)
 			tracker.StartTracking("cbuild", "setup "+strings.Join(args, " "))
 		}
 
