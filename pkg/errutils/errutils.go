@@ -33,6 +33,7 @@ const (
 	ErrPathNotExist           = "path does not exist: '%s'"
 	ErrFetchingAbsPath        = "unable to get absolute path: '%s'"
 	ErrInvalidPath            = "invalid path: '%s'"
+	ErrPerfResults            = "unable to save performance results: %s"
 )
 
 const (

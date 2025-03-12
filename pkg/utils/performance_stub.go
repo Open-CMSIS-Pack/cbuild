@@ -8,21 +8,20 @@
 
 package utils
 
-// PerformanceTracker is a no-op version used in normal mode
+// PerformanceTracker is a no-op stub version used in normal mode
+// to resolve build errors
 type PerformanceTracker struct{}
 
 func SetExample(name string) {}
 
-// GetTrackerInstance returns nil in normal mode
 func GetTrackerInstance(outputPath string) *PerformanceTracker {
 	return nil
 }
 
-// StartTracking does nothing in normal mode
 func (pt *PerformanceTracker) StartTracking(tool string, args string) {}
 
-// StopTracking does nothing in normal mode
 func (pt *PerformanceTracker) StopTracking() {}
 
-// SaveResults does nothing in normal mode
-func (pt *PerformanceTracker) SaveResults() {}
+func (pt *PerformanceTracker) SaveResults() error {
+	return nil
+}

@@ -6,6 +6,7 @@
 package setup
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 
@@ -15,6 +16,7 @@ import (
 	log "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/logger"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 func setUpProject(cmd *cobra.Command, args []string) error {
@@ -151,14 +153,26 @@ var SetUpCmd = &cobra.Command{
 				return err
 			}
 			utils.SetExample(exampleDir)
-			tracker.StartTracking("cbuild", "setup "+strings.Join(args, " "))
+
+			flags := []string{}
+			cmd.Flags().Visit(func(f *pflag.Flag) {
+				flags = append(flags, fmt.Sprintf("--%s=%s", f.Name, f.Value.String()))
+			})
+
+			tracker.StartTracking("cbuild", "setup "+
+				strings.Join(args, " ")+" "+strings.Join(flags, " "))
 		}
 
 		err := setUpProject(cmd, args)
 
 		if tracker != nil {
 			tracker.StopTracking()
-			tracker.SaveResults()
+			// Save all results
+			perfErr := tracker.SaveResults()
+			if perfErr != nil {
+				err := errutils.New(errutils.ErrPerfResults, perfErr.Error())
+				log.Error(err)
+			}
 		}
 
 		return err
