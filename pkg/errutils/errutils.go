@@ -31,6 +31,8 @@ const (
 	ErrMissingRequiredArg     = "setup command is missing mandatory option '--context-set'"
 	ErrDeleteFailed           = "failed to delete: '%s'"
 	ErrPathNotExist           = "path does not exist: '%s'"
+	ErrFetchingAbsPath        = "unable to get absolute path: '%s'"
+	ErrInvalidPath            = "invalid path: '%s'"
 )
 
 const (

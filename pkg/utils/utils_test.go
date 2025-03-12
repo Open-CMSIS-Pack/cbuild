@@ -631,3 +631,64 @@ include("${CMSIS_COMPILER_ROOT}/GCC.10.3.1.cmake")
 		})
 	}
 }
+
+// TestGetParentFolder tests the GetParentFolder function
+func TestGetParentFolder(t *testing.T) {
+	tests := []struct {
+		name      string
+		inputPath string
+		want      string
+		wantErr   bool
+	}{
+		{
+			name:      "Absolute Path",
+			inputPath: "/home/user/docs",
+			want:      "user",
+			wantErr:   false,
+		},
+		{
+			name:      "Relative Path",
+			inputPath: "./testdata/subdir",
+			want:      "testdata",
+			wantErr:   false,
+		},
+		{
+			name:      "Empty Path",
+			inputPath: "",
+			want:      "",
+			wantErr:   true,
+		},
+		{
+			name:      "Non-Existent Path",
+			inputPath: "/this/path/does/not/exist",
+			want:      "not",
+			wantErr:   false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GetParentFolder(tt.inputPath)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.want, got)
+			}
+		})
+	}
+}
+
+// TestGetParentFolderWithTempDir ensures the function works with a real temp directory.
+func TestGetParentFolderWithTempDir(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "testdir")
+	assert.NoError(t, err)
+	defer os.RemoveAll(tempDir)
+
+	parent := filepath.Dir(tempDir)
+	expected := filepath.Base(parent)
+
+	result, err := GetParentFolder(tempDir)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, result)
+}
