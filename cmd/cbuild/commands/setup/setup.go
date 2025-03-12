@@ -1,11 +1,12 @@
 /*
- * Copyright (c) 2024 Arm Limited. All rights reserved.
+ * Copyright (c) 2024-2025 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
 package setup
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 
@@ -15,6 +16,7 @@ import (
 	log "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/logger"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/utils"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 func setUpProject(cmd *cobra.Command, args []string) error {
@@ -143,7 +145,37 @@ var SetUpCmd = &cobra.Command{
 	Use:   "setup <name>.csolution.yml [options]",
 	Short: "Generate project data for IDE environment",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return setUpProject(cmd, args)
+		perfResultFile, _ := cmd.Flags().GetString("perf-report")
+		tracker := utils.GetTrackerInstance(perfResultFile)
+		if tracker != nil {
+			exampleDir, err := utils.GetParentFolder(args[0])
+			if err != nil {
+				return err
+			}
+			utils.SetExample(exampleDir)
+
+			flags := []string{}
+			cmd.Flags().Visit(func(f *pflag.Flag) {
+				flags = append(flags, fmt.Sprintf("--%s=%s", f.Name, f.Value.String()))
+			})
+
+			tracker.StartTracking("cbuild", "setup "+
+				strings.Join(args, " ")+" "+strings.Join(flags, " "))
+		}
+
+		err := setUpProject(cmd, args)
+
+		if tracker != nil {
+			tracker.StopTracking()
+			// Save all results
+			perfErr := tracker.SaveResults()
+			if perfErr != nil {
+				err := errutils.New(errutils.ErrPerfResults, perfErr.Error())
+				log.Error(err)
+			}
+		}
+
+		return err
 	},
 }
 
@@ -171,4 +203,7 @@ func init() {
 	SetUpCmd.Flags().StringP("toolchain", "", "", "Input toolchain to be used")
 	SetUpCmd.Flags().BoolP("cbuildgen", "", false, "Generate legacy *.cprj files and use cbuildgen backend")
 	SetUpCmd.Flags().BoolP("no-database", "", false, "Skip the generation of compile_commands.json files")
+
+	SetUpCmd.Flags().StringP("perf-report", "", "perf-report.json", "output performance report file")
+	_ = SetUpCmd.Flags().MarkHidden("perf-report")
 }
