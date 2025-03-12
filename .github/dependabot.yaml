@@ -1,16 +1,11 @@
 version: 2
 updates:
-  # GitHub Actions updates (weekly)
   - package-ecosystem: github-actions
     directory: "/.github/"
     schedule:
       interval: "weekly"
       day: "sunday"
-      time: "08:00"
     rebase-strategy: disabled
-    labels:
-      - "dependencies"
-      - "automated"
     reviewers:
       - "soumeh01"
       - "brondani"
@@ -20,17 +15,6 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-    groups:
-      minor-and-patch-updates:
-        patterns:
-          - "*"
-        update-types: ["minor", "patch"]
-    labels:
-      - "dependencies"
     reviewers:
       - "soumeh01"
       - "brondani"
-    commit-message:
-      prefix: "chore(deps)"
-    allow:
-      - dependency-type: "direct"
