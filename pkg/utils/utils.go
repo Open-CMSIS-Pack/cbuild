@@ -558,17 +558,3 @@ func ParseAndFetchToolchainInfo(toolchainFile string) string {
 
 	return fmt.Sprintf("Using %s V%s compiler, from: '%s'", compilerName, toolchainVersion, toolchainRoot)
 }
-
-func GetParentFolder(path string) (string, error) {
-	if path == "" {
-		return "", errutils.New(errutils.ErrInvalidPath, "empty path provided")
-	}
-
-	absPath, err := filepath.Abs(path)
-	if err != nil {
-		return "", errutils.New(errutils.ErrFetchingAbsPath, err.Error())
-	}
-
-	parentPath := filepath.Dir(absPath)
-	return filepath.Base(parentPath), nil
-}

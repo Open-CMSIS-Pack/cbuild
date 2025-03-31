@@ -44,11 +44,10 @@ jobs:
             **/go.mod
             **/go.sum
 
-      - uses: golangci/golangci-lint-action@2226d7cb06a077cd73e56eedd38eecad18e5d837 # v6.5.0
+      - uses: golangci/golangci-lint-action@1481404843c368bc19ca9406f87d6e0fc97bdcfd # v7.0.0
         with:
           version: latest
           skip-cache: true
-          args: "--verbose --print-issued-lines --print-linter-name --out-${NO_FUTURE}format colored-line-number --timeout 300s --max-issues-per-linter 0 --max-same-issues 0"
 
   format:
     name: Format

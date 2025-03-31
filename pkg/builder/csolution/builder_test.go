@@ -33,17 +33,19 @@ type RunnerMock struct{}
 
 func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) (string, error) {
 	if strings.Contains(program, "csolution") {
-		if args[0] == "list" {
-			if args[1] == "contexts" {
+		switch args[0] {
+		case "list":
+			switch args[1] {
+			case "contexts":
 				return "test.Debug+CM0\r\ntest.Release+CM0", nil
-			} else if args[1] == "toolchains" {
+			case "toolchains":
 				return "AC5@5.6.7\nAC6@6.18.0\nGCC@11.2.1\nIAR@8.50.6\n", nil
-			} else if args[1] == "packs" {
+			case "packs":
 				return "ARM::test:0.0.1\r\nARM::test2:0.0.2", nil
-			} else if args[1] == "environment" {
+			case "environment":
 				return "CMSIS_PACK_ROOT=C:/Path/Packs\nCMSIS_COMPILER_ROOT=C:/Test/etc\n", nil
 			}
-		} else if args[0] == "convert" {
+		case "convert":
 			return "", nil
 		}
 	} else if strings.Contains(program, "cbuildgen") {

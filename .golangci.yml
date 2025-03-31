@@ -1,22 +1,21 @@
+version: "2"
 run:
-  timeout: 10m
-
-  # Run linters over integration tests
   build-tags:
     - integration
-
 linters:
-  disable-all: true # Disable defaults, then enable the ones we want
+  default: none
   enable:
+    - bodyclose
     - errcheck
-    - gosimple
+    - gosec
     - govet
     - ineffassign
     - staticcheck
-    - typecheck
     - unused
-    - bodyclose
-    - stylecheck
-    - gosec
-    - goimports
-    - gofmt
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling

@@ -139,6 +139,7 @@ func (b CbuildIdxBuilder) build() error {
 		log.Debug("cbuild2cmake command: " + vars.Cbuild2cmakeBin + " " + strings.Join(args, " "))
 	}
 
+	//nolint:staticcheck // intentional logic for clarity
 	_, err = b.Runner.ExecuteCommand(vars.Cbuild2cmakeBin, !(b.Options.Debug || b.Options.Verbose), args...)
 	if err != nil {
 		return err
@@ -167,6 +168,7 @@ func (b CbuildIdxBuilder) build() error {
 		log.Debug("cmake configuration command: " + vars.CmakeBin + " " + strings.Join(args, " "))
 	}
 
+	//nolint:staticcheck // intentional logic for clarity
 	_, err = b.Runner.ExecuteCommand(vars.CmakeBin, !(b.Options.Debug || b.Options.Verbose), args...)
 	if err != nil {
 		return err
@@ -186,6 +188,7 @@ func (b CbuildIdxBuilder) build() error {
 		args = append(args, "--target", buildTarget)
 	}
 
+	//nolint:staticcheck // intentional logic for clarity
 	if b.Options.Generator == "Ninja" && !(b.Options.Debug || b.Options.Verbose) {
 		isVersionGreaterorEqual, err := b.validateNinjaVersion(NinjaVersion)
 		if err != nil {

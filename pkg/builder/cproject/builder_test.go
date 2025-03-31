@@ -30,15 +30,18 @@ type RunnerMock struct{}
 
 func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) (string, error) {
 	if strings.Contains(program, "cbuildgen") {
-		if args[0] == "packlist" {
+		switch args[0] {
+		case "packlist":
 			packlistFile := filepath.Join(testRoot, testDir, "IntDir/minimal.cpinstall")
 			file, _ := os.Create(packlistFile)
 			defer file.Close()
-		} else if args[0] == "cmake" {
+
+		case "cmake":
 			cmakelistFile := filepath.Join(testRoot, testDir, "IntDir/CMakeLists.txt")
 			file, _ := os.Create(cmakelistFile)
 			defer file.Close()
 		}
+
 	} else if strings.Contains(program, "cpackget") {
 	} else if strings.Contains(program, "cmake") {
 	} else if strings.Contains(program, "ninja") {
