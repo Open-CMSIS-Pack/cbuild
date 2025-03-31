@@ -22,13 +22,14 @@ import (
 func setUpProject(cmd *cobra.Command, args []string) error {
 	var inputFile string
 	argCnt := len(args)
-	if argCnt == 0 {
+	switch argCnt {
+	case 0:
 		err := errutils.New(errutils.ErrRequireArg, "cbuild setup --help")
 		log.Error(err)
 		return err
-	} else if argCnt == 1 {
+	case 1:
 		inputFile = args[0]
-	} else {
+	default:
 		err := errutils.New(errutils.ErrInvalidCmdLineArg)
 		log.Error(err)
 		_ = cmd.Help()
@@ -71,10 +72,7 @@ func setUpProject(cmd *cobra.Command, args []string) error {
 	useCbuildgen, _ := cmd.Flags().GetBool("cbuildgen")
 	noDatabase, _ := cmd.Flags().GetBool("no-database")
 
-	useCbuild2CMake := true
-	if useCbuildgen {
-		useCbuild2CMake = false
-	}
+	useCbuild2CMake := !useCbuildgen
 
 	if !useContextSet {
 		err = errutils.New(errutils.ErrMissingRequiredArg)
