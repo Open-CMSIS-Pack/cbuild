@@ -143,10 +143,7 @@ func NewRootCmd() *cobra.Command {
 			useCbuildgen, _ := cmd.Flags().GetBool("cbuildgen")
 
 			// set cbuild2cmake as default tool
-			useCbuild2CMake := true
-			if useCbuildgen {
-				useCbuild2CMake = false
-			}
+			useCbuild2CMake := !useCbuildgen
 
 			if jobs <= 0 {
 				err := errutils.New(errutils.ErrInvalidNumJobs)
@@ -229,7 +226,7 @@ func NewRootCmd() *cobra.Command {
 	}
 
 	cobra.AddTemplateFunc("replaceString", func(s string) string {
-		return strings.Replace(strings.Replace(s, "strings  ", "arg [...]", -1), "string ", "arg    ", -1)
+		return strings.ReplaceAll(strings.ReplaceAll(s, "strings  ", "arg [...]"), "string ", "arg    ")
 	})
 	rootCmd.SetUsageTemplate(usageTemplate)
 	rootCmd.DisableFlagsInUseLine = true

@@ -20,11 +20,12 @@ import (
 func listContexts(cmd *cobra.Command, args []string) error {
 	var inputFile string
 	argCnt := len(args)
-	if argCnt == 0 {
+	switch argCnt {
+	case 0:
 		return errutils.New(errutils.ErrRequireArg, "cbuild list contexts --help")
-	} else if argCnt == 1 {
+	case 1:
 		inputFile = args[0]
-	} else {
+	default:
 		err := errutils.New(errutils.ErrInvalidCmdLineArg)
 		log.Error(err)
 		_ = cmd.Help()

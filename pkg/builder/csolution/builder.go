@@ -168,6 +168,7 @@ func (b CSolutionBuilder) generateBuildFiles() (err error) {
 		}
 		_, stdErr, err = utils.ExecuteCommand(csolutionBin, args...)
 	} else {
+		//nolint:staticcheck // intentional logic for clarity
 		_, err = b.runCSolution(args, !(b.Options.Debug || b.Options.Verbose))
 	}
 
