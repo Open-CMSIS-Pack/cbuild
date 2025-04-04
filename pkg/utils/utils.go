@@ -180,6 +180,10 @@ type CbuildIndex struct {
 			Project       string `yaml:"project"`
 			Configuration string `yaml:"configuration"`
 			Rebuild       bool   `yaml:"rebuild"`
+			Messages      struct {
+				Warnings []string `yaml:"warnings"`
+				Info     []string `yaml:"info"`
+			} `yaml:"messages"`
 		} `yaml:"cbuilds"`
 		Executes []interface{} `yaml:"executes"`
 		Rebuild  bool          `yaml:"rebuild"`

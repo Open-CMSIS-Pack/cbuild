@@ -166,13 +166,64 @@ func (b CSolutionBuilder) generateBuildFiles() (err error) {
 		if err != nil {
 			return
 		}
+		log.Debug("csolution command: csolution " + strings.Join(args, " "))
 		_, stdErr, err = utils.ExecuteCommand(csolutionBin, args...)
 	} else {
-		//nolint:staticcheck // intentional logic for clarity
-		_, err = b.runCSolution(args, !(b.Options.Debug || b.Options.Verbose))
-	}
+		log.Debug("csolution command: csolution " + strings.Join(args, " "))
 
-	log.Debug("csolution command: csolution " + strings.Join(args, " "))
+		//nolint:staticcheck // intentional logic for clarity
+		_, convertErr := b.runCSolution(args, !b.Options.Debug && !b.Options.Verbose)
+		if convertErr != nil {
+			return convertErr
+		}
+
+		// Get index file
+		idxFile, err := b.getIdxFilePath()
+		if err != nil {
+			return err
+		}
+
+		data, err := utils.ParseCbuildIndexFile(idxFile)
+		if err != nil {
+			return err
+		}
+
+		// Collect unique warnings
+		uniqueWarnings := make(map[string]struct{})
+		for _, cbuild := range data.BuildIdx.Cbuilds {
+			for _, warning := range cbuild.Messages.Warnings {
+				uniqueWarnings[warning] = struct{}{}
+			}
+		}
+
+		// extract unregistered toolchains
+		if len(uniqueWarnings) > 0 {
+			var warnings []string
+			for w := range uniqueWarnings {
+				warnings = append(warnings, w)
+			}
+
+			outStr := strings.Join(warnings, ", ")
+			re := regexp.MustCompile(`no compiler registered for '([^']+)'`)
+			matches := re.FindAllStringSubmatch(outStr, -1)
+
+			toolchains := make(map[string]struct{})
+			for _, match := range matches {
+				if len(match) > 1 {
+					toolchains[match[1]] = struct{}{}
+				}
+			}
+
+			if len(toolchains) > 0 {
+				var missing []string
+				for name := range toolchains {
+					missing = append(missing, name)
+				}
+				return errutils.New(errutils.ErrNoCompilerRegistered, strings.Join(missing, ", "))
+			}
+		}
+
+	}
 
 	// Execute this code exclusively upon invocation of the 'setup' command.
 	// Its purpose is to update layer information within the *.cbuild-idx.yml files.
