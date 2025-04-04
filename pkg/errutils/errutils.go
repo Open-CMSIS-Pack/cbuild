@@ -34,6 +34,7 @@ const (
 	ErrFetchingAbsPath        = "unable to get absolute path: '%s'"
 	ErrInvalidPath            = "invalid path: '%s'"
 	ErrPerfResults            = "unable to save performance results: %s"
+	ErrNoCompilerRegistered   = "required compiler(s) not registered: '%s'"
 )
 
 const (
