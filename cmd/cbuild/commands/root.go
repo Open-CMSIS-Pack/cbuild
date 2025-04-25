@@ -141,9 +141,17 @@ func NewRootCmd() *cobra.Command {
 			useContextSet, _ := cmd.Flags().GetBool("context-set")
 			frozenPacks, _ := cmd.Flags().GetBool("frozen-packs")
 			useCbuildgen, _ := cmd.Flags().GetBool("cbuildgen")
+			targetSet, _ := cmd.Flags().GetString("active")
 
 			// set cbuild2cmake as default tool
 			useCbuild2CMake := !useCbuildgen
+
+			// -a option is not compatible with -c or -S
+			if targetSet != "" && (len(contexts) > 0 || useContextSet) {
+				err := errutils.New(errutils.ErrInvalidTargetSetUsage)
+				log.Error(err)
+				return err
+			}
 
 			if jobs <= 0 {
 				err := errutils.New(errutils.ErrInvalidNumJobs)
@@ -174,6 +182,7 @@ func NewRootCmd() *cobra.Command {
 				Toolchain:       toolchain,
 				FrozenPacks:     frozenPacks,
 				UseCbuild2CMake: useCbuild2CMake,
+				TargetSet:       targetSet,
 			}
 
 			configs, err := utils.GetInstallConfigs()
@@ -254,6 +263,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.PersistentFlags().StringP("log", "", "", "Save output messages in a log file")
 	rootCmd.PersistentFlags().StringP("toolchain", "", "", "Input toolchain to be used")
 	rootCmd.Flags().BoolP("cbuildgen", "", false, "Generate legacy *.cprj files and use cbuildgen backend")
+	rootCmd.Flags().StringP("active", "a", "", "Select active target-set: <target-type>[@<set>]")
 
 	// CPRJ specific hidden flags
 	rootCmd.Flags().StringP("intdir", "i", "", "Set directory for intermediate files")

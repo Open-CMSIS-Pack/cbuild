@@ -71,6 +71,32 @@ func TestCommands(t *testing.T) {
 		err := cmd.Execute()
 		assert.Error(err)
 	})
+
+	t.Run("test invalid command with -a and -c", func(t *testing.T) {
+		cmd := commands.NewRootCmd()
+		cmd.SetArgs([]string{csolutionFile, "-a", "test", "-c", "test.Debug+CM0"})
+
+		err := cmd.Execute()
+		assert.EqualError(err, "invalid target-set usage. The '-a' option cannot be used with the '-c' or '-S'")
+	})
+
+	t.Run("test invalid command with -a and -S", func(t *testing.T) {
+		cmd := commands.NewRootCmd()
+		cmd.SetArgs([]string{csolutionFile, "-a", "test", "-S"})
+
+		err := cmd.Execute()
+		assert.EqualError(err, "invalid target-set usage. The '-a' option cannot be used with the '-c' or '-S'")
+	})
+
+	t.Run("test valid command with -a", func(t *testing.T) {
+		cmd := commands.NewRootCmd()
+		cmd.SetArgs([]string{csolutionFile, "-a", "test"})
+
+		err := cmd.Execute()
+		// Though the command is valid, It fails for other reasons
+		assert.Error(err)
+		assert.Contains(err.Error(), "couldn't locate '../etc' directory relative to")
+	})
 }
 
 func TestPreLogConfiguration(t *testing.T) {

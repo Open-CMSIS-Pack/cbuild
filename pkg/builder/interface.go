@@ -36,6 +36,7 @@ type Options struct {
 	Load            string
 	Output          string
 	Toolchain       string
+	TargetSet       string
 	Jobs            int
 	Quiet           bool
 	Debug           bool

@@ -471,6 +471,15 @@ func TestFormulateArg(t *testing.T) {
 		strArg := utils.NormalizePath(strings.Join(args, " "))
 		assert.Equal("convert --solution=../../../test/"+testDir+"/Test.csolution.yml --no-check-schema --no-update-rte --context=test.Debug+Target --context=test.Release+Target --context-set", strArg)
 	})
+
+	t.Run("test --active arg", func(t *testing.T) {
+		b.Options = builder.Options{
+			TargetSet: "test",
+		}
+		args := b.formulateArgs([]string{"convert"})
+		strArg := utils.NormalizePath(strings.Join(args, " "))
+		assert.Equal("convert --solution=../../../test/"+testDir+"/Test.csolution.yml --no-check-schema --no-update-rte --active=test", strArg)
+	})
 }
 
 func TestGetCbuildSetFilePath(t *testing.T) {
