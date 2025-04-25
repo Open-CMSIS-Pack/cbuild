@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Arm Limited. All rights reserved.
+ * Copyright (c) 2024-2025 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -28,13 +28,16 @@ const (
 	ErrRequireArg             = "command requires an input file argument. Run '%s' for more information about a command"
 	ErrInvalidVersionString   = "invalid version %s. Expected %s"
 	ErrInvalidNumJobs         = "invalid number of job slots specified for parallel execution. Expected: j>0"
-	ErrMissingRequiredArg     = "setup command is missing mandatory option '--context-set'"
+	ErrMissingRequiredArg     = "setup command is missing mandatory option '--context-set' or '--active'"
 	ErrDeleteFailed           = "failed to delete: '%s'"
 	ErrPathNotExist           = "path does not exist: '%s'"
 	ErrFetchingAbsPath        = "unable to get absolute path: '%s'"
 	ErrInvalidPath            = "invalid path: '%s'"
 	ErrPerfResults            = "unable to save performance results: %s"
 	ErrNoCompilerRegistered   = "required compiler(s) not registered: '%s'"
+	ErrInvalidTargetSetUsage  = "invalid target-set usage. The '-a' option cannot be used with the '-c' or '-S'"
+	ErrInvalidSetUpArgs       = "invalid command line arguments. Options '-a' and '-S' are mutually exclusive"
+	ErrInvalidInputArg        = "invalid input argument for '%s'"
 )
 
 const (

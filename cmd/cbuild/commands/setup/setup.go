@@ -71,11 +71,26 @@ func setUpProject(cmd *cobra.Command, args []string) error {
 	frozenPacks, _ := cmd.Flags().GetBool("frozen-packs")
 	useCbuildgen, _ := cmd.Flags().GetBool("cbuildgen")
 	noDatabase, _ := cmd.Flags().GetBool("no-database")
+	targetSet, _ := cmd.Flags().GetString("active")
 
 	useCbuild2CMake := !useCbuildgen
 
-	if !useContextSet {
+	// Option '-a' and '-S' are mutually exclusive
+	if len(targetSet) > 0 && useContextSet {
+		err = errutils.New(errutils.ErrInvalidSetUpArgs)
+		log.Error(err)
+		return err
+	}
+
+	// Either '-a' or '-S' must be used
+	if len(targetSet) == 0 && !useContextSet {
 		err = errutils.New(errutils.ErrMissingRequiredArg)
+		log.Error(err)
+		return err
+	}
+
+	if len(targetSet) > 0 && targetSet[0] == '-' {
+		err = errutils.New(errutils.ErrInvalidInputArg, "-a")
 		log.Error(err)
 		return err
 	}
@@ -101,6 +116,7 @@ func setUpProject(cmd *cobra.Command, args []string) error {
 		FrozenPacks:     frozenPacks,
 		UseCbuild2CMake: useCbuild2CMake,
 		NoDatabase:      noDatabase,
+		TargetSet:       targetSet,
 	}
 
 	configs, err := utils.GetInstallConfigs()
@@ -201,6 +217,7 @@ func init() {
 	SetUpCmd.Flags().StringP("toolchain", "", "", "Input toolchain to be used")
 	SetUpCmd.Flags().BoolP("cbuildgen", "", false, "Generate legacy *.cprj files and use cbuildgen backend")
 	SetUpCmd.Flags().BoolP("no-database", "", false, "Skip the generation of compile_commands.json files")
+	SetUpCmd.Flags().StringP("active", "a", "", "Select active target-set: <target-type>[@<set>]")
 
 	SetUpCmd.Flags().StringP("perf-report", "", "perf-report.json", "output performance report file")
 	_ = SetUpCmd.Flags().MarkHidden("perf-report")

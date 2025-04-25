@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Arm Limited. All rights reserved.
+ * Copyright (c) 2023-2025 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -71,6 +71,9 @@ func (b CSolutionBuilder) formulateArgs(command []string) (args []string) {
 	}
 	if b.Options.Quiet {
 		args = append(args, "--quiet")
+	}
+	if b.Options.TargetSet != "" {
+		args = append(args, "--active="+b.Options.TargetSet)
 	}
 	return
 }
