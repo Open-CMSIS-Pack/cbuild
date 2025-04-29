@@ -844,3 +844,22 @@ func (b *CSolutionBuilder) getContextsToClean() (contexts []string, err error) {
 	// Default to using all available contexts
 	return allContexts, nil
 }
+
+func (b CSolutionBuilder) ListTargetSets() error {
+	_, err := b.listTargetSets(false)
+	return err
+}
+
+func (b CSolutionBuilder) listTargetSets(quiet bool) (targetSets []string, err error) {
+	args := b.formulateArgs([]string{"list", "target-sets"})
+
+	output, err := b.runCSolution(args, quiet)
+	if err != nil {
+		return
+	}
+
+	if output != "" {
+		targetSets = strings.Split(strings.ReplaceAll(strings.TrimSpace(output), "\r\n", "\n"), "\n")
+	}
+	return targetSets, nil
+}

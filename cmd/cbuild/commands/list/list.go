@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Arm Limited. All rights reserved.
+ * Copyright (c) 2023-2025 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -24,6 +24,7 @@ func init() {
 		command.Parent().HelpFunc()(command, strings)
 	})
 	ListContextsCmd.SetHelpFunc(func(command *cobra.Command, strings []string) {
+		_ = command.Flags().MarkHidden("schema")
 		_ = command.Flags().MarkHidden("toolchain")
 		command.Parent().HelpFunc()(command, strings)
 	})
@@ -32,5 +33,10 @@ func init() {
 		_ = command.Flags().MarkHidden("toolchain")
 		command.Parent().HelpFunc()(command, strings)
 	})
-	ListCmd.AddCommand(ListContextsCmd, ListToolchainsCmd, ListEnvironmentCmd)
+	ListTargetSetsCmd.SetHelpFunc(func(command *cobra.Command, strings []string) {
+		_ = command.Flags().MarkHidden("schema")
+		_ = command.Flags().MarkHidden("toolchain")
+		command.Parent().HelpFunc()(command, strings)
+	})
+	ListCmd.AddCommand(ListContextsCmd, ListToolchainsCmd, ListEnvironmentCmd, ListTargetSetsCmd)
 }
