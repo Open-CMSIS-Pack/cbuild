@@ -814,15 +814,33 @@ func (b *CSolutionBuilder) getContextsToClean() (contexts []string, err error) {
 	builder.Options.SchemaChk = false
 	allContexts, err := builder.listContexts(true, true)
 	if err != nil {
-		return nil, err
+		return []string{}, err
 	}
 
-	// Determine contexts based on options
-	if len(b.Options.Contexts) > 0 && !b.Options.UseContextSet {
-		// Resolve specific contexts from the provided options
-		contexts, err = utils.ResolveContexts(allContexts, b.Options.Contexts)
+	hasContextOption := (len(b.Options.Contexts) > 0 && !b.Options.UseContextSet)
+	hasTargetSetOption := (b.Options.TargetSet != "")
+
+	if hasTargetSetOption && (len(b.Options.Contexts) > 0 || b.Options.UseContextSet) {
+		err := errutils.New(errutils.ErrInvalidTargetSetUsage)
+		return []string{}, err
+	}
+
+	if hasContextOption || hasTargetSetOption {
+		var contextInputs []string
+
+		if hasTargetSetOption {
+			// Use the first part before "@" from the target set
+			targetParts := strings.Split(b.Options.TargetSet, "@")
+			contextInputs = []string{"+" + targetParts[0]}
+		} else if hasContextOption {
+			// Use the explicitly provided contexts
+			contextInputs = b.Options.Contexts
+		}
+
+		// Resolve contexts if inputs are available
+		contexts, err = utils.ResolveContexts(allContexts, contextInputs)
 		if err != nil {
-			return nil, err
+			return []string{}, err
 		}
 		return contexts, nil
 	}
@@ -831,12 +849,12 @@ func (b *CSolutionBuilder) getContextsToClean() (contexts []string, err error) {
 	if b.Options.UseContextSet {
 		filePath := b.getCbuildSetFilePath()
 		if exists, err := utils.FileExists(filePath); err != nil || !exists {
-			return nil, err
+			return []string{}, err
 		}
 
 		contexts, err = b.getSelectedContexts(filePath)
 		if err != nil {
-			return nil, err
+			return []string{}, err
 		}
 		return contexts, nil
 	}
