@@ -641,3 +641,58 @@ func TestNeedRebuild(t *testing.T) {
 		_ = os.RemoveAll(tmpDir)
 	})
 }
+
+func TestGetContextsToClean(t *testing.T) {
+	assert := assert.New(t)
+	b := CSolutionBuilder{
+		BuilderParams: builder.BuilderParams{
+			Runner:    RunnerMock{},
+			InputFile: filepath.Join(testRoot, testDir, "TestSolution/test.csolution.yml"),
+			InstallConfigs: utils.Configurations{
+				BinPath: configs.BinPath,
+				BinExtn: configs.BinExtn,
+				EtcPath: configs.EtcPath,
+			},
+		},
+	}
+
+	t.Run("test get contexts to clean from -c", func(t *testing.T) {
+		b.Options.Contexts = []string{"test.Release+CM0"}
+
+		contexts, err := b.getContextsToClean()
+		assert.Nil(err)
+		assert.Equal(1, len(contexts))
+		assert.Equal("test.Release+CM0", contexts[0])
+	})
+
+	t.Run("test get contexts to clean from -a", func(t *testing.T) {
+		b.InputFile = filepath.Join(testRoot, testDir, "TestSolution/test.csolution.yml")
+		b.Options.Contexts = []string{}
+		b.Options.TargetSet = "CM0@Custom3"
+
+		contexts, err := b.getContextsToClean()
+		assert.Nil(err)
+		assert.Equal(2, len(contexts))
+		assert.Equal("test.Debug+CM0", contexts[0])
+		assert.Equal("test.Release+CM0", contexts[1])
+	})
+
+	t.Run("test get contexts to clean with invalid options -c and -a", func(t *testing.T) {
+		b.Options.Contexts = []string{"test.Release+CM0"}
+		b.Options.TargetSet = "CM0"
+
+		contexts, err := b.getContextsToClean()
+		assert.Error(err)
+		assert.Equal(0, len(contexts))
+	})
+
+	t.Run("test get contexts to clean with invalid options -a and -S", func(t *testing.T) {
+		b.Options.Contexts = []string{""}
+		b.Options.TargetSet = "CM3"
+		b.Options.UseContextSet = true
+
+		contexts, err := b.getContextsToClean()
+		assert.Error(err)
+		assert.Equal(0, len(contexts))
+	})
+}
