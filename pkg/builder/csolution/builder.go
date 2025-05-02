@@ -817,6 +817,20 @@ func (b *CSolutionBuilder) getContextsToClean() (contexts []string, err error) {
 		return []string{}, err
 	}
 
+	// Handle context selection from a cbuild set file
+	if b.Options.UseContextSet {
+		filePath := b.getCbuildSetFilePath()
+		if exists, err := utils.FileExists(filePath); err != nil || !exists {
+			return []string{}, err
+		}
+
+		contexts, err = b.getSelectedContexts(filePath)
+		if err != nil {
+			return []string{}, err
+		}
+		return contexts, nil
+	}
+
 	hasContextOption := (len(b.Options.Contexts) > 0 && !b.Options.UseContextSet)
 	hasTargetSetOption := (b.Options.TargetSet != "")
 
@@ -839,20 +853,6 @@ func (b *CSolutionBuilder) getContextsToClean() (contexts []string, err error) {
 
 		// Resolve contexts if inputs are available
 		contexts, err = utils.ResolveContexts(allContexts, contextInputs)
-		if err != nil {
-			return []string{}, err
-		}
-		return contexts, nil
-	}
-
-	// Handle context selection from a cbuild set file
-	if b.Options.UseContextSet {
-		filePath := b.getCbuildSetFilePath()
-		if exists, err := utils.FileExists(filePath); err != nil || !exists {
-			return []string{}, err
-		}
-
-		contexts, err = b.getSelectedContexts(filePath)
 		if err != nil {
 			return []string{}, err
 		}
