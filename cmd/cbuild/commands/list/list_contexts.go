@@ -66,7 +66,7 @@ func listContexts(cmd *cobra.Command, args []string) error {
 
 var ListContextsCmd = &cobra.Command{
 	Use:   "contexts <name>.csolution.yml [options]",
-	Short: "Print list of contexts in a csolution.yml",
+	Short: "Print list of contexts in a <name>.csolution.yml",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		err := listContexts(cmd, args)
 		if err != nil {

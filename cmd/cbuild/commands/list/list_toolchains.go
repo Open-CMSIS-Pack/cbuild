@@ -66,7 +66,7 @@ func listToolchains(cmd *cobra.Command, args []string) error {
 
 var ListToolchainsCmd = &cobra.Command{
 	Use:   "toolchains [<name>.csolution.yml] [options]",
-	Short: "Print list of installed toolchains",
+	Short: "Print list of installed/supported toolchains",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		err := listToolchains(cmd, args)
 		if err != nil {
