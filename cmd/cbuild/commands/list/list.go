@@ -11,7 +11,7 @@ import (
 
 var ListCmd = &cobra.Command{
 	Use:   "list <command> [<name>.csolution.yml] [options]",
-	Short: "List information about environment, toolchains, and contexts",
+	Short: "List information about contexts, environment, target-sets and toolchains",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return cmd.Help()
 	},
