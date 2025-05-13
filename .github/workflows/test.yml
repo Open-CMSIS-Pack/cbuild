@@ -192,8 +192,8 @@ jobs:
           if-no-files-found: error
 
   publish-test-results:
-    if: ${{ github.workflow != 'Release' }}
-    name: "Publish Tests Results"
+    if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' && github.workflow != 'Release' }}
+    name: "Publish Test Results"
     needs: [ test ]
     runs-on: ubuntu-latest
     permissions:
@@ -217,7 +217,7 @@ jobs:
           report_individual_runs: true
 
   coverage:
-    if: ${{ github.workflow != 'Release' && github.repository == 'Open-CMSIS-Pack/cbuild' }}
+    if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' && github.workflow != 'Release' && github.repository == 'Open-CMSIS-Pack/cbuild' }}
     needs: [ test ]
     name: 'Coverage check'
     runs-on: ubuntu-latest
