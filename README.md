@@ -4,8 +4,8 @@
 [![TPIP Check](https://github.com/Open-CMSIS-Pack/cbuild/actions/workflows/tpip-check.yml/badge.svg)](https://github.com/Open-CMSIS-Pack/cbuild/actions/workflows/tpip-check.yml)
 [![Markdown](https://github.com/Open-CMSIS-Pack/cbuild/actions/workflows/markdown.yml/badge.svg)](https://github.com/Open-CMSIS-Pack/cbuild/actions/workflows/markdown.yml)
 
-[![Maintainability](https://api.codeclimate.com/v1/badges/53904fe8cbd887f3d5b0/maintainability)](https://codeclimate.com/github/Open-CMSIS-Pack/cbuild/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/53904fe8cbd887f3d5b0/test_coverage)](https://codeclimate.com/github/Open-CMSIS-Pack/cbuild/test_coverage)
+[![Maintainability](https://qlty.sh/badges/43ca18c2-f484-4e06-b43c-e9fdad9fb85b/maintainability.svg)](https://qlty.sh/gh/Open-CMSIS-Pack/projects/cbuild)
+[![Test Coverage](https://qlty.sh/badges/43ca18c2-f484-4e06-b43c-e9fdad9fb85b/test_coverage.svg)](https://qlty.sh/gh/Open-CMSIS-Pack/projects/cbuild)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/Open-CMSIS-Pack/cbuild/badge)](https://securityscorecards.dev/viewer/?uri=github.com/Open-CMSIS-Pack/cbuild)
 
 # cbuild: Open-CMSIS-Pack Build Invocation Utility
