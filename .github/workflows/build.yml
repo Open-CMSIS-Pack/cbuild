@@ -48,7 +48,7 @@ jobs:
           GOOS=darwin GOARCH=amd64 go build -o build/mac-amd64/cbuild ./cmd/cbuild
           GOOS=darwin GOARCH=arm64 go build -o build/mac-arm64/cbuild ./cmd/cbuild
           GOOS=linux GOARCH=amd64 go build -o build/lin-amd64/cbuild ./cmd/cbuild
-          GOOS=linux GOARCH=arm64 go build -o build/lin-arm64/cbuild ./cmd/cbuild        
+          GOOS=linux GOARCH=arm64 go build -o build/lin-arm64/cbuild ./cmd/cbuild
 
       - name: Archive windows amd64 binaries
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
