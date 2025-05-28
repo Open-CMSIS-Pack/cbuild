@@ -47,7 +47,7 @@ jobs:
         with:
           languages: go
           queries: security-and-quality
-          
+
       - name: Build executables
         run: |
           go build ./cmd/cbuild

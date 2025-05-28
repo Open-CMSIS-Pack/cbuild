@@ -13,7 +13,7 @@ project:
     - group: Sources
       misc:
         - compiler: GCC
-      files: 
+      files:
         - file: main.c
           misc:
             - compiler: GCC
