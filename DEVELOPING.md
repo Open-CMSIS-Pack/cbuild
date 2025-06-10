@@ -1,12 +1,12 @@
 # Developing cbuild
 
-Follow steps below to start developing for `cbuild`:
+Follow the steps below to start developing for `cbuild`:
 
 1. Requirements:
 
 - [Install Make](https://www.gnu.org/software/make/)
 - [Install Golang](https://golang.org/doc/install)
-- [Install GolangCI-Lint](https://golangci-lint.run/usage/install/#local-installation)
+- [Install GolangCI-Lint](https://golangci-lint.run/welcome/install/#local-installation)
 
 2. Clone the repo:
 `$ git clone https://github.com/Open-CMSIS-Pack/cbuild.git`
@@ -23,12 +23,12 @@ Follow steps below to start developing for `cbuild`:
 6. Make sure it builds
 `make build/cbuild`
 
-7. Done! You can now start changing the source code, please refer to [contributing guide](CONTRIBUTING.md)
- to start contributing to the project
+7. Done! You can now start modifying the source code. Please refer to [contributing guide](CONTRIBUTING.md)
+for guidelines.
 
 # Releasing
 
-If you have rights to push to the `main` branch of this repo, you might be entitled to
+If you have the right to push to the `main` branch of this repo, you might be entitled to
 make releases. Do that by running:
 `make release`
 
