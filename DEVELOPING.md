@@ -4,7 +4,7 @@ Follow the steps below to start developing for `cbuild`:
 
 1. Requirements:
 
-- [Install Make](https://www.gnu.org/software/make/)
+- [Install Make](https://www.gnu.org/software/make)
 - [Install Golang](https://golang.org/doc/install)
 - [Install GolangCI-Lint](https://golangci-lint.run/welcome/install/#local-installation)
 
