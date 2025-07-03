@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 Arm Limited. All rights reserved.
+ * Copyright (c) 2022-2025 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -484,7 +484,7 @@ func TestDeleteAll(t *testing.T) {
 		}
 
 		// Call the DeleteAll function
-		err := DeleteAll(delDir)
+		err := DeleteAll(delDir, "")
 		if err != nil {
 			t.Fatalf("Unexpected error: %v", err)
 		}
@@ -498,7 +498,7 @@ func TestDeleteAll(t *testing.T) {
 	t.Run("Delete NonExistent Directory", func(t *testing.T) {
 		// Test deleting a non-existent directory
 		nonExistentDir := filepath.Join(testDir, "non_existent_dir")
-		err := DeleteAll(nonExistentDir)
+		err := DeleteAll(nonExistentDir, "")
 
 		// Verify no error
 		assert.Error(t, err)
@@ -515,7 +515,7 @@ func TestDeleteAll(t *testing.T) {
 		}
 
 		// Call the DeleteAll function
-		err := DeleteAll(emptyDir)
+		err := DeleteAll(emptyDir, "")
 		if err != nil {
 			t.Fatalf("Unexpected error: %v", err)
 		}
@@ -537,11 +537,88 @@ func TestDeleteAll(t *testing.T) {
 		}
 
 		// Call the DeleteAll function
-		err := DeleteAll(testFile)
+		err := DeleteAll(testFile, "")
 		assert.NoError(t, err)
 
 		// Clean up
 		os.Remove(testFile)
+	})
+
+	t.Run("exclude pattern for a file", func(t *testing.T) {
+		delDir := filepath.Join(testDir, "test_dir_exclude_pattern")
+		_ = os.MkdirAll(delDir, 0755)
+		filePath := filepath.Join(delDir, "keep.log")
+		_ = os.WriteFile(filePath, []byte("test content 1"), 0600)
+		filePath = filepath.Join(delDir, "delete.txt")
+		_ = os.WriteFile(filePath, []byte("test content 2"), 0600)
+
+		err := DeleteAll(delDir, "*.log")
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+
+		if _, err := os.Stat(filepath.Join(delDir, "keep.log")); os.IsNotExist(err) {
+			t.Error("excluded file was deleted")
+		}
+		if _, err := os.Stat(filepath.Join(delDir, "delete.txt")); !os.IsNotExist(err) {
+			t.Error("non-excluded file was not deleted")
+		}
+	})
+
+	t.Run("non-existent root path", func(t *testing.T) {
+		err := DeleteAll("/non/existent/path", "")
+		if err == nil {
+			t.Error("expected error for non-existent path, got nil")
+		}
+	})
+
+	t.Run("exclude pattern does not match anything", func(t *testing.T) {
+		delDir := filepath.Join(testDir, "test_dir_pattern_not_matching")
+		_ = os.MkdirAll(delDir, 0755)
+		filePath := filepath.Join(delDir, "keep.log")
+		_ = os.WriteFile(filePath, []byte("test content 1"), 0600)
+		filePath = filepath.Join(delDir, "delete.txt")
+		_ = os.WriteFile(filePath, []byte("test content 2"), 0600)
+
+		err := DeleteAll(delDir, "nonmatch/**")
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+
+		entries, _ := os.ReadDir(delDir)
+		if len(entries) != 0 {
+			t.Error("expected all files deleted")
+		}
+	})
+
+	t.Run("exclude nested directory", func(t *testing.T) {
+		delDir := filepath.Join(testDir, "test_dir_exclude_nested_directories")
+		logDir := filepath.Join(delDir, "logs")
+		_ = os.MkdirAll(logDir, 0755)
+		dataDir := filepath.Join(delDir, "data")
+		_ = os.MkdirAll(dataDir, 0755)
+
+		logFile1 := filepath.Join(logDir, "log1.txt")
+		_ = os.WriteFile(logFile1, []byte("log1 text"), 0600)
+		logFile2 := filepath.Join(logDir, "log2.debug")
+		_ = os.WriteFile(logFile2, []byte("log2 debug"), 0600)
+		filePath := filepath.Join(dataDir, "file.info")
+		_ = os.WriteFile(filePath, []byte("data"), 0600)
+
+		err := DeleteAll(delDir, "*.debug")
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+
+		if _, err := os.Stat(filepath.Join(delDir, "logs/log2.debug")); os.IsNotExist(err) {
+			t.Error("excluded nested file was deleted")
+		}
+		if _, err := os.Stat(filepath.Join(delDir, "logs/log1.txt")); !os.IsNotExist(err) {
+			t.Error("excluded nested file was not deleted")
+		}
+		if _, err := os.Stat(filepath.Join(delDir, "data/file.info")); !os.IsNotExist(err) {
+			t.Error("non-excluded file was not deleted")
+		}
 	})
 }
 
