@@ -15,6 +15,3 @@ updates:
     directory: "/"
     schedule:
       interval: daily
-    reviewers:
-      - "soumeh01"
-      - "brondani"
