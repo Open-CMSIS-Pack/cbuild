@@ -770,7 +770,7 @@ func (b CSolutionBuilder) Clean() (err error) {
 	}
 
 	// Clean tmp dir
-	if err := utils.DeleteAll(tmpDir); err != nil {
+	if err := utils.DeleteAll(tmpDir, ""); err != nil {
 		if !b.Options.Clean {
 			log.Warn(err.Error())
 		}
@@ -793,7 +793,7 @@ func (b CSolutionBuilder) Clean() (err error) {
 			if err != nil {
 				log.Error("error cleaning '" + context + "'")
 			}
-			if err = utils.DeleteAll(outDir); err != nil {
+			if err = utils.DeleteAll(outDir, "*.cbuild.yml"); err != nil {
 				if !b.Options.Clean {
 					log.Warn(err.Error())
 				}
