@@ -563,7 +563,7 @@ func DeleteAll(path, excludeFilePattern string) error {
 
 	// Collect all directories
 	var dirs []string
-	filepath.Walk(path, func(p string, info os.FileInfo, err error) error {
+	_ = filepath.Walk(path, func(p string, info os.FileInfo, err error) error {
 		if err == nil && info.IsDir() {
 			dirs = append(dirs, p)
 		}

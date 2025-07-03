@@ -468,17 +468,6 @@ func TestGetOutDir(t *testing.T) {
 	})
 }
 
-func createFile(t *testing.T, baseDir, relPath string) {
-	t.Helper()
-	fullPath := filepath.Join(baseDir, relPath)
-	if err := os.MkdirAll(filepath.Dir(fullPath), 0755); err != nil {
-		t.Fatalf("failed to create dirs: %v", err)
-	}
-	if _, err := os.Create(fullPath); err != nil {
-		t.Fatalf("failed to create file: %v", err)
-	}
-}
-
 func TestDeleteAll(t *testing.T) {
 	testDir := filepath.Join(testRoot, testDir)
 	t.Run("Delete Existing Directory", func(t *testing.T) {
