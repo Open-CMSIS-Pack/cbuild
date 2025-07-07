@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Arm Limited. All rights reserved.
+ * Copyright (c) 2024-2025 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -307,17 +307,40 @@ func TestValidateNinjaVersion(t *testing.T) {
 	})
 }
 
-func TestHasExecutes(t *testing.T) {
+func TestImageOnly(t *testing.T) {
 	assert := assert.New(t)
+	configs := inittest.GetTestConfigs(testRoot, testDir)
 
 	b := CbuildIdxBuilder{
 		builder.BuilderParams{
 			Runner:    RunnerMock{},
-			InputFile: filepath.Join(testRoot, testDir, "Test.cbuild-idx.yml"),
+			InputFile: filepath.Join(testRoot, testDir, "image-only.cbuild-idx.yml"),
+			Options: builder.Options{
+				Contexts: []string{"+AVH"},
+				OutDir:   filepath.Join(testRoot, testDir, "OutDir"),
+			},
+			InstallConfigs: utils.Configurations{
+				BinPath: configs.BinPath,
+				BinExtn: configs.BinExtn,
+				EtcPath: configs.EtcPath,
+			},
 		},
 	}
 
-	t.Run("validate solution has executes nodes", func(t *testing.T) {
-		assert.True(b.HasExecutes())
+	t.Run("validate solution has image-only and executes nodes", func(t *testing.T) {
+		imageOnly, executes := b.HasImageOnlyAndExecutes()
+		assert.True(imageOnly)
+		assert.True(executes)
+	})
+
+	t.Run("test build image-only", func(t *testing.T) {
+		err := b.Build()
+		assert.Nil(err)
+	})
+
+	t.Run("test setup image-only", func(t *testing.T) {
+		b.Setup = true
+		err := b.Build()
+		assert.Nil(err)
 	})
 }
