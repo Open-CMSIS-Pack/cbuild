@@ -186,8 +186,9 @@ type CbuildIndex struct {
 				Info     []string `yaml:"info"`
 			} `yaml:"messages"`
 		} `yaml:"cbuilds"`
-		Executes []interface{} `yaml:"executes"`
-		Rebuild  bool          `yaml:"rebuild"`
+		Executes  []interface{} `yaml:"executes"`
+		Rebuild   bool          `yaml:"rebuild"`
+		ImageOnly bool          `yaml:"image-only"`
 	} `yaml:"build-idx"`
 }
 
