@@ -22,7 +22,7 @@ It is part of the CMSIS Toolbox, designed to streamline development workflows fo
 ## Documentation
 
 For detailed usage instructions, options, and examples, please refer to the comprehensive documentation
-available in the [CMSIS Toolbox repository](https://github.com/Open-CMSIS-Pack/cmsis-toolbox).
+available in the [CMSIS Toolbox repository](https://TEST_github.com/Open-CMSIS-Pack/cmsis-toolbox).
 
 ### Key Documentation Section
 
