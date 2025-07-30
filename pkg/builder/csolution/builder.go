@@ -72,7 +72,7 @@ func (b CSolutionBuilder) formulateArgs(command []string) (args []string) {
 	if b.Options.Quiet {
 		args = append(args, "--quiet")
 	}
-	if b.Options.TargetSet != "" {
+	if b.Options.UseTargetSet {
 		args = append(args, "--active="+b.Options.TargetSet)
 	}
 	return

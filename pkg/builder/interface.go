@@ -49,6 +49,7 @@ type Options struct {
 	Rebuild         bool
 	UpdateRte       bool
 	UseContextSet   bool
+	UseTargetSet    bool
 	FrozenPacks     bool
 	UseCbuild2CMake bool
 	NoDatabase      bool
