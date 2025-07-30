@@ -142,12 +142,13 @@ func NewRootCmd() *cobra.Command {
 			frozenPacks, _ := cmd.Flags().GetBool("frozen-packs")
 			useCbuildgen, _ := cmd.Flags().GetBool("cbuildgen")
 			targetSet, _ := cmd.Flags().GetString("active")
+			useTargetSet := cmd.Flags().Changed("active")
 
 			// set cbuild2cmake as default tool
 			useCbuild2CMake := !useCbuildgen
 
 			// -a option is not compatible with -c or -S
-			if targetSet != "" && (len(contexts) > 0 || useContextSet) {
+			if useTargetSet && (len(contexts) > 0 || useContextSet) {
 				err := errutils.New(errutils.ErrInvalidTargetSetUsage)
 				log.Error(err)
 				return err
@@ -183,6 +184,7 @@ func NewRootCmd() *cobra.Command {
 				FrozenPacks:     frozenPacks,
 				UseCbuild2CMake: useCbuild2CMake,
 				TargetSet:       targetSet,
+				UseTargetSet:    useTargetSet,
 			}
 
 			configs, err := utils.GetInstallConfigs()
