@@ -474,11 +474,22 @@ func TestFormulateArg(t *testing.T) {
 
 	t.Run("test --active arg", func(t *testing.T) {
 		b.Options = builder.Options{
-			TargetSet: "test",
+			TargetSet:    "test",
+			UseTargetSet: true,
 		}
 		args := b.formulateArgs([]string{"convert"})
 		strArg := utils.NormalizePath(strings.Join(args, " "))
 		assert.Equal("convert --solution=../../../test/"+testDir+"/Test.csolution.yml --no-check-schema --no-update-rte --active=test", strArg)
+	})
+
+	t.Run("test --active <empty arg>", func(t *testing.T) {
+		b.Options = builder.Options{
+			TargetSet:    "",
+			UseTargetSet: true,
+		}
+		args := b.formulateArgs([]string{"convert"})
+		strArg := utils.NormalizePath(strings.Join(args, " "))
+		assert.Equal("convert --solution=../../../test/"+testDir+"/Test.csolution.yml --no-check-schema --no-update-rte --active=", strArg)
 	})
 }
 

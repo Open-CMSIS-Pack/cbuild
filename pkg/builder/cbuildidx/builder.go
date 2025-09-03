@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Arm Limited. All rights reserved.
+ * Copyright (c) 2024-2025 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -27,9 +27,9 @@ type CbuildIdxBuilder struct {
 	builder.BuilderParams
 }
 
-func (b CbuildIdxBuilder) HasExecutes() bool {
+func (b CbuildIdxBuilder) HasImageOnlyAndExecutes() (bool, bool) {
 	data, _ := utils.ParseCbuildIndexFile(b.InputFile)
-	return len(data.BuildIdx.Executes) > 0
+	return data.BuildIdx.ImageOnly, len(data.BuildIdx.Executes) > 0
 }
 
 func (b CbuildIdxBuilder) getDirs(context string) (dirs builder.BuildDirs, err error) {
@@ -119,6 +119,13 @@ func (b CbuildIdxBuilder) build() error {
 		return err
 	}
 
+	// get image-only and executes presence
+	b.ImageOnly, b.Executes = b.HasImageOnlyAndExecutes()
+	if b.ImageOnly && !b.Executes {
+		log.Info("image-only finished successfully!")
+		return nil
+	}
+
 	// no CMake orchestration needed
 	if b.Options.NoDatabase {
 		log.Info("setup finished successfully!")
@@ -174,6 +181,12 @@ func (b CbuildIdxBuilder) build() error {
 		return err
 	}
 
+	// image-only 'executes' setup stops here
+	if b.Setup && b.ImageOnly {
+		log.Info("image-only setup finished successfully!")
+		return nil
+	}
+
 	// CMake build target(s) command
 	args = []string{"--build", dirs.IntDir, "-j", fmt.Sprintf("%d", b.Options.Jobs)}
 
@@ -183,6 +196,8 @@ func (b CbuildIdxBuilder) build() error {
 		args = append(args, "--target", buildTarget)
 	} else if b.Setup {
 		args = append(args, "--target", strings.ReplaceAll(b.BuildContext, " ", "_")+"-database")
+	} else if b.ImageOnly {
+		args = append(args, "--target all")
 	} else if b.BuildContext != "" {
 		buildTarget = strings.ReplaceAll(b.BuildContext, " ", "_")
 		args = append(args, "--target", buildTarget)
@@ -202,7 +217,7 @@ func (b CbuildIdxBuilder) build() error {
 		}
 	}
 
-	if !b.Setup {
+	if !b.Setup && !b.ImageOnly {
 		// Get selected toolchain info from context specific toolchain.cmake
 		toolchainFilePath := filepath.Join(dirs.IntDir, buildTarget, "toolchain.cmake")
 		usedToolchainInfo := utils.ParseAndFetchToolchainInfo(toolchainFilePath)
@@ -220,6 +235,11 @@ func (b CbuildIdxBuilder) build() error {
 	_, err = b.Runner.ExecuteCommand(vars.CmakeBin, false, args...)
 	if err != nil {
 		return err
+	}
+
+	if b.ImageOnly {
+		log.Info("image-only executes finished successfully!")
+		return nil
 	}
 
 	log.Info("build finished successfully!")

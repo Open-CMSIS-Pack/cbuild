@@ -22,6 +22,8 @@ type BuilderParams struct {
 	InstallConfigs utils.Configurations
 	Setup          bool
 	BuildContext   string
+	ImageOnly      bool
+	Executes       bool
 }
 
 type Options struct {
@@ -47,6 +49,7 @@ type Options struct {
 	Rebuild         bool
 	UpdateRte       bool
 	UseContextSet   bool
+	UseTargetSet    bool
 	FrozenPacks     bool
 	UseCbuild2CMake bool
 	NoDatabase      bool

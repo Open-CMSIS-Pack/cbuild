@@ -32,6 +32,17 @@ func TestSetupCommand(t *testing.T) {
 		assert.Contains(err.Error(), "couldn't locate '../etc' directory relative to")
 	})
 
+	t.Run("test valid command with -a <empty arg>", func(t *testing.T) {
+		cmd := commands.NewRootCmd()
+		cmd.SetArgs([]string{"setup", csolutionFile, "--active", ""})
+
+		err := cmd.Execute()
+
+		// Though the command is valid, It fails for other reasons
+		assert.Error(err)
+		assert.Contains(err.Error(), "couldn't locate '../etc' directory relative to")
+	})
+
 	t.Run("test invalid arguments to -a option", func(t *testing.T) {
 		cmd := commands.NewRootCmd()
 		args := []string{"setup", csolutionFile, "-a", "-d"}

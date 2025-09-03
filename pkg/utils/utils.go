@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 Arm Limited. All rights reserved.
+ * Copyright (c) 2022-2025 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"sort"
 	"strings"
 	"time"
 
@@ -185,8 +186,9 @@ type CbuildIndex struct {
 				Info     []string `yaml:"info"`
 			} `yaml:"messages"`
 		} `yaml:"cbuilds"`
-		Executes []interface{} `yaml:"executes"`
-		Rebuild  bool          `yaml:"rebuild"`
+		Executes  []interface{} `yaml:"executes"`
+		Rebuild   bool          `yaml:"rebuild"`
+		ImageOnly bool          `yaml:"image-only"`
 	} `yaml:"build-idx"`
 }
 
@@ -507,16 +509,91 @@ func GetOutDir(cbuildIdxFile string, context string) (string, error) {
 	return outDir, nil
 }
 
-func DeleteAll(path string) error {
-	// Check if the path exists
+// DeleteAll removes everything under path except files whose base name
+// matches the provided glob pattern. If pattern is empty, it just calls os.RemoveAll.
+func DeleteAll(path, excludeFilePattern string) error {
+	// check path exists
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return errutils.New(errutils.ErrPathNotExist, path)
 	}
 
-	err := os.RemoveAll(path)
-	if err != nil {
-		return errutils.New(errutils.ErrDeleteFailed, path)
+	// if no pattern given, just delete
+	if excludeFilePattern == "" {
+		if err := os.RemoveAll(path); err != nil {
+			return errutils.New(errutils.ErrDeleteFailed, path)
+		}
+		return nil
 	}
+
+	// Walk the tree and delete all non-matching files
+	var walkErr error
+	err := filepath.Walk(path, func(p string, info os.FileInfo, err error) error {
+		if err != nil {
+			// problem accessing p
+			return err
+		}
+		// skip root itself
+		if p == path {
+			return nil
+		}
+		// if this is a file…
+		if !info.IsDir() {
+			// see if base name matches the glob
+			match, merr := filepath.Match(excludeFilePattern, info.Name())
+			if merr != nil {
+				return merr
+			}
+			if match {
+				// do not delete matching file
+				return nil
+			}
+			// delete non-matching file
+			if derr := os.Remove(p); derr != nil {
+				// collect error but keep going
+				walkErr = derr
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return errutils.New(errutils.ErrDeleteFailed, err.Error())
+	}
+	if walkErr != nil {
+		return errutils.New(errutils.ErrDeleteFailed, walkErr.Error())
+	}
+
+	// Collect all directories
+	var dirs []string
+	_ = filepath.Walk(path, func(p string, info os.FileInfo, err error) error {
+		if err == nil && info.IsDir() {
+			dirs = append(dirs, p)
+		}
+		return nil
+	})
+
+	// Sort so deepest directories come first
+	sort.Slice(dirs, func(path1, path2 int) bool {
+		return len(dirs[path1]) > len(dirs[path2])
+	})
+
+	// Try removing each if it’s now empty
+	for _, dir := range dirs {
+		// skip the root; we won't remove path itself
+		if dir == path {
+			continue
+		}
+		// if directory is now empty, delete it
+		if entries, rerr := os.ReadDir(dir); rerr == nil && len(entries) == 0 {
+			if dirErr := os.Remove(dir); dirErr != nil {
+				// collect but don't abort
+				walkErr = dirErr
+			}
+		}
+	}
+	if walkErr != nil {
+		return errutils.New(errutils.ErrDeleteFailed, walkErr.Error())
+	}
+
 	return nil
 }
 
