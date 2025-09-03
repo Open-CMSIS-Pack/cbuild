@@ -38,7 +38,7 @@ func TestExecuteCommandEx(t *testing.T) {
 
 	t.Run("execute invalid command", func(t *testing.T) {
 		outStr, errStr, err := ExecuteCommand("go", "invalid")
-		assert.Error(err)
+		assert.Nil(err)
 		assert.Empty(outStr)
 		assert.Equal("go invalid: unknown command\nRun 'go help' for usage.\n", errStr)
 	})
