@@ -72,18 +72,19 @@ func setUpProject(cmd *cobra.Command, args []string) error {
 	useCbuildgen, _ := cmd.Flags().GetBool("cbuildgen")
 	noDatabase, _ := cmd.Flags().GetBool("no-database")
 	targetSet, _ := cmd.Flags().GetString("active")
+	useTargetSet := cmd.Flags().Changed("active")
 
 	useCbuild2CMake := !useCbuildgen
 
 	// Option '-a' and '-S' are mutually exclusive
-	if len(targetSet) > 0 && useContextSet {
+	if useTargetSet && useContextSet {
 		err = errutils.New(errutils.ErrInvalidSetUpArgs)
 		log.Error(err)
 		return err
 	}
 
 	// Either '-a' or '-S' must be used
-	if len(targetSet) == 0 && !useContextSet {
+	if !useTargetSet && !useContextSet {
 		err = errutils.New(errutils.ErrMissingRequiredArg)
 		log.Error(err)
 		return err
@@ -117,6 +118,7 @@ func setUpProject(cmd *cobra.Command, args []string) error {
 		UseCbuild2CMake: useCbuild2CMake,
 		NoDatabase:      noDatabase,
 		TargetSet:       targetSet,
+		UseTargetSet:    useTargetSet,
 	}
 
 	configs, err := utils.GetInstallConfigs()
