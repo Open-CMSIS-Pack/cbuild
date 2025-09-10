@@ -23,77 +23,80 @@ permissions: read-all
 
 jobs:
 
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
-        with:
-          egress-policy: audit
+  copyright-check:
+    uses: Open-CMSIS-Pack/workflows-and-actions-collection/.github/workflows/copyright.yml@copyright-check
 
-      - name: Check out repository code
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+  # build:
+  #   name: Build
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Harden Runner
+  #       uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+  #       with:
+  #         egress-policy: audit
 
-      - name: Install Go
-        uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
-        with:
-          go-version-file: go.mod
-          check-latest: true
+  #     - name: Check out repository code
+  #       uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
-      - name: Build executables
-        run: |
-          GOOS=windows GOARCH=amd64 go build -o build/win-amd64/cbuild.exe ./cmd/cbuild
-          GOOS=windows GOARCH=arm64 go build -o build/win-arm64/cbuild.exe ./cmd/cbuild
-          GOOS=darwin GOARCH=amd64 go build -o build/mac-amd64/cbuild ./cmd/cbuild
-          GOOS=darwin GOARCH=arm64 go build -o build/mac-arm64/cbuild ./cmd/cbuild
-          GOOS=linux GOARCH=amd64 go build -o build/lin-amd64/cbuild ./cmd/cbuild
-          GOOS=linux GOARCH=arm64 go build -o build/lin-arm64/cbuild ./cmd/cbuild
+  #     - name: Install Go
+  #       uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
+  #       with:
+  #         go-version-file: go.mod
+  #         check-latest: true
 
-      - name: Archive windows amd64 binaries
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: cbuild-windows-amd64
-          path: ./build/win-amd64/cbuild.exe
-          retention-days: 1
-          if-no-files-found: error
+  #     - name: Build executables
+  #       run: |
+  #         GOOS=windows GOARCH=amd64 go build -o build/win-amd64/cbuild.exe ./cmd/cbuild
+  #         GOOS=windows GOARCH=arm64 go build -o build/win-arm64/cbuild.exe ./cmd/cbuild
+  #         GOOS=darwin GOARCH=amd64 go build -o build/mac-amd64/cbuild ./cmd/cbuild
+  #         GOOS=darwin GOARCH=arm64 go build -o build/mac-arm64/cbuild ./cmd/cbuild
+  #         GOOS=linux GOARCH=amd64 go build -o build/lin-amd64/cbuild ./cmd/cbuild
+  #         GOOS=linux GOARCH=arm64 go build -o build/lin-arm64/cbuild ./cmd/cbuild
 
-      - name: Archive windows arm64 binaries
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: cbuild-windows-arm64
-          path: ./build/win-arm64/cbuild.exe
-          retention-days: 1
-          if-no-files-found: error
+  #     - name: Archive windows amd64 binaries
+  #       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+  #       with:
+  #         name: cbuild-windows-amd64
+  #         path: ./build/win-amd64/cbuild.exe
+  #         retention-days: 1
+  #         if-no-files-found: error
 
-      - name: Archive macos amd64 binaries
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: cbuild-mac-amd64
-          path: ./build/mac-amd64/cbuild
-          retention-days: 1
-          if-no-files-found: error
+  #     - name: Archive windows arm64 binaries
+  #       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+  #       with:
+  #         name: cbuild-windows-arm64
+  #         path: ./build/win-arm64/cbuild.exe
+  #         retention-days: 1
+  #         if-no-files-found: error
 
-      - name: Archive macos arm64 binaries
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: cbuild-mac-arm64
-          path: ./build/mac-arm64/cbuild
-          retention-days: 1
-          if-no-files-found: error
+  #     - name: Archive macos amd64 binaries
+  #       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+  #       with:
+  #         name: cbuild-mac-amd64
+  #         path: ./build/mac-amd64/cbuild
+  #         retention-days: 1
+  #         if-no-files-found: error
 
-      - name: Archive linux amd64 binaries
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: cbuild-lin-amd64
-          path: ./build/lin-amd64/cbuild
-          retention-days: 1
-          if-no-files-found: error
+  #     - name: Archive macos arm64 binaries
+  #       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+  #       with:
+  #         name: cbuild-mac-arm64
+  #         path: ./build/mac-arm64/cbuild
+  #         retention-days: 1
+  #         if-no-files-found: error
 
-      - name: Archive linux arm64 binaries
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: cbuild-lin-arm64
-          path: ./build/lin-arm64/cbuild
-          retention-days: 1
-          if-no-files-found: error
+  #     - name: Archive linux amd64 binaries
+  #       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+  #       with:
+  #         name: cbuild-lin-amd64
+  #         path: ./build/lin-amd64/cbuild
+  #         retention-days: 1
+  #         if-no-files-found: error
+
+  #     - name: Archive linux arm64 binaries
+  #       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+  #       with:
+  #         name: cbuild-lin-arm64
+  #         path: ./build/lin-arm64/cbuild
+  #         retention-days: 1
+  #         if-no-files-found: error
