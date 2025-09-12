@@ -1,0 +1,5 @@
+{
+    "clangd.arguments": [
+        "--compile-commands-dir=c:\\Sandbox\\forked\\cbuild\\test\\data\\TestSolution\\out\\test2\\CM0\\Debug"
+    ]
+}
