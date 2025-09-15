@@ -1,0 +1,13 @@
+name: Update vscode-workflows
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-workflows:
+    uses: Open-CMSIS-Pack/workflows-and-actions-collection/.github/workflows/update-workflows.yml@v1.0.0
+    secrets:
+      TOKEN_ACCESS: ${{ secrets.GITHUB_TOKEN }}
