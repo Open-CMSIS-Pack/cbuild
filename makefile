@@ -70,7 +70,7 @@ format-check:
 
 .PHONY: test release config
 test: $(SOURCES)
-	mkdir -p build && GOOS=$(OS) GOARCH=$(ARCH) go test $(ARGS) ./... -coverprofile build/cover.out
+	mkdir -p build && GOOS=$(OS) GOARCH=$(ARCH) go test $(ARGS) -v ./... -coverprofile build/cover.out
 
 test-all: format-check coverage-check lint
 
