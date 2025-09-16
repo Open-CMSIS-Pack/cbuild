@@ -72,16 +72,16 @@ format-check:
 
 .PHONY: test release config
 test: $(SOURCES)
-	mkdir -p build && GOOS=$(OS) GOARCH=$(ARCH) go test $(ARGS) -v ./... -coverprofile build/cover.out
+	GOOS=$(OS) GOARCH=$(ARCH) go test $(ARGS) -v ./... -coverprofile ./cover.out
 
 test-all: format-check coverage-check lint
 
 coverage-report: test
-	go tool cover -html=build/cover.out
+	go tool cover -html=./cover.out
 
 coverage-check: test
 	@echo Checking if test coverage is above 80%
-	test `go tool cover -func build/cover.out | tail -1 | awk '{print ($$3 + 0)*10}'` -gt 700
+	test `go tool cover -func ./cover.out | tail -1 | awk '{print ($$3 + 0)*10}'` -gt 700
 
 release: test-all $(PROG)
 	@./scripts/release
