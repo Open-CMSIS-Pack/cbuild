@@ -1,0 +1,7 @@
+build:
+  generated-by: cbuild tests
+  output-dirs:
+    outdir: ./OutDir
+  west:
+    project-id: west
+    app-path: ./west

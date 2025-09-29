@@ -178,6 +178,7 @@ type CbuildIndex struct {
 		Licenses interface{} `yaml:"licenses"`
 		Cbuilds  []struct {
 			Cbuild        string `yaml:"cbuild"`
+			West          bool   `yaml:"west"`
 			Project       string `yaml:"project"`
 			Configuration string `yaml:"configuration"`
 			Rebuild       bool   `yaml:"rebuild"`

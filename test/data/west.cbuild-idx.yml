@@ -1,0 +1,7 @@
+build-idx:
+  generated-by: cbuild tests
+  cbuilds:
+    - cbuild: west.Debug+CM0.cbuild.yml
+      west: true
+      project: west
+      configuration: .Debug+CM0
