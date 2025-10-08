@@ -237,6 +237,15 @@ func (b CbuildIdxBuilder) build() error {
 		return err
 	}
 
+	isWest, westInfo := b.GetWestBuildInfo()
+	if isWest {
+		// Add west files references to cbuild file
+		err = utils.AddWestFilesToCbuild(westInfo)
+		if err != nil {
+			return err
+		}
+	}
+
 	if b.ImageOnly {
 		log.Info("image-only executes finished successfully!")
 		return nil
@@ -310,4 +319,23 @@ func (b CbuildIdxBuilder) compareVersions(v1, v2 string) (int, error) {
 	}
 
 	return version1.Compare(version2), nil
+}
+
+func (b CbuildIdxBuilder) GetWestBuildInfo() (bool, utils.WestBuildInfo) {
+	var info utils.WestBuildInfo
+	basePath := filepath.Dir(b.InputFile)
+	cbuildIdxData, _ := utils.ParseCbuildIndexFile(b.InputFile)
+	for _, cbuild := range cbuildIdxData.BuildIdx.Cbuilds {
+		if b.BuildContext == cbuild.Project+cbuild.Configuration && cbuild.West {
+			info.Cbuild = filepath.Join(basePath, cbuild.Cbuild)
+			break
+		}
+	}
+	if info.Cbuild == "" {
+		return false, info
+	}
+	cbuildData, _ := utils.ParseCbuildFile(info.Cbuild)
+	info.OutDir = filepath.Join(filepath.Dir(info.Cbuild), cbuildData.Build.OutputDirs.Outdir)
+	info.CbuildData = cbuildData
+	return true, info
 }

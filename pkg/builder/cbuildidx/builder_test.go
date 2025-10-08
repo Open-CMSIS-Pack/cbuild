@@ -344,3 +344,43 @@ func TestImageOnly(t *testing.T) {
 		assert.Nil(err)
 	})
 }
+
+func TestWestSupport(t *testing.T) {
+	assert := assert.New(t)
+	configs := inittest.GetTestConfigs(testRoot, testDir)
+
+	b := CbuildIdxBuilder{
+		builder.BuilderParams{
+			Runner:    RunnerMock{},
+			InputFile: filepath.Join(testRoot, testDir, "west.cbuild-idx.yml"),
+			Options: builder.Options{
+				Contexts: []string{},
+				OutDir:   filepath.Join(testRoot, testDir, "OutDir"),
+			},
+			InstallConfigs: utils.Configurations{
+				BinPath: configs.BinPath,
+				BinExtn: configs.BinExtn,
+				EtcPath: configs.EtcPath,
+			},
+		},
+	}
+
+	t.Run("validate west build info", func(t *testing.T) {
+		b.BuildContext = "west.Debug+CM0"
+		isWest, westInfo := b.GetWestBuildInfo()
+		assert.True(isWest)
+		assert.Contains(westInfo.CbuildData.Build.OutputDirs.Outdir, "OutDir")
+		assert.Contains(westInfo.Cbuild, "west.Debug+CM0.cbuild.yml")
+	})
+
+	t.Run("test build west", func(t *testing.T) {
+		err := b.Build()
+		assert.Nil(err)
+	})
+
+	t.Run("test setup west", func(t *testing.T) {
+		b.Setup = true
+		err := b.Build()
+		assert.Nil(err)
+	})
+}
