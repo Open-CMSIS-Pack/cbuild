@@ -25,8 +25,6 @@ jobs:
     timeout-minutes: 5
     permissions:
       checks: write
-      pull-requests: write
-      actions: write
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
@@ -66,12 +64,10 @@ jobs:
         working-directory: ./cmd/cbuild
 
   commit-changes:
-    # Running this job only on specific event
-    # in order to have workaround for issue
-    # related to deletion of GH checks/status data
     permissions:
-      contents: write  # for peter-evans/create-pull-request to create branch
-      pull-requests: write  # for peter-evans/create-pull-request to create a PR
+      # Minimal permissions with PAT
+      contents: read
+      pull-requests: read
     if: (github.event_name == 'schedule') || (github.event_name == 'workflow_dispatch')
     needs: [ check-licenses ]
     runs-on: ubuntu-latest
@@ -95,11 +91,15 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
         with:
+          token: ${{ secrets.GRASCI_WORKFLOW_UPDATE  }}
           commit-message: Update TPIP report
           title: ':robot: [TPIP] Automated report updates'
           body: |
-            Third party IP report updates
+            Third-party IP report updates
+            **Automated Changes:**
+            - Updated third party licenses report
           branch: update-tpip
           delete-branch: true
           labels: TPIP
           reviewers: soumeh01
+          draft: true  # Create as draft PR for manual review
