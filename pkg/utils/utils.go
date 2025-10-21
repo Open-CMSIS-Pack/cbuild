@@ -510,16 +510,30 @@ func GetOutDir(cbuildIdxFile string, context string) (string, error) {
 	return outDir, nil
 }
 
+// matchAnyPattern checks if a filename matches any of the provided glob patterns
+func matchAnyPattern(filename string, patterns []string) (bool, error) {
+	for _, pattern := range patterns {
+		match, err := filepath.Match(pattern, filename)
+		if err != nil {
+			return false, err
+		}
+		if match {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 // DeleteAll removes everything under path except files whose base name
-// matches the provided glob pattern. If pattern is empty, it just calls os.RemoveAll.
-func DeleteAll(path, excludeFilePattern string) error {
+// matches any of the provided glob patterns. If patterns is empty, it just calls os.RemoveAll.
+func DeleteAll(path string, excludeFilePatterns []string) error {
 	// check path exists
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return errutils.New(errutils.ErrPathNotExist, path)
 	}
 
-	// if no pattern given, just delete
-	if excludeFilePattern == "" {
+	// if no patterns given, just delete everything
+	if len(excludeFilePatterns) == 0 {
 		if err := os.RemoveAll(path); err != nil {
 			return errutils.New(errutils.ErrDeleteFailed, path)
 		}
@@ -539,15 +553,17 @@ func DeleteAll(path, excludeFilePattern string) error {
 		}
 		// if this is a file…
 		if !info.IsDir() {
-			// see if base name matches the glob
-			match, merr := filepath.Match(excludeFilePattern, info.Name())
+			// check if file matches any of the exclude patterns
+			shouldExclude, merr := matchAnyPattern(info.Name(), excludeFilePatterns)
 			if merr != nil {
 				return merr
 			}
-			if match {
+
+			if shouldExclude {
 				// do not delete matching file
 				return nil
 			}
+
 			// delete non-matching file
 			if derr := os.Remove(p); derr != nil {
 				// collect error but keep going

@@ -484,7 +484,7 @@ func TestDeleteAll(t *testing.T) {
 		}
 
 		// Call the DeleteAll function
-		err := DeleteAll(delDir, "")
+		err := DeleteAll(delDir, []string{})
 		if err != nil {
 			t.Fatalf("Unexpected error: %v", err)
 		}
@@ -498,7 +498,7 @@ func TestDeleteAll(t *testing.T) {
 	t.Run("Delete NonExistent Directory", func(t *testing.T) {
 		// Test deleting a non-existent directory
 		nonExistentDir := filepath.Join(testDir, "non_existent_dir")
-		err := DeleteAll(nonExistentDir, "")
+		err := DeleteAll(nonExistentDir, []string{})
 
 		// Verify no error
 		assert.Error(t, err)
@@ -515,7 +515,7 @@ func TestDeleteAll(t *testing.T) {
 		}
 
 		// Call the DeleteAll function
-		err := DeleteAll(emptyDir, "")
+		err := DeleteAll(emptyDir, []string{})
 		if err != nil {
 			t.Fatalf("Unexpected error: %v", err)
 		}
@@ -537,7 +537,7 @@ func TestDeleteAll(t *testing.T) {
 		}
 
 		// Call the DeleteAll function
-		err := DeleteAll(testFile, "")
+		err := DeleteAll(testFile, []string{})
 		assert.NoError(t, err)
 
 		// Clean up
@@ -552,7 +552,7 @@ func TestDeleteAll(t *testing.T) {
 		filePath = filepath.Join(delDir, "delete.txt")
 		_ = os.WriteFile(filePath, []byte("test content 2"), 0600)
 
-		err := DeleteAll(delDir, "*.log")
+		err := DeleteAll(delDir, []string{"*.log"})
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
@@ -566,7 +566,7 @@ func TestDeleteAll(t *testing.T) {
 	})
 
 	t.Run("non-existent root path", func(t *testing.T) {
-		err := DeleteAll("/non/existent/path", "")
+		err := DeleteAll("/non/existent/path", []string{})
 		if err == nil {
 			t.Error("expected error for non-existent path, got nil")
 		}
@@ -580,7 +580,7 @@ func TestDeleteAll(t *testing.T) {
 		filePath = filepath.Join(delDir, "delete.txt")
 		_ = os.WriteFile(filePath, []byte("test content 2"), 0600)
 
-		err := DeleteAll(delDir, "nonmatch/**")
+		err := DeleteAll(delDir, []string{"nonmatch/**"})
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
@@ -605,7 +605,7 @@ func TestDeleteAll(t *testing.T) {
 		filePath := filepath.Join(dataDir, "file.info")
 		_ = os.WriteFile(filePath, []byte("data"), 0600)
 
-		err := DeleteAll(delDir, "*.debug")
+		err := DeleteAll(delDir, []string{"*.debug", "*.info"})
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
@@ -616,8 +616,8 @@ func TestDeleteAll(t *testing.T) {
 		if _, err := os.Stat(filepath.Join(delDir, "logs/log1.txt")); !os.IsNotExist(err) {
 			t.Error("excluded nested file was not deleted")
 		}
-		if _, err := os.Stat(filepath.Join(delDir, "data/file.info")); !os.IsNotExist(err) {
-			t.Error("non-excluded file was not deleted")
+		if _, err := os.Stat(filepath.Join(delDir, "data/file.info")); os.IsNotExist(err) {
+			t.Error("excluded nested file was deleted")
 		}
 	})
 }
