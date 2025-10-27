@@ -102,8 +102,8 @@ func TestWestUtils(t *testing.T) {
 		assert.Nil(err)
 
 		cbuildContent, _ := os.ReadFile(cbuildFile)
-		assert.Equal(
-			`build:
+
+		expected := `build:
   generated-by: cbuild tests
   groups:
     - group: sources
@@ -119,8 +119,28 @@ func TestWestUtils(t *testing.T) {
     - file: /src/user/main.c
     - file: /src/module/lib.c
     - file: /src/module/sub-module/sub-lib.c
-`, string(cbuildContent))
+`
+		assert.Equal(expected, string(cbuildContent))
 
+		// run again to check idempotency
+		err = AddWestFilesToCbuild(westInfo)
+		assert.Nil(err)
+		cbuildContent, _ = os.ReadFile(cbuildFile)
+		assert.Equal(expected, string(cbuildContent))
+	})
+
+	t.Run("test AddWestFilesToCbuild with wrong cbuild format", func(t *testing.T) {
+		westInfo := WestBuildInfo{
+			OutDir: testRoot + "/" + testDir,
+			Cbuild: cbuildFile,
+		}
+		_ = os.WriteFile(cbuildFile, []byte("unknown:\n  generated-by: cbuild tests\n"), 0600)
+		err := AddWestFilesToCbuild(westInfo)
+		assert.EqualError(err, "invalid cbuild format: '"+westInfo.Cbuild+"'")
+
+		_ = os.WriteFile(cbuildFile, []byte(""), 0600)
+		err = AddWestFilesToCbuild(westInfo)
+		assert.EqualError(err, "invalid cbuild format: '"+westInfo.Cbuild+"'")
 	})
 
 	os.Remove(compileCommandsFile)
