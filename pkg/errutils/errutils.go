@@ -38,6 +38,7 @@ const (
 	ErrInvalidTargetSetUsage  = "invalid target-set usage. The '-a' option cannot be used with the '-c' or '-S'"
 	ErrInvalidSetUpArgs       = "invalid command line arguments. Options '-a' and '-S' are mutually exclusive"
 	ErrInvalidInputArg        = "invalid input argument for '%s'"
+	ErrInvalidCbuildFormat    = "invalid cbuild format: '%s'"
 )
 
 const (
