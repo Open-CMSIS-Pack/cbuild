@@ -683,9 +683,8 @@ func TestGetContextsToClean(t *testing.T) {
 
 		contexts, err := b.getContextsToClean()
 		assert.Nil(err)
-		assert.Equal(2, len(contexts))
+		assert.Equal(1, len(contexts))
 		assert.Equal("test.Debug+CM0", contexts[0])
-		assert.Equal("test.Release+CM0", contexts[1])
 	})
 
 	t.Run("test get contexts to clean with invalid options -c and -a", func(t *testing.T) {

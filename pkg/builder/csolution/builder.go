@@ -829,9 +829,8 @@ func (b *CSolutionBuilder) getContextsToClean() (contexts []string, err error) {
 		var contextInputs []string
 
 		if hasTargetSetOption {
-			// Use the first part before "@" from the target set
-			targetParts := strings.Split(b.Options.TargetSet, "@")
-			contextInputs = []string{"+" + targetParts[0]}
+			// Use project contexts associated with the specified target-set
+			contextInputs = utils.GetTargetSetProjectContexts(b.InputFile, b.Options.TargetSet)
 		} else if hasContextOption {
 			// Use the explicitly provided contexts
 			contextInputs = b.Options.Contexts

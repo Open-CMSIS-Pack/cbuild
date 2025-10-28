@@ -12,6 +12,9 @@ solution:
       device: ARMCM0
       target-set:
         - set: Custom3
+          images:
+            - project-context: test.Debug
+
       misc:
         - compiler: GCC
 

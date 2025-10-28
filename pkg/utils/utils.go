@@ -205,6 +205,15 @@ type CbuildSet struct {
 
 type Csolution struct {
 	Solution struct {
+		TargetTypes []struct {
+			Type      string `yaml:"type"`
+			TargetSet []struct {
+				Set    string `yaml:"set"`
+				Images []struct {
+					ProjectContext string `yaml:"project-context"`
+				} `yaml:"images"`
+			} `yaml:"target-set"`
+		} `yaml:"target-types"`
 		OutputDirs struct {
 			Tmpdir string `yaml:"tmpdir"`
 		} `yaml:"output-dirs"`
@@ -669,4 +678,27 @@ func GetParentFolder(path string) (string, error) {
 
 	parentPath := filepath.Dir(absPath)
 	return filepath.Base(parentPath), nil
+}
+
+func GetTargetSetProjectContexts(csolutionFile string, selectedTargetSet string) []string {
+	targetType, targetSet, _ := strings.Cut(selectedTargetSet, "@")
+
+	// Parse the csolution file
+	data, _ := ParseCsolutionFile(csolutionFile)
+
+	// Get project contexts for the selected target set
+	for _, tt := range data.Solution.TargetTypes {
+		if tt.Type == targetType {
+			for _, ts := range tt.TargetSet {
+				if ts.Set == targetSet {
+					var contexts []string
+					for _, img := range ts.Images {
+						contexts = append(contexts, img.ProjectContext+"+"+targetType)
+					}
+					return contexts
+				}
+			}
+		}
+	}
+	return []string{}
 }
