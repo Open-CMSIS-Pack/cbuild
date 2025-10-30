@@ -115,10 +115,6 @@ func TestWestUtils(t *testing.T) {
     - group: sub-module
       files:
         - file: /src/module/sub-module/sub-lib.c
-  constructed-files:
-    - file: /src/user/main.c
-    - file: /src/module/lib.c
-    - file: /src/module/sub-module/sub-lib.c
 `
 		assert.Equal(expected, string(cbuildContent))
 

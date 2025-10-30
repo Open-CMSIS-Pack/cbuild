@@ -148,15 +148,13 @@ func AddWestFilesToCbuild(westInfo WestBuildInfo) error {
 	}
 
 	// Get all files and separate them by modules
-	var allFiles []string
-	fileTree := []Filetree{} // make(map[string][]string)
+	fileTree := []Filetree{}
 	for _, compileCommands := range compileCommandsData {
 		var file string
 		file, err = filepath.Rel(filepath.Dir(westInfo.Cbuild), compileCommands.File)
 		if err != nil {
 			file = compileCommands.File
 		}
-		allFiles = append(allFiles, filepath.ToSlash(file))
 		module := GetModule(filepath.ToSlash(compileCommands.File), modules)
 		AppendFileToGroup(&fileTree, module, filepath.ToSlash(file))
 	}
@@ -195,20 +193,6 @@ func AddWestFilesToCbuild(westInfo WestBuildInfo) error {
 
 	// Replace 'groups' node if it exists, otherwise append it
 	SetYamlNodeByKey(buildNode, groupsNode, "groups")
-
-	// Create constructed-files as a workaround for populating the outline view
-	constructedFilesNode := &yaml.Node{Kind: yaml.SequenceNode}
-	for _, file := range allFiles {
-		fileNode := &yaml.Node{Kind: yaml.MappingNode}
-		fileNode.Content = []*yaml.Node{
-			{Kind: yaml.ScalarNode, Value: "file"},
-			{Kind: yaml.ScalarNode, Value: file},
-		}
-		constructedFilesNode.Content = append(constructedFilesNode.Content, fileNode)
-	}
-
-	// Replace 'constructed-files' node if it exists, otherwise append it
-	SetYamlNodeByKey(buildNode, constructedFilesNode, "constructed-files")
 
 	// Update Cbuild file
 	var buf strings.Builder
