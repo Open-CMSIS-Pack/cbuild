@@ -257,6 +257,15 @@ func TestBuild(t *testing.T) {
 		b.Setup = false
 	})
 
+	t.Run("test setup with skip convert flag", func(t *testing.T) {
+		b.Setup = true
+		b.Options.SkipConvert = true
+		err := b.Build()
+		assert.Error(err)
+		b.Setup = false
+		b.Options.SkipConvert = false
+	})
+
 	t.Run("test build csolution without context", func(t *testing.T) {
 		err := b.Build()
 		assert.Error(err)
