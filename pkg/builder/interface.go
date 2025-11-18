@@ -53,6 +53,7 @@ type Options struct {
 	FrozenPacks     bool
 	UseCbuild2CMake bool
 	NoDatabase      bool
+	SkipConvert     bool
 }
 
 type InternalVars struct {

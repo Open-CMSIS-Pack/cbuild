@@ -650,9 +650,11 @@ func (b CSolutionBuilder) Build() (err error) {
 	}
 
 	// STEP 2: Generate build file(s)
-	if err = b.generateBuildFiles(); err != nil {
-		log.Error(err)
-		return err
+	if !b.Options.SkipConvert {
+		if err = b.generateBuildFiles(); err != nil {
+			log.Error(err)
+			return err
+		}
 	}
 
 	// STEP 3: Build project(s)

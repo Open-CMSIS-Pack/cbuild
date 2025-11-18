@@ -143,6 +143,7 @@ func NewRootCmd() *cobra.Command {
 			useCbuildgen, _ := cmd.Flags().GetBool("cbuildgen")
 			targetSet, _ := cmd.Flags().GetString("active")
 			useTargetSet := cmd.Flags().Changed("active")
+			skipConvert, _ := cmd.Flags().GetBool("skip-convert")
 
 			// set cbuild2cmake as default tool
 			useCbuild2CMake := !useCbuildgen
@@ -185,6 +186,7 @@ func NewRootCmd() *cobra.Command {
 				UseCbuild2CMake: useCbuild2CMake,
 				TargetSet:       targetSet,
 				UseTargetSet:    useTargetSet,
+				SkipConvert:     skipConvert,
 			}
 
 			configs, err := utils.GetInstallConfigs()
@@ -266,6 +268,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.PersistentFlags().StringP("toolchain", "", "", "Input toolchain to be used")
 	rootCmd.Flags().BoolP("cbuildgen", "", false, "Generate legacy *.cprj files and use cbuildgen backend")
 	rootCmd.Flags().StringP("active", "a", "", "Select active target-set: <target-type>[@<set>]")
+	rootCmd.Flags().BoolP("skip-convert", "", false, "Skip csolution convert step")
 
 	// CPRJ specific hidden flags
 	rootCmd.Flags().StringP("intdir", "i", "", "Set directory for intermediate files")

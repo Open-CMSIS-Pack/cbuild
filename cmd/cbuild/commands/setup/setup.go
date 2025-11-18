@@ -73,6 +73,7 @@ func setUpProject(cmd *cobra.Command, args []string) error {
 	noDatabase, _ := cmd.Flags().GetBool("no-database")
 	targetSet, _ := cmd.Flags().GetString("active")
 	useTargetSet := cmd.Flags().Changed("active")
+	skipConvert, _ := cmd.Flags().GetBool("skip-convert")
 
 	useCbuild2CMake := !useCbuildgen
 
@@ -119,6 +120,7 @@ func setUpProject(cmd *cobra.Command, args []string) error {
 		NoDatabase:      noDatabase,
 		TargetSet:       targetSet,
 		UseTargetSet:    useTargetSet,
+		SkipConvert:     skipConvert,
 	}
 
 	configs, err := utils.GetInstallConfigs()
@@ -220,6 +222,7 @@ func init() {
 	SetUpCmd.Flags().BoolP("cbuildgen", "", false, "Generate legacy *.cprj files and use cbuildgen backend")
 	SetUpCmd.Flags().BoolP("no-database", "", false, "Skip the generation of compile_commands.json files")
 	SetUpCmd.Flags().StringP("active", "a", "", "Select active target-set: <target-type>[@<set>]")
+	SetUpCmd.Flags().BoolP("skip-convert", "", false, "Skip csolution convert step")
 
 	SetUpCmd.Flags().StringP("perf-report", "", "perf-report.json", "output performance report file")
 	_ = SetUpCmd.Flags().MarkHidden("perf-report")
