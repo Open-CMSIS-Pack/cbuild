@@ -660,6 +660,23 @@ func TestNeedRebuild(t *testing.T) {
 
 		_ = os.RemoveAll(tmpDir)
 	})
+
+	t.Run("check rebuild needed when solution tmp directory is present but context tmp is absent", func(t *testing.T) {
+		b.Options.Rebuild = false
+		b.Options.UseCbuild2CMake = true
+		tmpDir := filepath.Join(testRoot, testDir, "custom/tmp/path")
+		content := "CMAKE_CACHEFILE_DIR:INTERNAL=" + tmpDir
+		_ = os.RemoveAll(tmpDir)
+		_ = os.MkdirAll(tmpDir, os.ModePerm)
+		cmakeCacheFile := filepath.Join(tmpDir, "CMakeCache.txt")
+		_ = os.WriteFile(cmakeCacheFile, []byte(content), 0600)
+
+		rebuild, err := b.needRebuild()
+		assert.Nil(err)
+		assert.True(rebuild)
+
+		_ = os.RemoveAll(tmpDir)
+	})
 }
 
 func TestGetContextsToClean(t *testing.T) {
