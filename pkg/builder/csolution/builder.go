@@ -728,6 +728,7 @@ func (b CSolutionBuilder) isProjectMoved() bool {
 }
 
 // hasRebuildNode checks if there is any rebuild required based on the given index file path.
+// It checks also if solution tmp directory is present but context tmp is absent
 // It returns true if a rebuild is needed, otherwise false.
 func (b CSolutionBuilder) hasRebuildNode(idxFilePath string) (bool, error) {
 	// Read the cbuild-idx file
@@ -741,10 +742,21 @@ func (b CSolutionBuilder) hasRebuildNode(idxFilePath string) (bool, error) {
 		return true, nil
 	}
 
+	// tmp directory path
+	tmpDir := filepath.Join(filepath.Dir(idxFilePath), data.BuildIdx.TmpDir)
+	tmpDirExists, _ := utils.FileExists(tmpDir)
+
 	// Check if any of the contexts requires a rebuild
 	for _, cbuild := range data.BuildIdx.Cbuilds {
 		if cbuild.Rebuild {
 			return true, nil
+		}
+		if tmpDirExists {
+			contextTmpDirExists, _ := utils.FileExists(
+				filepath.Join(tmpDir, cbuild.Project+cbuild.Configuration))
+			if !contextTmpDirExists {
+				return true, nil
+			}
 		}
 	}
 
