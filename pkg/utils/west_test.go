@@ -20,7 +20,7 @@ func TestWestUtils(t *testing.T) {
 [
 {
   "directory": "/output/zephyr",
-  "command": "gcc -c /src/main.c",
+  "command": "gcc -c /src/user/main.c",
   "file": "/src/user/main.c",
   "output": "CMakeFiles/zephyr.dir/src/user/main.o"
 },
@@ -77,25 +77,30 @@ func TestWestUtils(t *testing.T) {
 		modules, err := ParseModules(zephyrModulesFile)
 		assert.Nil(err)
 
-		assert.Equal("sources", GetModule(commands[0].File, modules))
+		assert.Equal("", GetModule(commands[0].File, modules))
 		assert.Equal("module", GetModule(commands[1].File, modules))
 		assert.Equal("sub-module", GetModule(commands[2].File, modules))
 	})
 
-	t.Run("test AppendFileToGroup", func(t *testing.T) {
-		fileTree := []Filetree{{Group: "sources", Files: []string{"/src/main.c"}}}
-		AppendFileToGroup(&fileTree, "sources", "/lib/lib.c")
-		AppendFileToGroup(&fileTree, "hal", "/hal/driver.c")
+	t.Run("test AppendFileToGroupUniquely", func(t *testing.T) {
+		fileTree := []Filetree{{Group: "App", Files: []string{"/src/main.c"}}}
+		AppendFileToGroupUniquely(&fileTree, "App", "/lib/lib.c")
+		AppendFileToGroupUniquely(&fileTree, "hal", "/hal/driver.c")
+		// duplicate will be filtered off
+		AppendFileToGroupUniquely(&fileTree, "hal", "/hal/driver.c")
 
 		assert.Equal([]Filetree{
-			{Group: "sources", Files: []string{"/src/main.c", "/lib/lib.c"}},
+			{Group: "App", Files: []string{"/src/main.c", "/lib/lib.c"}},
 			{Group: "hal", Files: []string{"/hal/driver.c"}}}, fileTree)
+		assert.Equal(2, len(fileTree[0].Files))
+		assert.Equal(1, len(fileTree[1].Files))
 	})
 
 	t.Run("test AddWestFilesToCbuild", func(t *testing.T) {
 		westInfo := WestBuildInfo{
-			OutDir: testRoot + "/" + testDir,
-			Cbuild: cbuildFile,
+			AppPath: "/src/user/",
+			OutDir:  testRoot + "/" + testDir,
+			Cbuild:  cbuildFile,
 		}
 
 		err := AddWestFilesToCbuild(westInfo)
@@ -106,15 +111,17 @@ func TestWestUtils(t *testing.T) {
 		expected := `build:
   generated-by: cbuild tests
   groups:
-    - group: sources
+    - group: App
       files:
         - file: /src/user/main.c
-    - group: module
-      files:
-        - file: /src/module/lib.c
-    - group: sub-module
-      files:
-        - file: /src/module/sub-module/sub-lib.c
+    - group: Zephyr Modules
+      groups:
+        - group: module
+          files:
+            - file: /src/module/lib.c
+        - group: sub-module
+          files:
+            - file: /src/module/sub-module/sub-lib.c
 `
 		assert.Equal(expected, string(cbuildContent))
 

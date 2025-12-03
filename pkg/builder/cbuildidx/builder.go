@@ -335,7 +335,8 @@ func (b CbuildIdxBuilder) GetWestBuildInfo() (bool, utils.WestBuildInfo) {
 		return false, info
 	}
 	cbuildData, _ := utils.ParseCbuildFile(info.Cbuild)
-	info.OutDir = filepath.Join(filepath.Dir(info.Cbuild), cbuildData.Build.OutputDirs.Outdir)
+	info.OutDir = filepath.ToSlash(filepath.Join(filepath.Dir(info.Cbuild), cbuildData.Build.OutputDirs.Outdir))
+	info.AppPath = filepath.ToSlash(filepath.Join(filepath.Dir(info.Cbuild), cbuildData.Build.West.AppPath))
 	info.CbuildData = cbuildData
 	return true, info
 }
