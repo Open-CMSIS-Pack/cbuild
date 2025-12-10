@@ -226,6 +226,9 @@ type Cbuild struct {
 			Intdir string `yaml:"intdir"`
 			Outdir string `yaml:"outdir"`
 		} `yaml:"output-dirs"`
+		West struct {
+			AppPath string `yaml:"app-path"`
+		} `yaml:"west"`
 	} `yaml:"build"`
 }
 
