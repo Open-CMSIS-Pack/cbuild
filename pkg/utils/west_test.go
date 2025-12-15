@@ -167,8 +167,8 @@ func TestWestUtils(t *testing.T) {
 		logBuffer.Reset()
 		err = CheckWestSetup()
 		assert.Nil(err)
-		assert.True(strings.Contains(logBuffer.String(), "warning cbuild: VIRTUAL_ENV environment variable specifies incorrect directory"))
-		assert.True(strings.Contains(logBuffer.String(), "warning cbuild: ZEPHYR_BASE environment variable specifies incorrect directory"))
+		assert.True(strings.Contains(logBuffer.String(), "warning cbuild: VIRTUAL_ENV environment variable specifies non-existent directory"))
+		assert.True(strings.Contains(logBuffer.String(), "warning cbuild: ZEPHYR_BASE environment variable specifies non-existent directory"))
 
 		// missing environment variables
 		os.Unsetenv("VIRTUAL_ENV")

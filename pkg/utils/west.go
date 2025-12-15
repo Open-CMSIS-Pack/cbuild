@@ -262,7 +262,7 @@ func CheckEnvVars(vars []string) {
 		if value == "" {
 			log.Warn("missing " + key + " environment variable")
 		} else if _, err := os.Stat(value); os.IsNotExist(err) {
-			log.Warn(key + " environment variable specifies incorrect directory: " + value)
+			log.Warn(key + " environment variable specifies non-existent directory: " + value)
 		}
 		log.Debug(key + "=" + value)
 	}
