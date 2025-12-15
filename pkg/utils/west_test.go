@@ -7,9 +7,13 @@
 package utils
 
 import (
+	"bytes"
 	"os"
+	"os/exec"
+	"strings"
 	"testing"
 
+	log "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/logger"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -144,6 +148,43 @@ func TestWestUtils(t *testing.T) {
 		_ = os.WriteFile(cbuildFile, []byte(""), 0600)
 		err = AddWestFilesToCbuild(westInfo)
 		assert.EqualError(err, "invalid cbuild format: '"+westInfo.Cbuild+"'")
+	})
+
+	t.Run("test CheckWestSetup", func(t *testing.T) {
+		// west tool is add to the PATH in test initialization
+		err := CheckWestSetup()
+		assert.Nil(err)
+
+		// save and restore log output
+		logger := log.StandardLogger().Out
+		defer func() { log.SetOutput(logger) }()
+		var logBuffer bytes.Buffer
+		log.SetOutput(&logBuffer)
+
+		// incorrect environment variable paths
+		os.Setenv("VIRTUAL_ENV", "/invalid/virtual/env")
+		os.Setenv("ZEPHYR_BASE", "/invalid/zephyr/base")
+		logBuffer.Reset()
+		err = CheckWestSetup()
+		assert.Nil(err)
+		assert.True(strings.Contains(logBuffer.String(), "warning cbuild: VIRTUAL_ENV environment variable specifies non-existent directory"))
+		assert.True(strings.Contains(logBuffer.String(), "warning cbuild: ZEPHYR_BASE environment variable specifies non-existent directory"))
+
+		// missing environment variables
+		os.Unsetenv("VIRTUAL_ENV")
+		os.Unsetenv("ZEPHYR_BASE")
+		logBuffer.Reset()
+		err = CheckWestSetup()
+		assert.Nil(err)
+		assert.True(strings.Contains(logBuffer.String(), "warning cbuild: missing VIRTUAL_ENV environment variable"))
+		assert.True(strings.Contains(logBuffer.String(), "warning cbuild: missing ZEPHYR_BASE environment variable"))
+
+		// missing west tool
+		westBin, err := exec.LookPath("west")
+		assert.Nil(err)
+		os.Remove(westBin)
+		err = CheckWestSetup()
+		assert.ErrorContains(err, "exec: \"west\": executable file not found")
 	})
 
 	os.Remove(compileCommandsFile)

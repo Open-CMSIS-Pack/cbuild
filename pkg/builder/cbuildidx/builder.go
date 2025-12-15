@@ -132,6 +132,15 @@ func (b CbuildIdxBuilder) build() error {
 		return nil
 	}
 
+	isWest, westInfo := b.GetWestBuildInfo()
+	if isWest {
+		// Check west setup
+		err = utils.CheckWestSetup()
+		if err != nil {
+			return err
+		}
+	}
+
 	if vars.CmakeBin == "" {
 		err = errutils.New(errutils.ErrBinaryNotFound, "cmake", "")
 		return err
@@ -237,7 +246,6 @@ func (b CbuildIdxBuilder) build() error {
 		return err
 	}
 
-	isWest, westInfo := b.GetWestBuildInfo()
 	if isWest {
 		// Add west files references to cbuild file
 		err = utils.AddWestFilesToCbuild(westInfo)
