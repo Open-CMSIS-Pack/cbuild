@@ -11,11 +11,13 @@ import (
 	"encoding/csv"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"slices"
 	"strings"
 
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/errutils"
+	log "github.com/Open-CMSIS-Pack/cbuild/v2/pkg/logger"
 	"gopkg.in/yaml.v3"
 )
 
@@ -250,5 +252,30 @@ func AddWestFilesToCbuild(westInfo WestBuildInfo) error {
 	}
 	file.Close()
 
+	return nil
+}
+
+func CheckEnvVars(vars []string) {
+	// Look for environment variables
+	for _, key := range vars {
+		value := os.Getenv(key)
+		if value == "" {
+			log.Warn("missing " + key + " environment variable")
+		} else if _, err := os.Stat(value); os.IsNotExist(err) {
+			log.Warn(key + " environment variable specifies incorrect directory: " + value)
+		}
+		log.Debug(key + "=" + value)
+	}
+}
+
+func CheckWestSetup() error {
+	// Check environment variables
+	CheckEnvVars([]string{"ZEPHYR_BASE", "VIRTUAL_ENV"})
+	// Look for west binary
+	westBin, err := exec.LookPath("west")
+	if err != nil {
+		return err
+	}
+	log.Debug("west found: " + westBin)
 	return nil
 }
