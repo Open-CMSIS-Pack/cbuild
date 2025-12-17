@@ -45,6 +45,11 @@ func TestInitialization(testRoot string, testDir string) {
 	cbuild2cmakeBin := testDirPath + "/bin/cbuild2cmake" + binExtension
 	file, _ = os.Create(cbuild2cmakeBin)
 	defer file.Close()
+	westDir, _ := filepath.Abs(testDirPath + "/bin")
+	westBin := westDir + "/west" + binExtension
+	//nolint:gosec // G306: executable permissions required for test binary
+	_ = os.WriteFile(westBin, []byte("#!/usr/bin/env bash\n"), 0755)
+	_ = os.Setenv("PATH", westDir+string(os.PathListSeparator)+os.Getenv("PATH"))
 }
 
 func CleanUp(testRoot string, testDir string) {
