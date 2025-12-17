@@ -3,7 +3,7 @@ module github.com/Open-CMSIS-Pack/cbuild/v2
 go 1.21
 
 require (
-	github.com/hashicorp/go-version v1.7.0
+	github.com/hashicorp/go-version v1.8.0
 	github.com/otiai10/copy v1.14.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.10.2
