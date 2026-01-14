@@ -10,18 +10,25 @@ on:
     tags:
       - "v*"
 
+permissions:
+  contents: read
+
 jobs:
   build-and-verify:
+    permissions:
+      contents: read
+      actions: write
     uses: Open-CMSIS-Pack/workflows-and-actions-collection/.github/workflows/build-and-verify.yml@v1.0.2
     with:
       program: cbuild
-      go-version-file: ./go.mod
+      go-version-file: go.mod
       enable-qlty-coverage: false
 
   goreleaser:
     needs: [ build-and-verify ]
     permissions:
       contents: write
+      actions: read
     runs-on: ubuntu-latest
     steps:
       - name: Harden Runner
@@ -69,4 +76,4 @@ jobs:
           version: latest
           args: release ${{ github.event_name != 'push' && '--snapshot' || '' }} --clean --release-notes=/tmp/RELEASE_NOTES
         env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
