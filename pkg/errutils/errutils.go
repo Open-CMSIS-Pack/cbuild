@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2025 Arm Limited. All rights reserved.
+ * Copyright (c) 2024-2026 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -39,6 +39,7 @@ const (
 	ErrInvalidSetUpArgs       = "invalid command line arguments. Options '-a' and '-S' are mutually exclusive"
 	ErrInvalidInputArg        = "invalid input argument for '%s'"
 	ErrInvalidCbuildFormat    = "invalid cbuild format: '%s'"
+	ErrChildFailed            = "child process failed with exit code: '%d'"
 )
 
 const (
