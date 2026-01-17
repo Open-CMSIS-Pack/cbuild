@@ -3,7 +3,7 @@
 | __Name__ | __Version__ | __Licence__ |
 |----------|-------------|-------------|
 | github.com/hashicorp/go-version | v1.8.0  | [MPL-2.0](https://github.com/hashicorp/go-version/blob/v1.8.0/LICENSE) |
-| github.com/sirupsen/logrus | v1.9.3  | [MIT](https://github.com/sirupsen/logrus/blob/v1.9.3/LICENSE) |
+| github.com/sirupsen/logrus | v1.9.4  | [MIT](https://github.com/sirupsen/logrus/blob/v1.9.4/LICENSE) |
 | github.com/spf13/cobra | v1.10.2  | [Apache-2.0](https://github.com/spf13/cobra/blob/v1.10.2/LICENSE.txt) |
 | github.com/spf13/pflag | v1.0.10  | [BSD-3-Clause](https://github.com/spf13/pflag/blob/v1.0.10/LICENSE) |
 | golang.org/x/sys/unix | v0.24.0  | [BSD-3-Clause](https://cs.opensource.google/go/x/sys/+/v0.24.0:LICENSE) |
