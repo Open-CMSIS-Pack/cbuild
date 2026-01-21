@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Arm Limited. All rights reserved.
+ * Copyright (c) 2022-2026 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -23,6 +23,13 @@ func TestExecuteCommand(t *testing.T) {
 
 	t.Run("execute command quiet", func(t *testing.T) {
 		_, err := runner.ExecuteCommand("go", true, "version")
+		assert.Nil(err)
+	})
+
+	t.Run("execute command from terminal", func(t *testing.T) {
+		// Simulate terminal by overriding isTerminal function
+		isTerminal = func() bool { return true }
+		_, err := runner.ExecuteCommand("go", false, "version")
 		assert.Nil(err)
 	})
 }
