@@ -48,6 +48,8 @@ func listToolchains(cmd *cobra.Command, args []string) error {
 	contexts, _ := cmd.Flags().GetStringSlice("context")
 	useContextSet, _ := cmd.Flags().GetBool("context-set")
 	verbose, _ := cmd.Flags().GetBool("verbose")
+	targetSet, _ := cmd.Flags().GetString("active")
+	useTargetSet := cmd.Flags().Changed("active")
 
 	p := csolution.CSolutionBuilder{
 		BuilderParams: builder.BuilderParams{
@@ -56,6 +58,8 @@ func listToolchains(cmd *cobra.Command, args []string) error {
 				Contexts:      contexts,
 				UseContextSet: useContextSet,
 				Verbose:       verbose,
+				TargetSet:     targetSet,
+				UseTargetSet:  useTargetSet,
 			},
 			InputFile:      inputFile,
 			InstallConfigs: configs,
@@ -81,4 +85,5 @@ func init() {
 	ListToolchainsCmd.Flags().BoolP("context-set", "S", false, "Select the context names from cbuild-set.yml for generating the target application")
 	ListToolchainsCmd.Flags().StringSliceP("context", "c", []string{}, "Input context names [<project-name>][.<build-type>][+<target-type>]")
 	ListToolchainsCmd.Flags().BoolP("verbose", "v", false, "Enable verbose messages")
+	ListToolchainsCmd.Flags().StringP("active", "a", "", "Select active target-set: <target-type>[@<set>]")
 }
