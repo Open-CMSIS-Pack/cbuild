@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 Arm Limited. All rights reserved.
+ * Copyright (c) 2023-2026 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -683,6 +683,11 @@ func (b CSolutionBuilder) needRebuild() (bool, error) {
 	if err != nil {
 		return false, err
 	}
+
+	// Check if CMSIS_COMPILER_ROOT is changed since last build
+	if b.isCompilerRootChanged() {
+		return true, nil
+	}
 	return rebuild, nil
 }
 
@@ -893,4 +898,33 @@ func (b CSolutionBuilder) listTargetSets(quiet bool) (targetSets []string, err e
 		targetSets = strings.Split(strings.ReplaceAll(strings.TrimSpace(output), "\r\n", "\n"), "\n")
 	}
 	return targetSets, nil
+}
+
+// isCompilerRootChanged compares the CMSIS_COMPILER_ROOT in roots.cmake with the given etcDirPath
+// Returns true if they differ, false if they match or if roots.cmake is missing or invalid
+func (b CSolutionBuilder) isCompilerRootChanged() bool {
+	tmpDir, err := utils.GetTmpDir(b.InputFile, b.Options.Output)
+	if err != nil {
+		return false
+	}
+
+	rootsCMakePath := filepath.Join(tmpDir, "roots.cmake")
+	rootsCMakePath = filepath.Clean(rootsCMakePath)
+	exists, err := utils.FileExists(rootsCMakePath)
+	if err != nil {
+		return false
+	}
+
+	if exists {
+		compilerRoot, err := utils.GetCompilerRootFromRootsCMake(rootsCMakePath)
+		if err == nil {
+			absCompilerRoot, _ := filepath.Abs(compilerRoot)
+			absEtcPath, _ := filepath.Abs(b.InstallConfigs.EtcPath)
+			if filepath.Clean(absCompilerRoot) != filepath.Clean(absEtcPath) {
+				return true
+			}
+		}
+	}
+
+	return false
 }

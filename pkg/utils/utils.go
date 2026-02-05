@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 Arm Limited. All rights reserved.
+ * Copyright (c) 2022-2026 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -704,4 +704,38 @@ func GetTargetSetProjectContexts(csolutionFile string, selectedTargetSet string)
 		}
 	}
 	return []string{}
+}
+
+// GetCompilerRootFromRootsCMake parses a roots.cmake file and returns the
+// value set for CMSIS_COMPILER_ROOT
+func GetCompilerRootFromRootsCMake(filePath string) (string, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		// Look for: set(CMSIS_COMPILER_ROOT "value" ...)
+		if strings.HasPrefix(line, "set(CMSIS_COMPILER_ROOT") {
+			// Extract the quoted value
+			start := strings.Index(line, "\"")
+			if start != -1 {
+				rest := line[start+1:]
+				end := strings.Index(rest, "\"")
+				if end != -1 {
+					value := rest[:end]
+					// Remove any trailing slashes or backslashes
+					value = strings.TrimRight(value, "/\\")
+					return value, nil
+				}
+			}
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		return "", err
+	}
+	return "", errutils.New(errutils.ErrInvalidRootsCmake, "CMSIS_COMPILER_ROOT not found")
 }

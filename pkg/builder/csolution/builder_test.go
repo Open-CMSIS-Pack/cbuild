@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 Arm Limited. All rights reserved.
+ * Copyright (c) 2023-2026 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -731,4 +731,80 @@ func TestGetContextsToClean(t *testing.T) {
 		assert.Error(err)
 		assert.Equal(0, len(contexts))
 	})
+}
+
+func TestIsCompilerRootChanged(t *testing.T) {
+	assert := assert.New(t)
+
+	baseDir := utils.NormalizePath(filepath.Join(testRoot, testDir, "TestSolution"))
+	baseDir, _ = filepath.Abs(baseDir)
+	inputFile := filepath.Join(baseDir, "test.csolution.yml")
+	outputDir := ""
+
+	// Helper to create roots.cmake
+	writeRoots := func(content string) string {
+		rootsPath := filepath.Join(baseDir, "tmpdir/roots.cmake")
+		dir := filepath.Dir(rootsPath)
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			t.Fatalf("failed to create directory for roots.cmake: %v", err)
+		}
+		_ = os.WriteFile(rootsPath, []byte(content), 0600)
+		return rootsPath
+	}
+
+	// Helper to create a dummy tmp dir and roots.cmake
+	getBuilder := func(etcPath string) CSolutionBuilder {
+		return CSolutionBuilder{
+			BuilderParams: builder.BuilderParams{
+				Runner:    RunnerMock{},
+				InputFile: inputFile,
+				Options: builder.Options{
+					Output: outputDir,
+				},
+				InstallConfigs: utils.Configurations{
+					EtcPath: etcPath,
+				},
+			},
+		}
+	}
+
+	// Case 1: roots.cmake exists, CMSIS_COMPILER_ROOT matches etcPath
+	t.Run("roots.cmake matches", func(t *testing.T) {
+		content := `set(CMSIS_COMPILER_ROOT \"` + baseDir + `\" CACHE PATH \"CMSIS compiler root\")`
+		writeRoots(content)
+		b := getBuilder(baseDir)
+		assert.False(b.isCompilerRootChanged(), "expected false, got true")
+	})
+
+	// Case 2: roots.cmake exists, CMSIS_COMPILER_ROOT differs from etcPath
+	t.Run("roots.cmake differs", func(t *testing.T) {
+		content := `set(CMSIS_COMPILER_ROOT \"/some/other/path\" CACHE PATH \"CMSIS compiler root\")`
+		writeRoots(content)
+		b := getBuilder(baseDir)
+		assert.True(b.isCompilerRootChanged(), "expected true, got false")
+	})
+
+	// Case 3: roots.cmake missing
+	t.Run("roots.cmake missing", func(t *testing.T) {
+		os.RemoveAll(filepath.Join(baseDir, "tmpdir"))
+		b := getBuilder(baseDir)
+		assert.False(b.isCompilerRootChanged(), "expected false, got true")
+	})
+
+	// Case 4: roots.cmake exists, but CMSIS_COMPILER_ROOT missing
+	t.Run("CMSIS_COMPILER_ROOT missing", func(t *testing.T) {
+		content := `set(SOME_OTHER_VAR \"/foo/bar\")`
+		writeRoots(content)
+		b := getBuilder(baseDir)
+		assert.False(b.isCompilerRootChanged(), "expected false, got true")
+	})
+
+	// Case 5: roots.cmake exists, but CMSIS_COMPILER_ROOT malformed
+	t.Run("CMSIS_COMPILER_ROOT malformed", func(t *testing.T) {
+		content := `set(CMSIS_COMPILER_ROOT /no/quotes)`
+		writeRoots(content)
+		b := getBuilder(baseDir)
+		assert.False(b.isCompilerRootChanged(), "expected false, got true")
+	})
+
 }

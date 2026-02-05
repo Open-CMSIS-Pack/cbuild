@@ -40,6 +40,7 @@ const (
 	ErrInvalidInputArg        = "invalid input argument for '%s'"
 	ErrInvalidCbuildFormat    = "invalid cbuild format: '%s'"
 	ErrChildFailed            = "child process failed with exit code: '%d'"
+	ErrInvalidRootsCmake      = "invalid roots.cmake file: '%s'"
 )
 
 const (
