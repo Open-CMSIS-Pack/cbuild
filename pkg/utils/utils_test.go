@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 Arm Limited. All rights reserved.
+ * Copyright (c) 2022-2026 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -779,4 +779,46 @@ func TestGetTargetSetProjectContexts(t *testing.T) {
 	// Unknown target-type
 	contexts = GetTargetSetProjectContexts(csolutionFile, "Unknown")
 	assert.Equal(t, 0, len(contexts))
+}
+
+func TestGetCompilerRootFromRootsCMake(t *testing.T) {
+	dir := t.TempDir()
+	filePath := filepath.Join(dir, "roots.cmake")
+
+	// Helper to write roots.cmake, ensuring parent dir exists
+	writeRoots := func(content string) {
+		if err := os.MkdirAll(filepath.Dir(filePath), 0755); err != nil {
+			t.Fatalf("failed to create dir for roots.cmake: %v", err)
+		}
+		err := os.WriteFile(filePath, []byte(content), 0600)
+		assert.NoError(t, err)
+	}
+
+	t.Run("valid CMSIS_COMPILER_ROOT", func(t *testing.T) {
+		content := `set(CMSIS_COMPILER_ROOT \"/some/path/to/etc\" CACHE PATH \"CMSIS compiler root\")`
+		writeRoots(content)
+		val, err := GetCompilerRootFromRootsCMake(filePath)
+		assert.NoError(t, err)
+		assert.Equal(t, "/some/path/to/etc", val)
+	})
+
+	t.Run("missing CMSIS_COMPILER_ROOT", func(t *testing.T) {
+		content := `set(SOME_OTHER_VAR \"/foo/bar\")`
+		writeRoots(content)
+		_, err := GetCompilerRootFromRootsCMake(filePath)
+		assert.Error(t, err)
+	})
+
+	t.Run("malformed line", func(t *testing.T) {
+		content := `set(CMSIS_COMPILER_ROOT /no/quotes)`
+		writeRoots(content)
+		_, err := GetCompilerRootFromRootsCMake(filePath)
+		assert.Error(t, err)
+	})
+
+	t.Run("file does not exist", func(t *testing.T) {
+		badPath := filepath.Join(dir, "notfound.cmake")
+		_, err := GetCompilerRootFromRootsCMake(badPath)
+		assert.Error(t, err)
+	})
 }
