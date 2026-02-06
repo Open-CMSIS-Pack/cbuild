@@ -352,9 +352,11 @@ func ResolveContexts(allContext []string, contextFilters []string) ([]string, er
 			if err != nil {
 				return nil, err
 			}
-			if match && !Contains(selectedContexts, context) {
-				matchFound = match
-				selectedContexts = append(selectedContexts, context)
+			if match {
+				if !Contains(selectedContexts, context) {
+					selectedContexts = append(selectedContexts, context)
+				}
+				matchFound = true
 			}
 		}
 		if !matchFound {

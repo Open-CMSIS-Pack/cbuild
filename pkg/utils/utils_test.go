@@ -7,6 +7,7 @@
 package utils
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -287,6 +288,7 @@ func TestResolveContexts(t *testing.T) {
 		{[]string{"Project2.Rel*+Tar*"}, []string{"Project2.Release+Target", "Project2.Release+Target2"}, false},
 		{[]string{".Rel*+*2"}, []string{"Project1.Release+Target2", "Project2.Release+Target2"}, false},
 		{[]string{"Project*.Release+*"}, []string{"Project1.Release+Target", "Project1.Release+Target2", "Project2.Release+Target", "Project2.Release+Target2"}, false},
+		{[]string{"+Target", "Project1.Debug+Target"}, []string{"Project1.Debug+Target", "Project1.Release+Target", "Project2.Debug+Target", "Project2.Release+Target", "Project4+Target"}, false},
 
 		// negative tests
 		{[]string{"Unknown"}, nil, true},
@@ -304,14 +306,17 @@ func TestResolveContexts(t *testing.T) {
 		{[]string{"Project1.Debug+Target+Target2"}, nil, true},
 	}
 
-	for _, test := range testCases {
+	for idx, test := range testCases {
 		outResolvedContexts, err := ResolveContexts(allContexts, test.contextFilters)
-		if test.ExpectError {
-			assert.Error(err)
-		} else {
-			assert.Nil(err)
+		caseInfo := func() string {
+			return fmt.Sprintf("TestCase #%d: contextFilters=%v", idx, test.contextFilters)
 		}
-		assert.Equal(test.expectedResolvedContexts, outResolvedContexts)
+		if test.ExpectError {
+			assert.Error(err, caseInfo())
+		} else {
+			assert.Nil(err, caseInfo())
+		}
+		assert.Equal(test.expectedResolvedContexts, outResolvedContexts, caseInfo())
 	}
 }
 
