@@ -289,6 +289,12 @@ func TestBuild(t *testing.T) {
 		err := b.Build()
 		assert.Error(err)
 	})
+
+	t.Run("test build csolution with skip convert flag", func(t *testing.T) {
+		b.Options.SkipConvert = true
+		err := b.Build()
+		assert.Error(err)
+	})
 }
 
 func TestRebuild(t *testing.T) {

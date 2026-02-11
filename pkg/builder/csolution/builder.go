@@ -650,7 +650,7 @@ func (b CSolutionBuilder) Build() (err error) {
 	}
 
 	// STEP 2: Generate build file(s)
-	if !b.Options.SkipConvert {
+	if !b.Options.SkipConvert || !b.buildFilesExist() {
 		if err = b.generateBuildFiles(); err != nil {
 			log.Error(err)
 			return err
@@ -659,6 +659,26 @@ func (b CSolutionBuilder) Build() (err error) {
 
 	// STEP 3: Build project(s)
 	return b.build()
+}
+
+func (b CSolutionBuilder) buildFilesExist() bool {
+	// Check cbuild-idx file
+	idxFile, err := b.getIdxFilePath()
+	if err != nil {
+		return false
+	}
+	// Check cbuild files
+	data, err := utils.ParseCbuildIndexFile(idxFile)
+	if err != nil {
+		return false
+	}
+	for _, cbuild := range data.BuildIdx.Cbuilds {
+		exists, err := utils.FileExists(filepath.Join(filepath.Dir(idxFile), cbuild.Cbuild))
+		if !exists || err != nil {
+			return false
+		}
+	}
+	return true
 }
 
 func (b CSolutionBuilder) needRebuild() (bool, error) {
