@@ -55,6 +55,7 @@ func (r Runner) ExecuteCommand(program string, quiet bool, args ...string) (stri
 		ptmx, ptyErr := pty.New()
 		if ptyErr == nil {
 			defer ptmx.Close()
+			// #nosec G115 os.Stdout.Fd() is safe here for terminal size
 			w, h, ptyErr := term.GetSize(int(os.Stdout.Fd()))
 			if ptyErr == nil && w > 0 && h > 0 {
 				_ = ptmx.Resize(w, h)

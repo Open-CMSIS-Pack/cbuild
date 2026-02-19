@@ -261,6 +261,7 @@ func CheckEnvVars(vars []string) {
 		value := os.Getenv(key)
 		if value == "" {
 			log.Warn("missing " + key + " environment variable")
+			// #nosec G703 value comes from environment variable (deployment config)
 		} else if _, err := os.Stat(value); os.IsNotExist(err) {
 			log.Warn(key + " environment variable specifies non-existent directory: " + value)
 		}
