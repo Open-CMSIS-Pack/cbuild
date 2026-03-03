@@ -814,3 +814,36 @@ func TestIsCompilerRootChanged(t *testing.T) {
 	})
 
 }
+
+func TestCleanTmpOut(t *testing.T) {
+	assert := assert.New(t)
+	b := CSolutionBuilder{
+		BuilderParams: builder.BuilderParams{
+			Runner:    RunnerMock{},
+			InputFile: filepath.Join(testRoot, testDir, "TestSolution/test.csolution.yml"),
+			InstallConfigs: utils.Configurations{
+				BinPath: configs.BinPath,
+				BinExtn: configs.BinExtn,
+				EtcPath: configs.EtcPath,
+			},
+		},
+	}
+	t.Run("test clean when 'out' directory is inside 'tmp' directory", func(t *testing.T) {
+		b.Options.UseCbuild2CMake = true
+		b.Options.Contexts = []string{"test.Debug+CM0"}
+		tmpDir := filepath.Join(testRoot, testDir, "TestSolution/tmpdir")
+		outDir := filepath.Join(tmpDir, "test")
+		_ = os.MkdirAll(outDir, os.ModePerm)
+		cbuildFile := filepath.Join(outDir, "test.Debug+CM0.cbuild.yml")
+		_ = os.WriteFile(cbuildFile, []byte("dummy"), 0600)
+		spuriousFile := filepath.Join(tmpDir, "spurious.txt")
+		_ = os.WriteFile(spuriousFile, []byte("dummy"), 0600)
+
+		err := b.Clean()
+		assert.Nil(err)
+		assert.FileExists(cbuildFile)
+		assert.NoFileExists(spuriousFile)
+
+		_ = os.RemoveAll(tmpDir)
+	})
+}

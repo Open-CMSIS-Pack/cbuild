@@ -51,3 +51,4 @@ solution:
 
   output-dirs:
     tmpdir: ./tmpdir
+    outdir: ./tmpdir/$Project$
