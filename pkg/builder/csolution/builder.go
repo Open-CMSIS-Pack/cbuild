@@ -808,8 +808,8 @@ func (b CSolutionBuilder) Clean() (err error) {
 		}
 	}
 
-	// Clean tmp dir
-	if err := utils.DeleteAll(tmpDir, []string{}); err != nil {
+	// Clean tmp dir, avoid to delete *.cbuild.yml and *.cbuild-run.yml files
+	if err := utils.DeleteAll(tmpDir, []string{"*.cbuild.yml", "*.cbuild-run.yml"}); err != nil {
 		if !b.Options.Clean {
 			log.Warn(err.Error())
 		}
