@@ -10,6 +10,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -554,21 +555,27 @@ func DeleteAll(path string, excludeFilePatterns []string) error {
 		return nil
 	}
 
+	root, err := os.OpenRoot(path)
+	if err != nil {
+		return errutils.New(errutils.ErrDeleteFailed, err.Error())
+	}
+	defer root.Close()
+
 	// Walk the tree and delete all non-matching files
 	var walkErr error
-	err := filepath.Walk(path, func(p string, info os.FileInfo, err error) error {
+	err = fs.WalkDir(root.FS(), ".", func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
 			// problem accessing p
 			return err
 		}
 		// skip root itself
-		if p == path {
+		if p == "." {
 			return nil
 		}
 		// if this is a file…
-		if !info.IsDir() {
+		if !d.IsDir() {
 			// check if file matches any of the exclude patterns
-			shouldExclude, merr := matchAnyPattern(info.Name(), excludeFilePatterns)
+			shouldExclude, merr := matchAnyPattern(d.Name(), excludeFilePatterns)
 			if merr != nil {
 				return merr
 			}
@@ -579,7 +586,7 @@ func DeleteAll(path string, excludeFilePatterns []string) error {
 			}
 
 			// delete non-matching file
-			if derr := os.Remove(p); derr != nil {
+			if derr := root.Remove(p); derr != nil {
 				// collect error but keep going
 				walkErr = derr
 			}
@@ -595,8 +602,8 @@ func DeleteAll(path string, excludeFilePatterns []string) error {
 
 	// Collect all directories
 	var dirs []string
-	_ = filepath.Walk(path, func(p string, info os.FileInfo, err error) error {
-		if err == nil && info.IsDir() {
+	_ = fs.WalkDir(root.FS(), ".", func(p string, d fs.DirEntry, err error) error {
+		if err == nil && d.IsDir() {
 			dirs = append(dirs, p)
 		}
 		return nil
@@ -610,12 +617,12 @@ func DeleteAll(path string, excludeFilePatterns []string) error {
 	// Try removing each if it’s now empty
 	for _, dir := range dirs {
 		// skip the root; we won't remove path itself
-		if dir == path {
+		if dir == "." {
 			continue
 		}
 		// if directory is now empty, delete it
-		if entries, rerr := os.ReadDir(dir); rerr == nil && len(entries) == 0 {
-			if dirErr := os.Remove(dir); dirErr != nil {
+		if entries, rerr := fs.ReadDir(root.FS(), dir); rerr == nil && len(entries) == 0 {
+			if dirErr := root.Remove(dir); dirErr != nil {
 				// collect but don't abort
 				walkErr = dirErr
 			}
