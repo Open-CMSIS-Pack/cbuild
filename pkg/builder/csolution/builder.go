@@ -153,11 +153,6 @@ func (b CSolutionBuilder) generateBuildFiles() (err error) {
 		args = append(args, "--context="+allYmlOrderedContexts[0])
 	}
 
-	// on setup command, run csolution convert command with --quiet
-	if b.Setup {
-		args = append(args, "--quiet")
-	}
-
 	if !b.Options.UseCbuild2CMake {
 		args = append(args, "--cbuildgen")
 	}
