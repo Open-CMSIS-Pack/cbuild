@@ -84,6 +84,8 @@ func (b CSolutionBuilder) runCSolution(args []string, quiet bool) (output string
 		return
 	}
 
+	log.Debug("csolution command: csolution " + strings.Join(args, " "))
+
 	// run csolution with args
 	output, err = b.Runner.ExecuteCommand(csolutionBin, quiet, args...)
 	return
@@ -167,8 +169,6 @@ func (b CSolutionBuilder) generateBuildFiles() (err error) {
 		log.Debug("csolution command: csolution " + strings.Join(args, " "))
 		_, stdErr, err = utils.ExecuteCommand(csolutionBin, args...)
 	} else {
-		log.Debug("csolution command: csolution " + strings.Join(args, " "))
-
 		//nolint:staticcheck // intentional logic for clarity
 		_, convertErr := b.runCSolution(args, !b.Options.Debug && !b.Options.Verbose)
 		if convertErr != nil {
@@ -635,17 +635,16 @@ func (b CSolutionBuilder) build() (err error) {
 func (b CSolutionBuilder) Build() (err error) {
 	_ = utils.UpdateEnvVars(b.InstallConfigs.BinPath, b.InstallConfigs.EtcPath)
 
-	// STEP 1: Install missing pack(s)
-	if err = b.installMissingPacks(); err != nil {
-		// Continue with build files generation upon setup command
-		if !b.Setup {
-			log.Error(err)
-			return err
-		}
-	}
-
-	// STEP 2: Generate build file(s)
 	if !b.Options.SkipConvert || !b.buildFilesExist() {
+		// STEP 1: Install missing pack(s)
+		if err = b.installMissingPacks(); err != nil {
+			// Continue with build files generation upon setup command
+			if !b.Setup {
+				log.Error(err)
+				return err
+			}
+		}
+		// STEP 2: Generate build file(s)
 		if err = b.generateBuildFiles(); err != nil {
 			log.Error(err)
 			return err
