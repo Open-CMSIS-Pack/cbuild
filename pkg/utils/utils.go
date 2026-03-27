@@ -467,7 +467,8 @@ func GetTmpDir(csolutionFile string, outputDir string) (string, error) {
 	}
 
 	tmpDir := data.Solution.OutputDirs.Tmpdir
-	if tmpDir == "" {
+	accessSequencesRegex := regexp.MustCompile(`\$.*?\$`)
+	if tmpDir == "" || accessSequencesRegex.MatchString(tmpDir) {
 		tmpDir = defaultTmpDir
 	}
 
