@@ -10,7 +10,6 @@ jobs:
   dependency-review:
     if: github.repository_owner == 'Open-CMSIS-Pack'
     runs-on: ubuntu-latest
-
     permissions:
       contents: write
       pull-requests: write
