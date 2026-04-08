@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Arm Limited. All rights reserved.
+ * Copyright (c) 2023-2026 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -26,7 +26,9 @@ func listEnvironment(cmd *cobra.Command, args []string) error {
 
 	p := csolution.CSolutionBuilder{
 		BuilderParams: builder.BuilderParams{
-			Runner:         utils.Runner{},
+			Runner: utils.Runner{
+				IsListCmd: true,
+			},
 			InstallConfigs: configs,
 		},
 	}

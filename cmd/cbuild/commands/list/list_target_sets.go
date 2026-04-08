@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Arm Limited. All rights reserved.
+ * Copyright (c) 2025-2026 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -55,7 +55,9 @@ func listTargetSets(cmd *cobra.Command, args []string) error {
 
 	p := csolution.CSolutionBuilder{
 		BuilderParams: builder.BuilderParams{
-			Runner: utils.Runner{},
+			Runner: utils.Runner{
+				IsListCmd: true,
+			},
 			Options: builder.Options{
 				SchemaChk: !noSchemaChk,
 				Filter:    filter,

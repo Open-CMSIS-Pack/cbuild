@@ -26,8 +26,9 @@ type RunnerInterface interface {
 }
 
 type Runner struct {
-	outBytes []byte
-	quiet    bool
+	outBytes  []byte // Captures the output bytes from the executed command
+	quiet     bool   // If true, suppresses output to the standard logger
+	IsListCmd bool   // Indicates if the current command is a 'list' command
 }
 
 func (r *Runner) Write(bytes []byte) (n int, err error) {
@@ -50,7 +51,7 @@ func (r Runner) ExecuteCommand(program string, quiet bool, args ...string) (stri
 	}
 
 	var err error
-	if !quiet && isTerminal() {
+	if !r.IsListCmd && isTerminal() {
 		// Use pty to preserve colors and interactive output
 		ptmx, ptyErr := pty.New()
 		if ptyErr == nil {
