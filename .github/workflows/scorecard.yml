@@ -20,8 +20,6 @@ jobs:
     if: github.repository == 'Open-CMSIS-Pack/cbuild'
     name: Scorecard analysis
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     permissions:
       # Needed to upload the results to code-scanning dashboard.
       security-events: write
