@@ -248,7 +248,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.Flags().BoolP("version", "V", false, "Print version")
 	rootCmd.Flags().BoolP("help", "h", false, "Print usage")
 	rootCmd.Flags().BoolP("quiet", "q", false, "Suppress output messages except build invocations")
-	rootCmd.Flags().BoolP("debug", "d", false, "Enable debug messages")
+	rootCmd.Flags().BoolP("debug", "d", false, "Enable debug messages of the cmsis build tools")
 	rootCmd.Flags().BoolP("verbose", "v", false, "Enable verbose messages from toolchain builds")
 	rootCmd.Flags().BoolP("clean", "C", false, "Remove intermediate and output directories")
 	rootCmd.Flags().BoolP("packs", "p", false, "Download missing software packs with cpackget")
