@@ -201,7 +201,7 @@ func init() {
 	SetUpCmd.DisableFlagsInUseLine = true
 	SetUpCmd.Flags().BoolP("help", "h", false, "Print usage")
 	SetUpCmd.Flags().BoolP("quiet", "q", false, "Suppress output messages except build invocations")
-	SetUpCmd.Flags().BoolP("debug", "d", false, "Enable debug messages")
+	SetUpCmd.Flags().BoolP("debug", "d", false, "Enable debug messages of the cmsis build tools")
 	SetUpCmd.Flags().BoolP("verbose", "v", false, "Enable verbose messages from toolchain builds")
 	SetUpCmd.Flags().BoolP("clean", "C", false, "Remove intermediate and output directories")
 	SetUpCmd.Flags().BoolP("packs", "p", false, "Download missing software packs with cpackget")
