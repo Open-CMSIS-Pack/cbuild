@@ -116,7 +116,7 @@ func init() {
 	BuildCPRJCmd.Flags().IntP("jobs", "j", 0, "Number of job slots for parallel execution")
 	BuildCPRJCmd.Flags().BoolP("help", "h", false, "Print usage")
 	BuildCPRJCmd.Flags().BoolP("quiet", "q", false, "Suppress output messages except build invocations")
-	BuildCPRJCmd.Flags().BoolP("debug", "d", false, "Enable debug messages")
+	BuildCPRJCmd.Flags().BoolP("debug", "d", false, "Enable debug messages of the cmsis build tools")
 	BuildCPRJCmd.Flags().BoolP("verbose", "v", false, "Enable verbose messages from toolchain builds")
 	BuildCPRJCmd.Flags().BoolP("clean", "C", false, "Remove intermediate and output directories")
 	BuildCPRJCmd.Flags().BoolP("packs", "p", false, "Download missing software packs with cpackget")

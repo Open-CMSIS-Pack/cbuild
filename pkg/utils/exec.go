@@ -51,7 +51,7 @@ func (r Runner) ExecuteCommand(program string, quiet bool, args ...string) (stri
 	}
 
 	var err error
-	if !r.IsListCmd && isTerminal() {
+	if !quiet && !r.IsListCmd && isTerminal() {
 		// Use pty to preserve colors and interactive output
 		ptmx, ptyErr := pty.New()
 		if ptyErr == nil {
