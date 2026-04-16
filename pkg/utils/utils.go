@@ -542,10 +542,11 @@ func matchAnyPattern(filename string, patterns []string) (bool, error) {
 
 // DeleteAll removes everything under path except files whose base name
 // matches any of the provided glob patterns. If patterns is empty, it just calls os.RemoveAll.
+// silently exits (nothing to delete) if the path does not exist.
 func DeleteAll(path string, excludeFilePatterns []string) error {
 	// check path exists
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return errutils.New(errutils.ErrPathNotExist, path)
+		return nil // nothing to delete
 	}
 
 	// if no patterns given, just delete everything

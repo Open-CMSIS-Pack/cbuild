@@ -506,7 +506,7 @@ func TestDeleteAll(t *testing.T) {
 		err := DeleteAll(nonExistentDir, []string{})
 
 		// Verify no error
-		assert.Error(t, err)
+		assert.Nil(t, err)
 	})
 
 	t.Run("Delete Empty Directory", func(t *testing.T) {
@@ -572,8 +572,8 @@ func TestDeleteAll(t *testing.T) {
 
 	t.Run("non-existent root path", func(t *testing.T) {
 		err := DeleteAll("/non/existent/path", []string{})
-		if err == nil {
-			t.Error("expected error for non-existent path, got nil")
+		if err != nil {
+			t.Error("expected no error for non-existent path, got error")
 		}
 	})
 
