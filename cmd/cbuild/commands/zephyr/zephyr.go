@@ -84,6 +84,16 @@ func normalizeLayers(input []string) []string {
 	return layers
 }
 
+func isSimpleModuleName(moduleName string) bool {
+	if moduleName == "." || moduleName == ".." {
+		return false
+	}
+	if strings.ContainsAny(moduleName, `/\`) {
+		return false
+	}
+	return moduleName == filepath.Base(moduleName)
+}
+
 func resolveAndValidateLayers(input []string, cwd string) ([]string, error) {
 	layers := normalizeLayers(input)
 	resolvedLayers := make([]string, 0, len(layers))
@@ -159,6 +169,11 @@ func generateZephyrModule(cmd *cobra.Command, _ []string) error {
 	moduleName = strings.TrimSpace(moduleName)
 	if moduleName == "" {
 		err := errutils.New(errutils.ErrMissingModuleArg)
+		log.Error(err)
+		return err
+	}
+	if !isSimpleModuleName(moduleName) {
+		err := errutils.New(errutils.ErrInvalidInputArg, "--module")
 		log.Error(err)
 		return err
 	}
@@ -252,7 +267,7 @@ func generateZephyrModule(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	_, err = runner.ExecuteCommand(csolutionBin, false, solutionFile, "convert")
+	_, err = runner.ExecuteCommand(csolutionBin, false, "convert", solutionFile)
 	if err != nil {
 		log.Error(err)
 		return err
@@ -266,22 +281,29 @@ func generateZephyrModule(cmd *cobra.Command, _ []string) error {
 	}
 
 	sourceModuleDir := filepath.Join(tmpDir, moduleName)
-	if _, statErr := os.Stat(sourceModuleDir); statErr == nil {
-		destinationModuleDir := filepath.Join(originalDir, moduleName)
-		if _, existsErr := os.Stat(destinationModuleDir); existsErr == nil {
-			err = errutils.New(errutils.ErrOverwritingDestination, destinationModuleDir)
-			log.Warn(err)
+	if _, statErr := os.Stat(sourceModuleDir); statErr != nil {
+		if os.IsNotExist(statErr) {
+			err = errutils.New(errutils.ErrPathNotExist, sourceModuleDir)
+		} else {
+			err = statErr
 		}
+		log.Error(err)
+		return err
+	}
 
-		if err = os.RemoveAll(destinationModuleDir); err != nil {
-			log.Error(err)
-			return err
-		}
+	destinationModuleDir := filepath.Join(originalDir, moduleName)
+	if _, existsErr := os.Stat(destinationModuleDir); existsErr == nil {
+		log.Warn("overwriting existing destination:", destinationModuleDir)
+	}
 
-		if err = os.Rename(sourceModuleDir, destinationModuleDir); err != nil {
-			log.Error(err)
-			return err
-		}
+	if err = os.RemoveAll(destinationModuleDir); err != nil {
+		log.Error(err)
+		return err
+	}
+
+	if err = os.Rename(sourceModuleDir, destinationModuleDir); err != nil {
+		log.Error(err)
+		return err
 	}
 
 	return nil

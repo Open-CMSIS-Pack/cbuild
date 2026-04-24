@@ -47,7 +47,6 @@ const (
 	ErrRelativizeClayerPath   = "unable to relativize clayer path %q against project file %q: %v"
 	ErrMissingModuleArg       = "missing required argument: --module"
 	ErrMissingClayerArg       = "missing required argument: --clayer requires at least one layer"
-	ErrOverwritingDestination = "overwriting existing destination: %s"
 )
 
 const (
