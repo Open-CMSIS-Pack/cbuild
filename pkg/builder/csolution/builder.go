@@ -134,6 +134,10 @@ func (b CSolutionBuilder) installMissingPacks() (err error) {
 	return nil
 }
 
+func (b CSolutionBuilder) InstallMissingPacks() error {
+	return b.installMissingPacks()
+}
+
 func (b CSolutionBuilder) generateBuildFiles() (err error) {
 	args := b.formulateArgs([]string{"convert"})
 
