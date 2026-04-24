@@ -41,6 +41,13 @@ const (
 	ErrInvalidCbuildFormat    = "invalid cbuild format: '%s'"
 	ErrChildFailed            = "child process failed with exit code: '%d'"
 	ErrInvalidRootsCmake      = "invalid roots.cmake file: '%s'"
+	ErrInvalidClayerPath      = "invalid clayer path %q: %v"
+	ErrClayerAccess           = "unable to access clayer file %s: %v"
+	ErrClayerPathIsDirectory  = "clayer path is a directory: %s"
+	ErrRelativizeClayerPath   = "unable to relativize clayer path %q against project file %q: %v"
+	ErrMissingModuleArg       = "missing required argument: --module"
+	ErrMissingClayerArg       = "missing required argument: --clayer requires at least one layer"
+	ErrOverwritingDestination = "overwriting existing destination: %s"
 )
 
 const (

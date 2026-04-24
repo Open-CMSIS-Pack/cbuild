@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 Arm Limited. All rights reserved.
+ * Copyright (c) 2022-2026 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -16,6 +16,7 @@ import (
 	"github.com/Open-CMSIS-Pack/cbuild/v2/cmd/cbuild/commands/build"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/cmd/cbuild/commands/list"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/cmd/cbuild/commands/setup"
+	"github.com/Open-CMSIS-Pack/cbuild/v2/cmd/cbuild/commands/zephyr"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder/cproject"
 	"github.com/Open-CMSIS-Pack/cbuild/v2/pkg/builder/csolution"
@@ -279,7 +280,7 @@ func NewRootCmd() *cobra.Command {
 	_ = rootCmd.Flags().MarkHidden("update")
 
 	rootCmd.SetFlagErrorFunc(FlagErrorFunc)
-	rootCmd.AddCommand(build.BuildCPRJCmd, list.ListCmd, setup.SetUpCmd)
+	rootCmd.AddCommand(build.BuildCPRJCmd, list.ListCmd, setup.SetUpCmd, zephyr.ZephyrCmd)
 	return rootCmd
 }
 
