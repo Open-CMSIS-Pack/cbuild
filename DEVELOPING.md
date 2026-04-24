@@ -26,6 +26,15 @@ Follow the steps below to start developing for `cbuild`:
 7. Done! You can now start modifying the source code. Please refer to [contributing guide](CONTRIBUTING.md)
 for guidelines.
 
+# Debugging
+
+Workaround for VS Code debug issue concerning DWARFv5 https://github.com/go-delve/delve/issues/4268:
+Build `dlv` with go 1.25.0:
+
+```bash
+GOTOOLCHAIN="go1.25.0" go install -a github.com/go-delve/delve/cmd/dlv@latest
+```
+
 # Releasing
 
 If you have the right to push to the `main` branch of this repo, you might be entitled to
