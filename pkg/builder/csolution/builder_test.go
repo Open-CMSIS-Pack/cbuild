@@ -876,7 +876,9 @@ func TestRunCSolutionQuietMode(t *testing.T) {
 
 		// Call runCSolution with quiet=true and --verbose in args
 		args := []string{"convert", "--verbose", "some-file.yml"}
-		_, _ = b.runCSolution(args, true)
+		output, err := b.runCSolution(args, true)
+		assert.Equal("", output)
+		assert.Nil(err)
 
 		// Verify --verbose was removed from captured args
 		assert.NotContains(runnerCapture.capturedArgs, "--verbose")
