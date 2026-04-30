@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 Arm Limited. All rights reserved.
+ * Copyright (c) 2022-2026 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -196,7 +196,9 @@ func NewRootCmd() *cobra.Command {
 			}
 
 			params := builder.BuilderParams{
-				Runner:         utils.Runner{},
+				Runner: utils.Runner{
+					PlainOutput: options.Debug || options.Verbose,
+				},
 				Options:        options,
 				InputFile:      inputFile,
 				InstallConfigs: configs,
