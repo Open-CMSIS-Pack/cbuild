@@ -14,6 +14,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -82,6 +83,10 @@ func (b CSolutionBuilder) runCSolution(args []string, quiet bool) (output string
 	csolutionBin, err := b.getCSolutionPath()
 	if err != nil {
 		return
+	}
+
+	if quiet {
+		args = slices.DeleteFunc(args, func(arg string) bool { return arg == "--verbose" })
 	}
 
 	log.Debug("csolution command: csolution " + strings.Join(args, " "))

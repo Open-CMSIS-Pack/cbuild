@@ -59,6 +59,15 @@ func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) (
 	return "", nil
 }
 
+type RunnerMockWithArgCapture struct {
+	capturedArgs []string
+}
+
+func (r *RunnerMockWithArgCapture) ExecuteCommand(program string, quiet bool, args ...string) (string, error) {
+	r.capturedArgs = args
+	return "", nil
+}
+
 func TestListContexts(t *testing.T) {
 	assert := assert.New(t)
 	b := CSolutionBuilder{
@@ -845,5 +854,35 @@ func TestCleanTmpOut(t *testing.T) {
 		assert.NoFileExists(spuriousFile)
 
 		_ = os.RemoveAll(tmpDir)
+	})
+}
+
+func TestRunCSolutionQuietMode(t *testing.T) {
+	assert := assert.New(t)
+
+	t.Run("Quiet mode removes verbose flag", func(t *testing.T) {
+		runnerCapture := &RunnerMockWithArgCapture{}
+		b := CSolutionBuilder{
+			BuilderParams: builder.BuilderParams{
+				Runner:    runnerCapture,
+				InputFile: filepath.Join(testRoot, testDir, "TestSolution/test.csolution.yml"),
+				InstallConfigs: utils.Configurations{
+					BinPath: configs.BinPath,
+					BinExtn: configs.BinExtn,
+					EtcPath: configs.EtcPath,
+				},
+			},
+		}
+
+		// Call runCSolution with quiet=true and --verbose in args
+		args := []string{"convert", "--verbose", "some-file.yml"}
+		output, err := b.runCSolution(args, true)
+		assert.Equal("", output)
+		assert.Nil(err)
+
+		// Verify --verbose was removed from captured args
+		assert.NotContains(runnerCapture.capturedArgs, "--verbose")
+		assert.Contains(runnerCapture.capturedArgs, "convert")
+		assert.Contains(runnerCapture.capturedArgs, "some-file.yml")
 	})
 }

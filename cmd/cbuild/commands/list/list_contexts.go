@@ -53,7 +53,7 @@ func listContexts(cmd *cobra.Command, args []string) error {
 	p := csolution.CSolutionBuilder{
 		BuilderParams: builder.BuilderParams{
 			Runner: utils.Runner{
-				IsListCmd: true,
+				PlainOutput: true,
 			},
 			Options: builder.Options{
 				SchemaChk: !noSchemaChk,

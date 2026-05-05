@@ -130,7 +130,9 @@ func setUpProject(cmd *cobra.Command, args []string) error {
 	}
 
 	params := builder.BuilderParams{
-		Runner:         utils.Runner{},
+		Runner: utils.Runner{
+			PlainOutput: options.Debug || options.Verbose,
+		},
 		Options:        options,
 		InputFile:      inputFile,
 		InstallConfigs: configs,
