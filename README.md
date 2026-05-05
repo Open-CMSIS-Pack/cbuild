@@ -1,6 +1,5 @@
 [![Release](https://github.com/Open-CMSIS-Pack/cbuild/actions/workflows/release.yml/badge.svg)](https://github.com/Open-CMSIS-Pack/cbuild/actions/workflows/release.yml)
-[![Build](https://github.com/Open-CMSIS-Pack/cbuild/actions/workflows/build.yml/badge.svg)](https://github.com/Open-CMSIS-Pack/cbuild/actions/workflows/build.yml)
-[![Test](https://github.com/Open-CMSIS-Pack/cbuild/actions/workflows/test.yml/badge.svg)](https://github.com/Open-CMSIS-Pack/cbuild/actions/workflows/test.yml)
+[![Build And Test](https://github.com/Open-CMSIS-Pack/cbuild/actions/workflows/ci.yml/badge.svg)](https://github.com/Open-CMSIS-Pack/cbuild/actions/workflows/ci.yml)
 [![TPIP Check](https://github.com/Open-CMSIS-Pack/cbuild/actions/workflows/tpip-check.yml/badge.svg)](https://github.com/Open-CMSIS-Pack/cbuild/actions/workflows/tpip-check.yml)
 [![Markdown](https://github.com/Open-CMSIS-Pack/cbuild/actions/workflows/markdown.yml/badge.svg)](https://github.com/Open-CMSIS-Pack/cbuild/actions/workflows/markdown.yml)
 
