@@ -27,52 +27,52 @@ const (
 
 var (
 	getInstallConfigs = utils.GetInstallConfigs
-	runnerInterface   = func() utils.RunnerInterface { return utils.Runner{} }
+	newRunner         = func() utils.RunnerInterface { return utils.Runner{} }
 )
 
 func createSolutionContent(moduleName string, toolchain string, device string, packs []string) string {
-	var builder strings.Builder
-	builder.WriteString("solution:\n\n")
-	builder.WriteString("  compiler: ")
-	builder.WriteString(toolchain)
-	builder.WriteString("\n\n")
-	builder.WriteString("  packs:\n")
+	var sb strings.Builder
+	sb.WriteString("solution:\n\n")
+	sb.WriteString("  compiler: ")
+	sb.WriteString(toolchain)
+	sb.WriteString("\n\n")
+	sb.WriteString("  packs:\n")
 	for _, pack := range packs {
-		builder.WriteString("    - pack: ")
-		builder.WriteString(pack)
-		builder.WriteString("\n")
+		sb.WriteString("    - pack: ")
+		sb.WriteString(pack)
+		sb.WriteString("\n")
 	}
-	builder.WriteString("\n")
-	builder.WriteString("  target-types:\n")
-	builder.WriteString("    - type: ")
-	builder.WriteString(device)
-	builder.WriteString("\n")
-	builder.WriteString("      device: ")
-	builder.WriteString(device)
-	builder.WriteString("\n\n")
-	builder.WriteString("  projects:\n")
-	builder.WriteString("    - project: ")
-	builder.WriteString(moduleName)
-	builder.WriteString(".cproject.yml\n")
+	sb.WriteString("\n")
+	sb.WriteString("  target-types:\n")
+	sb.WriteString("    - type: ")
+	sb.WriteString(device)
+	sb.WriteString("\n")
+	sb.WriteString("      device: ")
+	sb.WriteString(device)
+	sb.WriteString("\n\n")
+	sb.WriteString("  projects:\n")
+	sb.WriteString("    - project: ")
+	sb.WriteString(moduleName)
+	sb.WriteString(".cproject.yml\n")
 
-	return builder.String()
+	return sb.String()
 }
 
 func createProjectContent(clayers []string) string {
-	var builder strings.Builder
-	builder.WriteString("project:\n\n")
-	builder.WriteString("  layers:\n")
+	var sb strings.Builder
+	sb.WriteString("project:\n\n")
+	sb.WriteString("  layers:\n")
 
 	for _, clayer := range clayers {
-		builder.WriteString("    - layer: ")
-		builder.WriteString(clayer)
-		builder.WriteString("\n")
+		sb.WriteString("    - layer: ")
+		sb.WriteString(clayer)
+		sb.WriteString("\n")
 	}
 
-	return builder.String()
+	return sb.String()
 }
 
-func normalizeLayers(input []string) []string {
+func trimAndDropEmpty(input []string) []string {
 	layers := make([]string, 0, len(input))
 	for _, item := range input {
 		layer := strings.TrimSpace(item)
@@ -95,7 +95,7 @@ func isSimpleModuleName(moduleName string) bool {
 }
 
 func resolveAndValidateLayers(input []string, cwd string) ([]string, error) {
-	layers := normalizeLayers(input)
+	layers := trimAndDropEmpty(input)
 	resolvedLayers := make([]string, 0, len(layers))
 
 	for _, layer := range layers {
@@ -149,7 +149,7 @@ func makeLayersRelativeToProject(input []string, projectFile string) ([]string, 
 func getToolBinary(binPath string, name string, ext string) (string, error) {
 	toolPath := filepath.Join(binPath, name+ext)
 	if _, err := os.Stat(toolPath); err != nil {
-		return "", err
+		return "", errutils.New(errutils.ErrBinaryNotFound, name+ext, "at '"+toolPath+"'")
 	}
 	return toolPath, nil
 }
@@ -189,7 +189,7 @@ func generateZephyrModule(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	validPacks := normalizeLayers(packs)
+	validPacks := trimAndDropEmpty(packs)
 	if len(validPacks) == 0 {
 		validPacks = []string{defaultPack}
 	}
@@ -253,7 +253,7 @@ func generateZephyrModule(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	runner := runnerInterface()
+	runner := newRunner()
 	csolutionBuilder := csolution.CSolutionBuilder{
 		BuilderParams: builder.BuilderParams{
 			Runner:         runner,

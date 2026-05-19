@@ -45,8 +45,8 @@ const (
 	ErrClayerAccess           = "unable to access clayer file %s: %v"
 	ErrClayerPathIsDirectory  = "clayer path is a directory: %s"
 	ErrRelativizeClayerPath   = "unable to relativize clayer path %q against project file %q: %v"
-	ErrMissingModuleArg       = "missing required argument: --module"
-	ErrMissingClayerArg       = "missing required argument: --clayer requires at least one layer"
+	ErrMissingModuleArg       = "--module is required"
+	ErrMissingClayerArg       = "--clayer requires at least one layer"
 )
 
 const (

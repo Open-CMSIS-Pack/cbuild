@@ -198,8 +198,8 @@ func TestMakeLayersRelativeToProject(t *testing.T) {
 	})
 }
 
-func TestNormalizeLayers(t *testing.T) {
-	layers := normalizeLayers([]string{"  a.clayer.yml ", "", "  ", "b.clayer.yml"})
+func TestTrimAndDropEmpty(t *testing.T) {
+	layers := trimAndDropEmpty([]string{"  a.clayer.yml ", "", "  ", "b.clayer.yml"})
 	if len(layers) != 2 {
 		t.Fatalf("expected 2 layers, got %d", len(layers))
 	}
@@ -268,10 +268,10 @@ func TestZephyrModuleGeneration(t *testing.T) {
 	}
 
 	oldGetInstallConfigs := getInstallConfigs
-	oldRunnerInterface := runnerInterface
+	oldNewRunner := newRunner
 	t.Cleanup(func() {
 		getInstallConfigs = oldGetInstallConfigs
-		runnerInterface = oldRunnerInterface
+		newRunner = oldNewRunner
 	})
 
 	getInstallConfigs = func() (utils.Configurations, error) {
@@ -288,7 +288,7 @@ func TestZephyrModuleGeneration(t *testing.T) {
 		}
 		return nil
 	}}
-	runnerInterface = func() utils.RunnerInterface { return fake }
+	newRunner = func() utils.RunnerInterface { return fake }
 
 	cmd := testZephyrCmd(t, "demo", []string{clayer}, []string{defaultPack})
 	if err := generateZephyrModule(cmd, nil); err != nil {
@@ -332,17 +332,17 @@ func TestZephyrModuleGenerationFailsWhenModuleDirMissing(t *testing.T) {
 	}
 
 	oldGetInstallConfigs := getInstallConfigs
-	oldRunnerInterface := runnerInterface
+	oldNewRunner := newRunner
 	t.Cleanup(func() {
 		getInstallConfigs = oldGetInstallConfigs
-		runnerInterface = oldRunnerInterface
+		newRunner = oldNewRunner
 	})
 
 	getInstallConfigs = func() (utils.Configurations, error) {
 		return utils.Configurations{BinPath: binDir, EtcPath: workDir, BinExtn: ""}, nil
 	}
 	fake := &fakeRunner{}
-	runnerInterface = func() utils.RunnerInterface { return fake }
+	newRunner = func() utils.RunnerInterface { return fake }
 
 	cmd := testZephyrCmd(t, "demo", []string{clayer}, []string{defaultPack})
 	err := generateZephyrModule(cmd, nil)
@@ -351,5 +351,39 @@ func TestZephyrModuleGenerationFailsWhenModuleDirMissing(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "path does not exist") {
 		t.Fatalf("expected missing path error, got %v", err)
+	}
+}
+
+func TestZephyrModuleGenerationFailsWhenToolBinaryMissing(t *testing.T) {
+	workDir := withTempWorkingDir(t)
+
+	binDir := filepath.Join(workDir, "bin")
+	if err := os.MkdirAll(binDir, 0700); err != nil {
+		t.Fatalf("failed to create bin dir: %v", err)
+	}
+	createTool(t, binDir, "cbuild2cmake")
+	createTool(t, binDir, "cpackget")
+
+	clayer := filepath.Join(workDir, "input.clayer.yml")
+	if err := os.WriteFile(clayer, []byte("layer"), 0600); err != nil {
+		t.Fatalf("failed to write clayer: %v", err)
+	}
+
+	oldGetInstallConfigs := getInstallConfigs
+	t.Cleanup(func() {
+		getInstallConfigs = oldGetInstallConfigs
+	})
+
+	getInstallConfigs = func() (utils.Configurations, error) {
+		return utils.Configurations{BinPath: binDir, EtcPath: workDir, BinExtn: ""}, nil
+	}
+
+	cmd := testZephyrCmd(t, "demo", []string{clayer}, []string{defaultPack})
+	err := generateZephyrModule(cmd, nil)
+	if err == nil {
+		t.Fatal("expected error when csolution binary is missing")
+	}
+	if !strings.Contains(err.Error(), "csolution not found") {
+		t.Fatalf("expected missing csolution binary error, got %v", err)
 	}
 }
