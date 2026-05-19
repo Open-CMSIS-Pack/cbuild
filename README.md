@@ -1,3 +1,4 @@
+[![Releases](https://img.shields.io/github/v/tag/Open-CMSIS-Pack/cbuild.svg?sort=semver&label=Release)](https://github.com/Open-CMSIS-Pack/cbuild/releases)
 [![Release](https://github.com/Open-CMSIS-Pack/cbuild/actions/workflows/release.yml/badge.svg)](https://github.com/Open-CMSIS-Pack/cbuild/actions/workflows/release.yml)
 [![Build And Test](https://github.com/Open-CMSIS-Pack/cbuild/actions/workflows/ci.yml/badge.svg)](https://github.com/Open-CMSIS-Pack/cbuild/actions/workflows/ci.yml)
 [![TPIP Check](https://github.com/Open-CMSIS-Pack/cbuild/actions/workflows/tpip-check.yml/badge.svg)](https://github.com/Open-CMSIS-Pack/cbuild/actions/workflows/tpip-check.yml)
