@@ -96,7 +96,7 @@ func (b CSolutionBuilder) runCSolution(args []string, quiet bool) (output string
 	return
 }
 
-func (b CSolutionBuilder) installMissingPacks() (err error) {
+func (b CSolutionBuilder) InstallMissingPacks() (err error) {
 	if !b.Options.Packs {
 		return nil
 	}
@@ -642,7 +642,7 @@ func (b CSolutionBuilder) Build() (err error) {
 
 	if !b.Options.SkipConvert || !b.buildFilesExist() {
 		// STEP 1: Install missing pack(s)
-		if err = b.installMissingPacks(); err != nil {
+		if err = b.InstallMissingPacks(); err != nil {
 			// Continue with build files generation upon setup command
 			if !b.Setup {
 				log.Error(err)

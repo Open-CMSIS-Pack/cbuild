@@ -349,21 +349,21 @@ func TestInstallMissingPacks(t *testing.T) {
 	}
 
 	t.Run("test install missing packs", func(t *testing.T) {
-		err := b.installMissingPacks()
+		err := b.InstallMissingPacks()
 		assert.Nil(err)
 	})
 
 	t.Run("test install missing packs with invalid path", func(t *testing.T) {
 		binExtn := b.InstallConfigs.BinExtn
 		b.InstallConfigs.BinExtn = "invalid_path"
-		err := b.installMissingPacks()
+		err := b.InstallMissingPacks()
 		b.InstallConfigs.BinExtn = binExtn
 		assert.Error(err)
 	})
 
 	t.Run("test install missing packs with no --pack arg", func(t *testing.T) {
 		b.Options.Packs = false
-		err := b.installMissingPacks()
+		err := b.InstallMissingPacks()
 		assert.Nil(err)
 	})
 }
