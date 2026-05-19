@@ -3,7 +3,7 @@ module github.com/Open-CMSIS-Pack/cbuild/v2
 go 1.25.0
 
 require (
-	github.com/aymanbagabas/go-pty v0.2.2
+	github.com/aymanbagabas/go-pty v0.2.3
 	github.com/hashicorp/go-version v1.9.0
 	github.com/otiai10/copy v1.14.1
 	github.com/sirupsen/logrus v1.9.4
@@ -15,13 +15,13 @@ require (
 )
 
 require (
-	github.com/creack/pty v1.1.21 // indirect
+	github.com/creack/pty v1.1.24 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/otiai10/mint v1.6.3 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/u-root/u-root v0.11.0 // indirect
-	golang.org/x/crypto v0.45.0 // indirect
-	golang.org/x/sync v0.8.0 // indirect
+	github.com/u-root/u-root v0.16.0 // indirect
+	golang.org/x/crypto v0.51.0 // indirect
+	golang.org/x/sync v0.18.0 // indirect
 	golang.org/x/sys v0.44.0 // indirect
 )
