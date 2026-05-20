@@ -194,12 +194,8 @@ func generateZephyrModule(cmd *cobra.Command, _ []string) error {
 		validPacks = []string{defaultPack}
 	}
 
-	tmpDir := filepath.Join(originalDir, moduleName+"-tmp")
-	if err = os.RemoveAll(tmpDir); err != nil {
-		log.Error(err)
-		return err
-	}
-	if err = os.MkdirAll(tmpDir, 0700); err != nil {
+	tmpDir, err := os.MkdirTemp(filepath.Dir(originalDir), moduleName+"-tmp-*")
+	if err != nil {
 		log.Error(err)
 		return err
 	}
