@@ -369,8 +369,9 @@ func TestWestSupport(t *testing.T) {
 		b.BuildContext = "west.Debug+CM0"
 		isWest, westInfo := b.GetWestBuildInfo()
 		assert.True(isWest)
-		assert.Contains(westInfo.CbuildData.Build.OutputDirs.Outdir, "OutDir")
-		assert.Contains(westInfo.Cbuild, "west.Debug+CM0.cbuild.yml")
+		assert.Len(westInfo, 1)
+		assert.Contains(westInfo[0].CbuildData.Build.OutputDirs.Outdir, "OutDir")
+		assert.Contains(westInfo[0].Cbuild, "west.Debug+CM0.cbuild.yml")
 	})
 
 	t.Run("test build west", func(t *testing.T) {

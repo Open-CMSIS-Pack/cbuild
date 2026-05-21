@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2025 Arm Limited. All rights reserved.
+ * Copyright (c) 2024-2026 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -247,10 +247,12 @@ func (b CbuildIdxBuilder) build() error {
 	}
 
 	if isWest {
-		// Add west files references to cbuild file
-		err = utils.AddWestFilesToCbuild(westInfo)
-		if err != nil {
-			return err
+		// Add west files references to cbuild files
+		for _, info := range westInfo {
+			err = utils.AddWestFilesToCbuild(info)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -329,22 +331,23 @@ func (b CbuildIdxBuilder) compareVersions(v1, v2 string) (int, error) {
 	return version1.Compare(version2), nil
 }
 
-func (b CbuildIdxBuilder) GetWestBuildInfo() (bool, utils.WestBuildInfo) {
-	var info utils.WestBuildInfo
+func (b CbuildIdxBuilder) GetWestBuildInfo() (bool, []utils.WestBuildInfo) {
+	var westInfoCollection []utils.WestBuildInfo
 	basePath := filepath.Dir(b.InputFile)
 	cbuildIdxData, _ := utils.ParseCbuildIndexFile(b.InputFile)
 	for _, cbuild := range cbuildIdxData.BuildIdx.Cbuilds {
-		if b.BuildContext == cbuild.Project+cbuild.Configuration && cbuild.West {
+		if cbuild.West {
+			var info utils.WestBuildInfo
 			info.Cbuild = filepath.Join(basePath, cbuild.Cbuild)
-			break
+			cbuildData, _ := utils.ParseCbuildFile(info.Cbuild)
+			info.OutDir = filepath.ToSlash(filepath.Join(filepath.Dir(info.Cbuild), cbuildData.Build.OutputDirs.Outdir))
+			info.AppPath = filepath.ToSlash(filepath.Join(filepath.Dir(info.Cbuild), cbuildData.Build.West.AppPath))
+			info.CbuildData = cbuildData
+			westInfoCollection = append(westInfoCollection, info)
 		}
 	}
-	if info.Cbuild == "" {
-		return false, info
+	if len(westInfoCollection) == 0 {
+		return false, nil
 	}
-	cbuildData, _ := utils.ParseCbuildFile(info.Cbuild)
-	info.OutDir = filepath.ToSlash(filepath.Join(filepath.Dir(info.Cbuild), cbuildData.Build.OutputDirs.Outdir))
-	info.AppPath = filepath.ToSlash(filepath.Join(filepath.Dir(info.Cbuild), cbuildData.Build.West.AppPath))
-	info.CbuildData = cbuildData
-	return true, info
+	return true, westInfoCollection
 }
