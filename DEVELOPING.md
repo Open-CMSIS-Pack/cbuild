@@ -29,7 +29,7 @@ for guidelines.
 # Debugging
 
 Workaround for VS Code debug issue concerning DWARFv5 https://github.com/go-delve/delve/issues/4268:
-Build `dlv` with go 1.25.0:
+Build `dlv` with go 1.26:
 
 ```bash
 GOTOOLCHAIN="go1.25.0" go install -a github.com/go-delve/delve/cmd/dlv@latest
