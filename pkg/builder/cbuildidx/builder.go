@@ -107,7 +107,7 @@ func (b CbuildIdxBuilder) build() error {
 		return err
 	}
 
-	_ = utils.UpdateEnvVars(vars.BinPath, vars.EtcPath)
+	_ = utils.UpdateEnvVars(vars.BinPath, &vars.EtcPath)
 
 	if len(b.Options.Contexts) == 0 && b.BuildContext == "" {
 		err = errutils.New(errutils.ErrNoContextFound)

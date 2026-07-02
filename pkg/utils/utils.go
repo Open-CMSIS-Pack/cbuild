@@ -50,7 +50,7 @@ func GetExecutablePath() (string, error) {
 	return executablePath, nil
 }
 
-func UpdateEnvVars(binPath string, etcPath string) (env EnvVars) {
+func UpdateEnvVars(binPath string, etcPath *string) (env EnvVars) {
 	env.PackRoot = os.Getenv("CMSIS_PACK_ROOT")
 	if env.PackRoot == "" {
 		packRoot := GetDefaultCmsisPackRoot()
@@ -61,10 +61,12 @@ func UpdateEnvVars(binPath string, etcPath string) (env EnvVars) {
 	}
 	env.CompilerRoot = os.Getenv("CMSIS_COMPILER_ROOT")
 	if env.CompilerRoot == "" {
-		env.CompilerRoot, _ = filepath.Abs(etcPath)
+		env.CompilerRoot, _ = filepath.Abs(*etcPath)
 		os.Setenv("CMSIS_COMPILER_ROOT", env.CompilerRoot)
 	}
 	env.BuildRoot, _ = filepath.Abs(binPath)
+	*etcPath = env.CompilerRoot
+
 	log.Debug("CMSIS_PACK_ROOT: " + env.PackRoot)
 	log.Debug("CMSIS_COMPILER_ROOT: " + env.CompilerRoot)
 	return env

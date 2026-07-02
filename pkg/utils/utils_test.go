@@ -41,7 +41,7 @@ func TestUpdateEnvVars(t *testing.T) {
 	t.Run("test update environment variables", func(t *testing.T) {
 		binPath := testRoot + "/bin"
 		etcPath := testRoot + "/etc"
-		env := UpdateEnvVars(binPath, etcPath)
+		env := UpdateEnvVars(binPath, &etcPath)
 		binPath, _ = filepath.Abs(binPath)
 		etcPath, _ = filepath.Abs(etcPath)
 		assert.Equal(env.BuildRoot, binPath)
@@ -54,7 +54,7 @@ func TestUpdateEnvVars(t *testing.T) {
 		etcPath := testRoot + "/etc"
 		packRoot, _ := filepath.Abs(testRoot + "/packs")
 		_ = os.Setenv("CMSIS_PACK_ROOT", packRoot)
-		env := UpdateEnvVars(binPath, etcPath)
+		env := UpdateEnvVars(binPath, &etcPath)
 		binPath, _ = filepath.Abs(binPath)
 		etcPath, _ = filepath.Abs(etcPath)
 		assert.Equal(env.BuildRoot, binPath)
