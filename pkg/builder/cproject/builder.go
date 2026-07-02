@@ -117,7 +117,8 @@ func (b CprjBuilder) build() error {
 		return err
 	}
 
-	_ = utils.UpdateEnvVars(vars.BinPath, vars.EtcPath)
+	env := utils.UpdateEnvVars(vars.BinPath, vars.EtcPath)
+	vars.EtcPath = env.CompilerRoot
 
 	if b.Options.Rebuild {
 		err = b.clean(dirs, vars)

@@ -638,7 +638,8 @@ func (b CSolutionBuilder) build() (err error) {
 }
 
 func (b CSolutionBuilder) Build() (err error) {
-	_ = utils.UpdateEnvVars(b.InstallConfigs.BinPath, b.InstallConfigs.EtcPath)
+	env := utils.UpdateEnvVars(b.InstallConfigs.BinPath, b.InstallConfigs.EtcPath)
+	b.InstallConfigs.EtcPath = env.CompilerRoot
 
 	if !b.Options.SkipConvert || !b.buildFilesExist() {
 		// STEP 1: Install missing pack(s)
