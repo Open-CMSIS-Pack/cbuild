@@ -5,11 +5,19 @@ updates:
     schedule:
       interval: "weekly"
       day: "sunday"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
     rebase-strategy: disabled
-    reviewers:
-      - "soumeh01"
-      - "brondani"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    cooldown:
+      default-days: 14
+    commit-message:
+      prefix: "ci"
+    labels:
+      - "dependencies"
+      - "github-actions"
 
   - package-ecosystem: "gomod"
     directory: "/"
