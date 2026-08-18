@@ -30,7 +30,7 @@ jobs:
       enable-qlty-coverage: ${{ !(github.event_name == 'pull_request' && (github.event.pull_request.head.repo.fork || github.actor == 'dependabot[bot]'))}}
 
   publish-test-results:
-    name: "Publish Tests Results"
+    name: "Publish Test Results"
     needs: [ build-and-verify ]
     runs-on: ubuntu-latest
     permissions:
