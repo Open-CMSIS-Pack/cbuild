@@ -8,9 +8,9 @@ updates:
     open-pull-requests-limit: 5
     rebase-strategy: disabled
     groups:
-      github-actions:
+      codeql-actions:
         patterns:
-          - "*"
+          - "github/codeql-action/*"
     cooldown:
       default-days: 14
     commit-message:
