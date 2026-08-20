@@ -9,6 +9,7 @@ package utils
 import (
 	"bytes"
 	"encoding/csv"
+	"errors"
 	"io"
 	"os"
 	"os/exec"
@@ -107,6 +108,14 @@ func AddGroupsAndFiles(node *yaml.Node, zephyr *yaml.Node, groups []string, file
 }
 
 func AddWestFilesToCbuild(westInfo WestBuildInfo) error {
+	compileCommandsFile := filepath.Join(westInfo.OutDir, "compile_commands.json")
+	if _, err := os.Stat(compileCommandsFile); err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil
+		}
+		return err
+	}
+
 	modulesFile := filepath.Join(westInfo.OutDir, "zephyr_modules.txt")
 	modules, _ := ParseModules(modulesFile)
 	modules = append(modules, Module{Name: App, Path: westInfo.AppPath})
@@ -125,9 +134,12 @@ func AddWestFilesToCbuild(westInfo WestBuildInfo) error {
 	}
 
 	// Get all files and separate them by modules
-	fileTree, _ := GetCompileCommandFileTree(westInfo.OutDir, westInfo.Cbuild, func(file string) string {
+	fileTree, err := GetCompileCommandFileTree(westInfo.OutDir, westInfo.Cbuild, func(file string) string {
 		return GetModule(file, modules)
 	})
+	if err != nil {
+		return err
+	}
 
 	// Find 'build' node
 	var buildNode *yaml.Node
