@@ -72,6 +72,79 @@ func TestGetDefaultCmsisPackRoot(t *testing.T) {
 	})
 }
 
+func TestParseCbuildCMakeImages(t *testing.T) {
+	assert := assert.New(t)
+	file := filepath.Join(t.TempDir(), "native.cbuild.yml")
+
+	content := `build:
+  cmake:
+    source: ./native
+    images:
+      - image: app.elf
+        type: elf
+      - image: app.hex
+        type: hex
+      - image: app.bin
+        type: bin
+      - image: app.lib
+        type: lib
+`
+	assert.NoError(os.WriteFile(file, []byte(content), 0600))
+
+	cbuild, err := ParseCbuildFile(file)
+	assert.NoError(err)
+	assert.Equal("./native", cbuild.Build.CMake.Source)
+	assert.Equal("app.elf", cbuild.Build.CMake.Images[0].Image)
+	assert.Equal("elf", cbuild.Build.CMake.Images[0].Type)
+	assert.Equal("app.hex", cbuild.Build.CMake.Images[1].Image)
+	assert.Equal("hex", cbuild.Build.CMake.Images[1].Type)
+	assert.Equal("app.bin", cbuild.Build.CMake.Images[2].Image)
+	assert.Equal("bin", cbuild.Build.CMake.Images[2].Type)
+	assert.Equal("app.lib", cbuild.Build.CMake.Images[3].Image)
+	assert.Equal("lib", cbuild.Build.CMake.Images[3].Type)
+}
+
+func TestAddCMakeFilesToCbuildPreservesImages(t *testing.T) {
+	assert := assert.New(t)
+	dir := t.TempDir()
+	cbuildFile := filepath.Join(dir, "native.cbuild.yml")
+	compileCommands := `[{"directory":".","file":"native/main.c","output":"main.c.o","command":"cc -c native/main.c"}]`
+	cbuild := `build:
+  output-dirs:
+    outdir: .
+  cmake:
+    source: ./native
+    images:
+      - image: app.elf
+        type: elf
+`
+	assert.NoError(os.WriteFile(filepath.Join(dir, "compile_commands.json"), []byte(compileCommands), 0600))
+	assert.NoError(os.WriteFile(cbuildFile, []byte(cbuild), 0600))
+
+	assert.NoError(AddCMakeFilesToCbuild(CMakeBuildInfo{OutDir: dir, Cbuild: cbuildFile}))
+	content, err := os.ReadFile(cbuildFile)
+	assert.NoError(err)
+	assert.Contains(string(content), "group: CMake Sources")
+	assert.Contains(string(content), "file: native/main.c")
+	parsed, err := ParseCbuildFile(cbuildFile)
+	assert.NoError(err)
+	assert.Equal("app.elf", parsed.Build.CMake.Images[0].Image)
+	assert.Equal("elf", parsed.Build.CMake.Images[0].Type)
+}
+
+func TestAddCMakeFilesToCbuildIgnoresMissingCompileCommands(t *testing.T) {
+	assert := assert.New(t)
+	dir := t.TempDir()
+	cbuildFile := filepath.Join(dir, "native.cbuild.yml")
+	cbuild := []byte("build:\n  generated-by: cbuild tests\n")
+	assert.NoError(os.WriteFile(cbuildFile, cbuild, 0600))
+
+	assert.NoError(AddCMakeFilesToCbuild(CMakeBuildInfo{OutDir: dir, Cbuild: cbuildFile}))
+	content, err := os.ReadFile(cbuildFile)
+	assert.NoError(err)
+	assert.Equal(cbuild, content)
+}
+
 func TestParseContext(t *testing.T) {
 	assert := assert.New(t)
 

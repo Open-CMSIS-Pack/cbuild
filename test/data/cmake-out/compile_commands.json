@@ -1,0 +1,8 @@
+[
+  {
+    "directory": ".",
+    "command": "cc -c native/main.c",
+    "file": "../../../test/cbuildidx/native/main.c",
+    "output": "CMakeFiles/native.dir/main.c.o"
+  }
+]

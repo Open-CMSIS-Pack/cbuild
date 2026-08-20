@@ -1,0 +1,9 @@
+build:
+  generated-by: cbuild tests
+  context: native.Debug+CM0
+  output-dirs:
+    outdir: ./cmake-out
+  cmake:
+    project-id: native
+    source: ./native
+    generator: Ninja

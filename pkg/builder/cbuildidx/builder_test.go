@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2025 Arm Limited. All rights reserved.
+ * Copyright (c) 2024-2026 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -26,7 +26,10 @@ func init() {
 	inittest.TestInitialization(testRoot, testDir)
 }
 
-type RunnerMock struct{}
+type RunnerMock struct {
+	generateCMakeContexts bool
+	generateWestContexts  bool
+}
 
 func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) (string, error) {
 	if strings.Contains(program, "cbuild2cmake") {
@@ -34,8 +37,29 @@ func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) (
 		cmakelistFile := filepath.Join(testRoot, testDir, "tmp/CMakeLists.txt")
 		file, _ := os.Create(cmakelistFile)
 		defer file.Close()
+		if r.generateCMakeContexts {
+			cbuild := "build:\n  context: pending.Release+CM0\n  output-dirs:\n    outdir: ./pending-cmake-out\n"
+			_ = os.WriteFile(filepath.Join(testRoot, testDir, "pending.Release+CM0.cbuild.yml"), []byte(cbuild), 0600)
+			_ = os.MkdirAll(filepath.Join(testRoot, testDir, "pending-cmake-out"), 0755)
+		}
+		if r.generateWestContexts {
+			cbuild := "build:\n  context: pending.Release+CM0\n  output-dirs:\n    outdir: ./pending-west-out\n  west:\n    app-path: ./pending-west\n"
+			_ = os.WriteFile(filepath.Join(testRoot, testDir, "pending.Release+CM0.cbuild.yml"), []byte(cbuild), 0600)
+			_ = os.MkdirAll(filepath.Join(testRoot, testDir, "pending-west-out"), 0755)
+		}
 	} else if strings.Contains(program, "cpackget") {
 	} else if strings.Contains(program, "cmake") {
+		if len(args) > 0 && args[0] == "--build" {
+			buildArgs := strings.Join(args, " ")
+			if r.generateCMakeContexts && strings.Contains(buildArgs, "pending.Release+CM0") {
+				compileCommands := "[{\"directory\":\".\",\"file\":\"pending/main.c\",\"output\":\"main.c.o\",\"command\":\"cc -c pending/main.c\"}]"
+				_ = os.WriteFile(filepath.Join(testRoot, testDir, "pending-cmake-out", "compile_commands.json"), []byte(compileCommands), 0600)
+			}
+			if r.generateWestContexts && strings.Contains(buildArgs, "pending.Release+CM0") {
+				compileCommands := "[{\"directory\":\".\",\"file\":\"pending-west/main.c\",\"output\":\"main.c.o\",\"command\":\"cc -c pending-west/main.c\"}]"
+				_ = os.WriteFile(filepath.Join(testRoot, testDir, "pending-west-out", "compile_commands.json"), []byte(compileCommands), 0600)
+			}
+		}
 	} else if strings.Contains(program, "ninja") {
 		if args[0] == "--version" {
 			return "1.10.2.git.kitware.jobserver-1", nil
@@ -384,4 +408,150 @@ func TestWestSupport(t *testing.T) {
 		err := b.Build()
 		assert.Nil(err)
 	})
+}
+
+func TestWestSupportMultipleContexts(t *testing.T) {
+	assert := assert.New(t)
+	configs := inittest.GetTestConfigs(testRoot, testDir)
+	indexFile := filepath.Join(testRoot, testDir, "west-multiple.cbuild-idx.yml")
+	pendingCbuild := filepath.Join(testRoot, testDir, "pending.Release+CM0.cbuild.yml")
+	pendingOutDir := filepath.Join(testRoot, testDir, "pending-west-out")
+	index := "build-idx:\n  tmpdir: tmp\n  cbuilds:\n    - cbuild: west.Debug+CM0.cbuild.yml\n      west: true\n      project: west\n      configuration: .Debug+CM0\n    - cbuild: pending.Release+CM0.cbuild.yml\n      west: true\n      project: pending\n      configuration: .Release+CM0\n"
+	assert.NoError(os.WriteFile(indexFile, []byte(index), 0600))
+	t.Cleanup(func() {
+		_ = os.Remove(indexFile)
+		_ = os.Remove(pendingCbuild)
+		_ = os.RemoveAll(pendingOutDir)
+	})
+
+	b := CbuildIdxBuilder{
+		builder.BuilderParams{
+			Runner:    RunnerMock{generateWestContexts: true},
+			InputFile: indexFile,
+			Options: builder.Options{
+				Contexts: []string{"west.Debug+CM0", "pending.Release+CM0"},
+				OutDir:   filepath.Join(testRoot, testDir, "OutDir"),
+			},
+			InstallConfigs: utils.Configurations{
+				BinPath: configs.BinPath,
+				BinExtn: configs.BinExtn,
+				EtcPath: configs.EtcPath,
+			},
+		},
+	}
+
+	b.BuildContext = "west.Debug+CM0"
+	isWest, westInfo := b.GetWestBuildInfo()
+	assert.True(isWest)
+	assert.Len(westInfo, 1)
+	assert.Contains(westInfo[0].Cbuild, "west.Debug+CM0.cbuild.yml")
+
+	westCompileCommands := filepath.Join(testRoot, testDir, "OutDir", "compile_commands.json")
+	compileCommands := "[{\"directory\":\".\",\"file\":\"west/main.c\",\"output\":\"main.c.o\",\"command\":\"cc -c west/main.c\"}]"
+	assert.NoError(os.WriteFile(westCompileCommands, []byte(compileCommands), 0600))
+	t.Cleanup(func() { _ = os.Remove(westCompileCommands) })
+
+	assert.NoError(b.Build())
+	b.BuildContext = "pending.Release+CM0"
+	assert.NoError(b.Build())
+	pendingContent, readErr := os.ReadFile(pendingCbuild)
+	assert.NoError(readErr)
+	assert.Contains(string(pendingContent), "group: Zephyr Sources")
+	assert.Contains(string(pendingContent), "pending-west/main.c")
+
+	isWest, westInfo = b.GetWestBuildInfo()
+	assert.True(isWest)
+	assert.Len(westInfo, 2)
+}
+
+func TestCMakeSupport(t *testing.T) {
+	assert := assert.New(t)
+	configs := inittest.GetTestConfigs(testRoot, testDir)
+
+	b := CbuildIdxBuilder{
+		builder.BuilderParams{
+			Runner:       RunnerMock{},
+			InputFile:    filepath.Join(testRoot, testDir, "cmake.cbuild-idx.yml"),
+			BuildContext: "native.Debug+CM0",
+			Options: builder.Options{
+				Contexts: []string{},
+				OutDir:   filepath.Join(testRoot, testDir, "OutDir"),
+			},
+			InstallConfigs: utils.Configurations{
+				BinPath: configs.BinPath,
+				BinExtn: configs.BinExtn,
+				EtcPath: configs.EtcPath,
+			},
+		},
+	}
+
+	t.Run("validate cmake build info", func(t *testing.T) {
+		isCMake, cmakeInfo := b.GetCMakeBuildInfo()
+		assert.True(isCMake)
+		assert.Len(cmakeInfo, 1)
+		assert.Contains(cmakeInfo[0].OutDir, "cmake-out")
+		assert.Contains(cmakeInfo[0].Cbuild, "native.Debug+CM0.cbuild.yml")
+	})
+
+	t.Run("test build cmake", func(t *testing.T) {
+		err := b.Build()
+		assert.Nil(err)
+		cbuildContent, readErr := os.ReadFile(filepath.Join(testRoot, testDir, "native.Debug+CM0.cbuild.yml"))
+		assert.Nil(readErr)
+		assert.Contains(string(cbuildContent), "group: CMake Sources")
+		assert.Contains(string(cbuildContent), "native/main.c")
+	})
+
+	t.Run("test setup cmake", func(t *testing.T) {
+		b.Setup = true
+		err := b.Build()
+		assert.Nil(err)
+	})
+}
+
+func TestCMakeSupportMultipleContexts(t *testing.T) {
+	assert := assert.New(t)
+	configs := inittest.GetTestConfigs(testRoot, testDir)
+	pendingCbuild := filepath.Join(testRoot, testDir, "pending.Release+CM0.cbuild.yml")
+	pendingOutDir := filepath.Join(testRoot, testDir, "pending-cmake-out")
+	t.Cleanup(func() {
+		_ = os.Remove(pendingCbuild)
+		_ = os.RemoveAll(pendingOutDir)
+	})
+
+	b := CbuildIdxBuilder{
+		builder.BuilderParams{
+			Runner:    RunnerMock{generateCMakeContexts: true},
+			InputFile: filepath.Join(testRoot, testDir, "cmake.cbuild-idx.yml"),
+			Options: builder.Options{
+				Contexts: []string{"native.Debug+CM0", "pending.Release+CM0"},
+				OutDir:   filepath.Join(testRoot, testDir, "OutDir"),
+			},
+			InstallConfigs: utils.Configurations{
+				BinPath: configs.BinPath,
+				BinExtn: configs.BinExtn,
+				EtcPath: configs.EtcPath,
+			},
+		},
+	}
+
+	b.BuildContext = "native.Debug+CM0"
+	err := b.Build()
+	assert.NoError(err)
+	b.BuildContext = "pending.Release+CM0"
+	err = b.Build()
+	assert.NoError(err)
+	nativeContent, readErr := os.ReadFile(filepath.Join(testRoot, testDir, "native.Debug+CM0.cbuild.yml"))
+	assert.NoError(readErr)
+	assert.Contains(string(nativeContent), "group: CMake Sources")
+	assert.Contains(string(nativeContent), "native/main.c")
+	pendingContent, readErr := os.ReadFile(pendingCbuild)
+	assert.NoError(readErr)
+	assert.Contains(string(pendingContent), "group: CMake Sources")
+	assert.Contains(string(pendingContent), "pending/main.c")
+
+	b.BuildContext = "pending.Release+CM0"
+	isCMake, cmakeInfo := b.GetCMakeBuildInfo()
+	assert.True(isCMake)
+	assert.Len(cmakeInfo, 2)
 }

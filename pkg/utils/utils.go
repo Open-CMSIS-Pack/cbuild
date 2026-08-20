@@ -181,6 +181,7 @@ type CbuildIndex struct {
 		Cbuilds  []struct {
 			Cbuild        string `yaml:"cbuild"`
 			West          bool   `yaml:"west"`
+			CMake         bool   `yaml:"cmake"`
 			Project       string `yaml:"project"`
 			Configuration string `yaml:"configuration"`
 			Rebuild       bool   `yaml:"rebuild"`
@@ -203,6 +204,11 @@ type CbuildSet struct {
 		} `yaml:"contexts"`
 		Compiler string `yaml:"compiler"`
 	} `yaml:"cbuild-set"`
+}
+
+type CMakeImage struct {
+	Image string `yaml:"image"`
+	Type  string `yaml:"type"`
 }
 
 type Csolution struct {
@@ -231,6 +237,10 @@ type Cbuild struct {
 		West struct {
 			AppPath string `yaml:"app-path"`
 		} `yaml:"west"`
+		CMake struct {
+			Source string       `yaml:"source"`
+			Images []CMakeImage `yaml:"images"`
+		} `yaml:"cmake"`
 	} `yaml:"build"`
 }
 
