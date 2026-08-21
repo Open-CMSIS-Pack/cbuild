@@ -1,0 +1,12 @@
+build-idx:
+  generated-by: cbuild tests
+  tmpdir: tmp
+  cbuilds:
+    - cbuild: native.Debug+CM0.cbuild.yml
+      cmake: true
+      project: native
+      configuration: .Debug+CM0
+    - cbuild: pending.Release+CM0.cbuild.yml
+      cmake: true
+      project: pending
+      configuration: .Release+CM0

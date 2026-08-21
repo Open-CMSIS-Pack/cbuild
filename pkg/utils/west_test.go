@@ -10,6 +10,7 @@ import (
 	"bytes"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -190,4 +191,33 @@ func TestWestUtils(t *testing.T) {
 	os.Remove(compileCommandsFile)
 	os.Remove(zephyrModulesFile)
 	os.Remove(cbuildFile)
+}
+
+func TestAddWestFilesToCbuildIgnoresMissingCompileCommands(t *testing.T) {
+	assert := assert.New(t)
+	dir := t.TempDir()
+	cbuildFile := filepath.Join(dir, "context.cbuild.yml")
+	cbuild := []byte("build:\n  generated-by: cbuild tests\n  groups:\n    - group: Existing\n")
+	assert.NoError(os.WriteFile(cbuildFile, cbuild, 0600))
+
+	err := AddWestFilesToCbuild(WestBuildInfo{OutDir: dir, Cbuild: cbuildFile})
+	assert.NoError(err)
+	content, readErr := os.ReadFile(cbuildFile)
+	assert.NoError(readErr)
+	assert.Equal(cbuild, content)
+}
+
+func TestAddWestFilesToCbuildDoesNotRewriteOnInvalidCompileCommands(t *testing.T) {
+	assert := assert.New(t)
+	dir := t.TempDir()
+	cbuildFile := filepath.Join(dir, "context.cbuild.yml")
+	cbuild := []byte("build:\n  generated-by: cbuild tests\n  groups:\n    - group: Existing\n")
+	assert.NoError(os.WriteFile(filepath.Join(dir, "compile_commands.json"), []byte("invalid"), 0600))
+	assert.NoError(os.WriteFile(cbuildFile, cbuild, 0600))
+
+	err := AddWestFilesToCbuild(WestBuildInfo{OutDir: dir, Cbuild: cbuildFile})
+	assert.Error(err)
+	content, readErr := os.ReadFile(cbuildFile)
+	assert.NoError(readErr)
+	assert.Equal(cbuild, content)
 }

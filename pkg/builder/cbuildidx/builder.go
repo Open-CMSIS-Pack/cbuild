@@ -133,8 +133,7 @@ func (b CbuildIdxBuilder) build() error {
 		return nil
 	}
 
-	isWest, westInfo := b.GetWestBuildInfo()
-	if isWest {
+	if b.HasWestBuildContext() {
 		// Check west setup
 		err = utils.CheckWestSetup()
 		if err != nil {
@@ -247,11 +246,21 @@ func (b CbuildIdxBuilder) build() error {
 		return err
 	}
 
+	isWest, westInfo := b.GetWestBuildInfo()
+	isCMake, cmakeInfo := b.GetCMakeBuildInfo()
+
 	if isWest {
 		// Add west files references to cbuild files
 		for _, info := range westInfo {
 			err = utils.AddWestFilesToCbuild(info)
 			if err != nil {
+				return err
+			}
+		}
+	}
+	if isCMake {
+		for _, info := range cmakeInfo {
+			if err = utils.AddCMakeFilesToCbuild(info); err != nil {
 				return err
 			}
 		}
@@ -332,18 +341,35 @@ func (b CbuildIdxBuilder) compareVersions(v1, v2 string) (int, error) {
 	return version1.Compare(version2), nil
 }
 
+func (b CbuildIdxBuilder) HasWestBuildContext() bool {
+	cbuildIdxData, _ := utils.ParseCbuildIndexFile(b.InputFile)
+	for _, cbuild := range cbuildIdxData.BuildIdx.Cbuilds {
+		context := cbuild.Project + cbuild.Configuration
+		if cbuild.West && (b.BuildContext == "" || b.BuildContext == context) {
+			return true
+		}
+	}
+	return false
+}
+
 func (b CbuildIdxBuilder) GetWestBuildInfo() (bool, []utils.WestBuildInfo) {
 	var westInfoCollection []utils.WestBuildInfo
 	basePath := filepath.Dir(b.InputFile)
 	cbuildIdxData, _ := utils.ParseCbuildIndexFile(b.InputFile)
 	for _, cbuild := range cbuildIdxData.BuildIdx.Cbuilds {
-		if cbuild.West {
-			var info utils.WestBuildInfo
-			info.Cbuild = filepath.Join(basePath, cbuild.Cbuild)
-			cbuildData, _ := utils.ParseCbuildFile(info.Cbuild)
-			info.OutDir = filepath.ToSlash(filepath.Join(filepath.Dir(info.Cbuild), cbuildData.Build.OutputDirs.Outdir))
-			info.AppPath = filepath.ToSlash(filepath.Join(filepath.Dir(info.Cbuild), cbuildData.Build.West.AppPath))
-			info.CbuildData = cbuildData
+		if !cbuild.West {
+			continue
+		}
+		context := cbuild.Project + cbuild.Configuration
+		var info utils.WestBuildInfo
+		info.Cbuild = filepath.Join(basePath, cbuild.Cbuild)
+		cbuildData, _ := utils.ParseCbuildFile(info.Cbuild)
+		info.OutDir = filepath.ToSlash(filepath.Join(filepath.Dir(info.Cbuild), cbuildData.Build.OutputDirs.Outdir))
+		info.AppPath = filepath.ToSlash(filepath.Join(filepath.Dir(info.Cbuild), cbuildData.Build.West.AppPath))
+		info.CbuildData = cbuildData
+		compileCommands := filepath.Join(info.OutDir, "compile_commands.json")
+		isCurrentContext := b.BuildContext == "" || b.BuildContext == context
+		if _, err := os.Stat(compileCommands); isCurrentContext || err == nil {
 			westInfoCollection = append(westInfoCollection, info)
 		}
 	}
@@ -351,4 +377,30 @@ func (b CbuildIdxBuilder) GetWestBuildInfo() (bool, []utils.WestBuildInfo) {
 		return false, nil
 	}
 	return true, westInfoCollection
+}
+
+func (b CbuildIdxBuilder) GetCMakeBuildInfo() (bool, []utils.CMakeBuildInfo) {
+	var cmakeInfoCollection []utils.CMakeBuildInfo
+	basePath := filepath.Dir(b.InputFile)
+	cbuildIdxData, _ := utils.ParseCbuildIndexFile(b.InputFile)
+	for _, cbuild := range cbuildIdxData.BuildIdx.Cbuilds {
+		if !cbuild.CMake {
+			continue
+		}
+		context := cbuild.Project + cbuild.Configuration
+		info := utils.CMakeBuildInfo{
+			Cbuild: filepath.Join(basePath, cbuild.Cbuild),
+		}
+		cbuildData, _ := utils.ParseCbuildFile(info.Cbuild)
+		info.OutDir = filepath.ToSlash(filepath.Join(filepath.Dir(info.Cbuild), cbuildData.Build.OutputDirs.Outdir))
+		compileCommands := filepath.Join(info.OutDir, "compile_commands.json")
+		isCurrentContext := b.BuildContext == "" || b.BuildContext == context
+		if _, err := os.Stat(compileCommands); isCurrentContext || err == nil {
+			cmakeInfoCollection = append(cmakeInfoCollection, info)
+		}
+	}
+	if len(cmakeInfoCollection) == 0 {
+		return false, nil
+	}
+	return true, cmakeInfoCollection
 }
