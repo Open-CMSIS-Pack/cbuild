@@ -22,7 +22,7 @@ func listTargetSets(cmd *cobra.Command, args []string) error {
 	argCnt := len(args)
 	switch argCnt {
 	case 0:
-		return errutils.New(errutils.ErrRequireArg, "cbuild list target-sets --help")
+		return errutils.New(errutils.ErrRequireArg, "cbuild list targets --help")
 	case 1:
 		inputFile = args[0]
 	default:
@@ -72,8 +72,9 @@ func listTargetSets(cmd *cobra.Command, args []string) error {
 }
 
 var ListTargetSetsCmd = &cobra.Command{
-	Use:   "target-sets <name>.csolution.yml [options]",
-	Short: "Print list of target-sets in a <name>.csolution.yml",
+	Use:     "targets <name>.csolution.yml [options]",
+	Aliases: []string{"target-sets"},
+	Short:   "Print list of targets (<target-type>[@<target-set>]) in a <name>.csolution.yml",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		err := listTargetSets(cmd, args)
 		if err != nil {

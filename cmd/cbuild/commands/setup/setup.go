@@ -223,7 +223,7 @@ func init() {
 	SetUpCmd.Flags().StringP("toolchain", "", "", "Input toolchain to be used")
 	SetUpCmd.Flags().BoolP("cbuildgen", "", false, "Generate legacy *.cprj files and use cbuildgen backend")
 	SetUpCmd.Flags().BoolP("no-database", "", false, "Skip the generation of compile_commands.json files")
-	SetUpCmd.Flags().StringP("active", "a", "", "Select active target-set: <target-type>[@<set>]")
+	SetUpCmd.Flags().StringP("active", "a", "", "Select active target: <target-type>[@<target-set>]")
 	SetUpCmd.Flags().BoolP("skip-convert", "", false, "Skip csolution convert step")
 
 	SetUpCmd.Flags().StringP("perf-report", "", "perf-report.json", "output performance report file")
