@@ -20,33 +20,40 @@ func TestListTargetSetsCommand(t *testing.T) {
 
 	t.Run("No arguments", func(t *testing.T) {
 		cmd := commands.NewRootCmd()
-		cmd.SetArgs([]string{"list", "target-sets"})
+		cmd.SetArgs([]string{"list", "targets"})
 		err := cmd.Execute()
 		assert.Error(err)
 	})
 
 	t.Run("invalid flag", func(t *testing.T) {
 		cmd := commands.NewRootCmd()
-		cmd.SetArgs([]string{"list", "target-sets", "--invalid"})
+		cmd.SetArgs([]string{"list", "targets", "--invalid"})
 		err := cmd.Execute()
 		assert.Error(err)
 	})
 
 	t.Run("multiple arguments", func(t *testing.T) {
 		cmd := commands.NewRootCmd()
-		cmd.SetArgs([]string{"list", "target-sets", csolutionFile, csolutionFile})
+		cmd.SetArgs([]string{"list", "targets", csolutionFile, csolutionFile})
 		err := cmd.Execute()
 		assert.Error(err)
 	})
 
-	t.Run("test list target-sets", func(t *testing.T) {
+	t.Run("test list targets", func(t *testing.T) {
 		cmd := commands.NewRootCmd()
-		cmd.SetArgs([]string{"list", "target-sets", csolutionFile})
+		cmd.SetArgs([]string{"list", "targets", csolutionFile})
 		err := cmd.Execute()
 		assert.Error(err)
 	})
 
-	t.Run("test list target-sets help", func(t *testing.T) {
+	t.Run("test list targets help", func(t *testing.T) {
+		cmd := commands.NewRootCmd()
+		cmd.SetArgs([]string{"list", "targets", "-h"})
+		err := cmd.Execute()
+		assert.Nil(err)
+	})
+
+	t.Run("test list target-sets alias", func(t *testing.T) {
 		cmd := commands.NewRootCmd()
 		cmd.SetArgs([]string{"list", "target-sets", "-h"})
 		err := cmd.Execute()

@@ -87,5 +87,5 @@ func init() {
 	ListToolchainsCmd.Flags().BoolP("context-set", "S", false, "Select the context names from cbuild-set.yml for generating the target application")
 	ListToolchainsCmd.Flags().StringSliceP("context", "c", []string{}, "Input context names [<project-name>][.<build-type>][+<target-type>]")
 	ListToolchainsCmd.Flags().BoolP("verbose", "v", false, "Enable verbose messages")
-	ListToolchainsCmd.Flags().StringP("active", "a", "", "Select active target-set: <target-type>[@<set>]")
+	ListToolchainsCmd.Flags().StringP("active", "a", "", "Select active target: <target-type>[@<target-set>]")
 }

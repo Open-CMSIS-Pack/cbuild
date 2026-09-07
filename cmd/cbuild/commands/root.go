@@ -270,7 +270,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.PersistentFlags().StringP("log", "", "", "Save output messages in a log file")
 	rootCmd.PersistentFlags().StringP("toolchain", "", "", "Input toolchain to be used")
 	rootCmd.Flags().BoolP("cbuildgen", "", false, "Generate legacy *.cprj files and use cbuildgen backend")
-	rootCmd.Flags().StringP("active", "a", "", "Select active target-set: <target-type>[@<set>]")
+	rootCmd.Flags().StringP("active", "a", "", "Select active target: <target-type>[@<target-set>]")
 	rootCmd.Flags().BoolP("skip-convert", "", false, "Skip csolution convert step")
 
 	// CPRJ specific hidden flags
