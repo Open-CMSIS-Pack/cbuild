@@ -21,7 +21,9 @@ else
     OS=linux
 endif
 
-SOURCES := $(wildcard cmd/cbuild/*.go) $(wildcard pkg/*/*.go)
+VERSION_SCRIPT := scripts/version
+SOURCES := $(wildcard cmd/cbuild/*.go) $(wildcard pkg/*/*.go) $(VERSION_SCRIPT)
+VERSION := $(shell $(VERSION_SCRIPT))
 
 all:
 	@echo Pick one of:
@@ -53,7 +55,8 @@ all:
 
 $(PROG): $(SOURCES)
 	@echo Building project
-	GOOS=$(OS) GOARCH=$(ARCH) go build -ldflags "-X main.version=`git describe 2>/dev/null || echo unknown`" -o $(PROG) ./cmd/cbuild
+	@mkdir -p $(dir $(PROG))
+	GOOS=$(OS) GOARCH=$(ARCH) go build -ldflags "-X main.version=$(VERSION)" -o $(PROG) ./cmd/cbuild
 
 build: $(PROG)
 
