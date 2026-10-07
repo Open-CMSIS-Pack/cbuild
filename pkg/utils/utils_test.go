@@ -854,6 +854,10 @@ func TestGetTargetSetProjectContexts(t *testing.T) {
 	contexts := GetTargetSetProjectContexts(csolutionFile, "CM0@Custom3")
 	assert.Equal(t, 1, len(contexts))
 	assert.Equal(t, "test.Debug+CM0", contexts[0])
+	// Valid target-type@set
+	contexts = GetTargetSetProjectContexts(csolutionFile, "CM0@Custom4")
+	assert.Equal(t, 1, len(contexts))
+	assert.Equal(t, "test2.Debug+CM0", contexts[0])
 	// Unknown target-type
 	contexts = GetTargetSetProjectContexts(csolutionFile, "Unknown")
 	assert.Equal(t, 0, len(contexts))
