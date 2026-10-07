@@ -718,7 +718,9 @@ func GetTargetSetProjectContexts(csolutionFile string, selectedTargetSet string)
 				if ts.Set == targetSet {
 					var contexts []string
 					for _, img := range ts.Images {
-						contexts = append(contexts, img.ProjectContext+"+"+targetType)
+						if img.ProjectContext != "" {
+							contexts = append(contexts, img.ProjectContext+"+"+targetType)
+						}
 					}
 					return contexts
 				}

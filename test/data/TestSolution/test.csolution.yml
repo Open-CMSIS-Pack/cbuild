@@ -14,6 +14,11 @@ solution:
         - set: Custom3
           images:
             - project-context: test.Debug
+        - set: Custom4
+          images:
+            - project-context: test2.Debug
+            - image: app.hex
+              load: image
 
       misc:
         - compiler: GCC
