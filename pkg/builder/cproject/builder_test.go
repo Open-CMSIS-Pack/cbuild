@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 Arm Limited. All rights reserved.
+ * Copyright (c) 2022-2026 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -253,7 +253,7 @@ func TestBuild(t *testing.T) {
 
 	t.Run("test build verbose", func(t *testing.T) {
 		b.Options.Debug = false
-		b.Options.Verbose = true
+		b.Options.Info = true
 		err := b.Build()
 		assert.Nil(err)
 	})

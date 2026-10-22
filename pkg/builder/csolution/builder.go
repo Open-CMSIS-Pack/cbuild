@@ -64,7 +64,7 @@ func (b CSolutionBuilder) formulateArgs(command []string) (args []string) {
 	if b.Options.Filter != "" {
 		args = append(args, "--filter="+b.Options.Filter)
 	}
-	if b.Options.Verbose {
+	if b.Options.Info {
 		args = append(args, "--verbose")
 	}
 	if b.Options.FrozenPacks {
@@ -175,7 +175,7 @@ func (b CSolutionBuilder) generateBuildFiles() (err error) {
 		_, stdErr, err = utils.ExecuteCommand(csolutionBin, args...)
 	} else {
 		//nolint:staticcheck // intentional logic for clarity
-		_, convertErr := b.runCSolution(args, !b.Options.Debug && !b.Options.Verbose)
+		_, convertErr := b.runCSolution(args, !b.Options.Debug && !b.Options.Info)
 		if convertErr != nil {
 			return convertErr
 		}
