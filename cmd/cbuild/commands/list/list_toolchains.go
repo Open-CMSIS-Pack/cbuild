@@ -51,6 +51,7 @@ func listToolchains(cmd *cobra.Command, args []string) error {
 	targetSet, _ := cmd.Flags().GetString("active")
 	useTargetSet := cmd.Flags().Changed("active")
 
+	info := verbose
 	p := csolution.CSolutionBuilder{
 		BuilderParams: builder.BuilderParams{
 			Runner: utils.Runner{
@@ -59,7 +60,7 @@ func listToolchains(cmd *cobra.Command, args []string) error {
 			Options: builder.Options{
 				Contexts:      contexts,
 				UseContextSet: useContextSet,
-				Verbose:       verbose,
+				Info:          info,
 				TargetSet:     targetSet,
 				UseTargetSet:  useTargetSet,
 			},
