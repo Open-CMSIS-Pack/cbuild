@@ -66,12 +66,12 @@ func preConfiguration(cmd *cobra.Command, args []string) error {
 	log.SetLevel(logrus.WarnLevel)
 	debug, _ := cmd.Flags().GetBool("debug")
 	quiet, _ := cmd.Flags().GetBool("quiet")
-	info, _ := cmd.Flags().GetBool("info")
+	verbose, _ := cmd.Flags().GetBool("verbose")
 	logFile, _ := cmd.Flags().GetString("log")
 
 	if debug {
 		log.SetLevel(logrus.DebugLevel)
-	} else if info {
+	} else if verbose {
 		log.SetLevel(logrus.InfoLevel)
 	} else if quiet {
 		log.SetLevel(logrus.ErrorLevel)
@@ -132,7 +132,7 @@ func NewRootCmd() *cobra.Command {
 			jobs, _ := cmd.Flags().GetInt("jobs")
 			quiet, _ := cmd.Flags().GetBool("quiet")
 			debug, _ := cmd.Flags().GetBool("debug")
-			info, _ := cmd.Flags().GetBool("info")
+			verboseBuild, _ := cmd.Flags().GetBool("verbose-build")
 			verbose, _ := cmd.Flags().GetBool("verbose")
 			clean, _ := cmd.Flags().GetBool("clean")
 			noSchemaChk, _ := cmd.Flags().GetBool("no-schema-check")
@@ -174,7 +174,7 @@ func NewRootCmd() *cobra.Command {
 				Quiet:           quiet,
 				Debug:           debug,
 				Verbose:         verbose,
-				Info:            info,
+				VerboseBuild:    verboseBuild,
 				Clean:           clean,
 				SchemaChk:       !noSchemaChk,
 				Packs:           packs,
@@ -200,7 +200,7 @@ func NewRootCmd() *cobra.Command {
 
 			params := builder.BuilderParams{
 				Runner: utils.Runner{
-					PlainOutput: options.Debug || options.Info || options.Verbose,
+					PlainOutput: options.Debug || options.VerboseBuild || options.Verbose,
 				},
 				Options:        options,
 				InputFile:      inputFile,
@@ -255,7 +255,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.Flags().BoolP("quiet", "q", false, "Suppress output messages except build invocations")
 	rootCmd.Flags().BoolP("debug", "d", false, "Enable debug messages of the cmsis build tools")
 	rootCmd.Flags().BoolP("verbose", "v", false, "Enable verbose messages from toolchain builds")
-	rootCmd.Flags().BoolP("info", "", false, "Enable info messages from toolchain builds")
+	rootCmd.Flags().BoolP("verbose-build", "", false, "Show only build progress messages")
 	rootCmd.Flags().BoolP("clean", "C", false, "Remove intermediate and output directories")
 	rootCmd.Flags().BoolP("packs", "p", false, "Download missing software packs with cpackget")
 	rootCmd.Flags().BoolP("rebuild", "r", false, "Remove intermediate and output directories and rebuild")

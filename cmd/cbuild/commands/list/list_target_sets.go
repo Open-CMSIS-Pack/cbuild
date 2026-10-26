@@ -53,7 +53,6 @@ func listTargetSets(cmd *cobra.Command, args []string) error {
 	quiet, _ := cmd.Flags().GetBool("quiet")
 	verbose, _ := cmd.Flags().GetBool("verbose")
 
-	info := verbose
 	p := csolution.CSolutionBuilder{
 		BuilderParams: builder.BuilderParams{
 			Runner: utils.Runner{
@@ -63,7 +62,7 @@ func listTargetSets(cmd *cobra.Command, args []string) error {
 				SchemaChk: !noSchemaChk,
 				Filter:    filter,
 				Quiet:     quiet,
-				Info:      info,
+				Verbose:   verbose,
 			},
 			InputFile:      args[0],
 			InstallConfigs: configs,

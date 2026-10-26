@@ -250,7 +250,7 @@ func (b CprjBuilder) build() error {
 	if b.Options.Target != "" {
 		args = append(args, "--target", b.Options.Target)
 	}
-	if b.Options.Debug || b.Options.Info || b.Options.Verbose {
+	if b.Options.Debug || b.Options.VerboseBuild || b.Options.Verbose {
 		args = append(args, "--verbose")
 	}
 

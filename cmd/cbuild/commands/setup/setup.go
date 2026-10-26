@@ -97,7 +97,6 @@ func setUpProject(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	info := verbose
 	options := builder.Options{
 		LogFile:         logFile,
 		Generator:       generator,
@@ -105,7 +104,7 @@ func setUpProject(cmd *cobra.Command, args []string) error {
 		Jobs:            jobs,
 		Quiet:           quiet,
 		Debug:           debug,
-		Info:            info,
+		Verbose:         verbose,
 		Clean:           clean,
 		SchemaChk:       !noSchemaChk,
 		Packs:           packs,

@@ -156,7 +156,7 @@ func (b CbuildIdxBuilder) build() error {
 	}
 
 	//nolint:staticcheck // intentional logic for clarity
-	_, err = b.Runner.ExecuteCommand(vars.Cbuild2cmakeBin, !(b.Options.Debug || b.Options.Info), args...)
+	_, err = b.Runner.ExecuteCommand(vars.Cbuild2cmakeBin, !(b.Options.Debug || b.Options.Verbose), args...)
 	if err != nil {
 		return err
 	}
@@ -185,7 +185,7 @@ func (b CbuildIdxBuilder) build() error {
 	}
 
 	//nolint:staticcheck // intentional logic for clarity
-	_, err = b.Runner.ExecuteCommand(vars.CmakeBin, !(b.Options.Debug || b.Options.Info), args...)
+	_, err = b.Runner.ExecuteCommand(vars.CmakeBin, !(b.Options.Debug || b.Options.Verbose), args...)
 	if err != nil {
 		return err
 	}
@@ -213,7 +213,7 @@ func (b CbuildIdxBuilder) build() error {
 	}
 
 	//nolint:staticcheck // intentional logic for clarity
-	if b.Options.Generator == "Ninja" && !(b.Options.Debug || b.Options.Info || b.Options.Verbose) {
+	if b.Options.Generator == "Ninja" && !(b.Options.Debug || b.Options.Verbose) {
 		isVersionGreaterorEqual, err := b.validateNinjaVersion(NinjaVersion)
 		if err != nil {
 			return err

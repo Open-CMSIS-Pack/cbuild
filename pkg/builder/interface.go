@@ -43,7 +43,7 @@ type Options struct {
 	Quiet           bool
 	Debug           bool
 	Verbose         bool
-	Info            bool
+	VerboseBuild    bool
 	Clean           bool
 	SchemaChk       bool
 	Packs           bool
