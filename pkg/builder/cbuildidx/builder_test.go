@@ -201,12 +201,12 @@ func TestVerboseBuildSuppressesNinjaProgress(t *testing.T) {
 			Runner:    RunnerMock{capturedBuildArgs: &capturedBuildArgs, ninjaVersion: "1.11.1"},
 			InputFile: filepath.Join(testRoot, testDir, "Hello.cbuild-idx.yml"),
 			Options: builder.Options{
-				Contexts:     []string{"Hello.Debug+AVH"},
-				OutDir:       filepath.Join(testRoot, testDir, "OutDir"),
-				Packs:        true,
-				Generator:    "Ninja",
-				Jobs:         1,
-				VerboseBuild: true,
+				Contexts:      []string{"Hello.Debug+AVH"},
+				OutDir:        filepath.Join(testRoot, testDir, "OutDir"),
+				Packs:         true,
+				Generator:     "Ninja",
+				Jobs:          1,
+				BuildCommands: true,
 			},
 			InstallConfigs: utils.Configurations{
 				BinPath: configs.BinPath,

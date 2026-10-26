@@ -132,7 +132,7 @@ func NewRootCmd() *cobra.Command {
 			jobs, _ := cmd.Flags().GetInt("jobs")
 			quiet, _ := cmd.Flags().GetBool("quiet")
 			debug, _ := cmd.Flags().GetBool("debug")
-			verboseBuild, _ := cmd.Flags().GetBool("verbose-build")
+			buildCommands, _ := cmd.Flags().GetBool("build-commands")
 			verbose, _ := cmd.Flags().GetBool("verbose")
 			clean, _ := cmd.Flags().GetBool("clean")
 			noSchemaChk, _ := cmd.Flags().GetBool("no-schema-check")
@@ -174,7 +174,7 @@ func NewRootCmd() *cobra.Command {
 				Quiet:           quiet,
 				Debug:           debug,
 				Verbose:         verbose,
-				VerboseBuild:    verboseBuild,
+				BuildCommands:   buildCommands,
 				Clean:           clean,
 				SchemaChk:       !noSchemaChk,
 				Packs:           packs,
@@ -200,7 +200,7 @@ func NewRootCmd() *cobra.Command {
 
 			params := builder.BuilderParams{
 				Runner: utils.Runner{
-					PlainOutput: options.Debug || options.VerboseBuild || options.Verbose,
+					PlainOutput: options.Debug || options.BuildCommands || options.Verbose,
 				},
 				Options:        options,
 				InputFile:      inputFile,
@@ -255,7 +255,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.Flags().BoolP("quiet", "q", false, "Suppress output messages except build invocations")
 	rootCmd.Flags().BoolP("debug", "d", false, "Enable debug messages of the cmsis build tools")
 	rootCmd.Flags().BoolP("verbose", "v", false, "Enable verbose messages from toolchain builds")
-	rootCmd.Flags().BoolP("verbose-build", "", false, "Show only build progress messages")
+	rootCmd.Flags().BoolP("build-commands", "", false, "show command invocations during build process")
 	rootCmd.Flags().BoolP("clean", "C", false, "Remove intermediate and output directories")
 	rootCmd.Flags().BoolP("packs", "p", false, "Download missing software packs with cpackget")
 	rootCmd.Flags().BoolP("rebuild", "r", false, "Remove intermediate and output directories and rebuild")
