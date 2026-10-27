@@ -29,6 +29,8 @@ func init() {
 type RunnerMock struct {
 	generateCMakeContexts bool
 	generateWestContexts  bool
+	capturedBuildArgs     *[]string
+	ninjaVersion          string
 }
 
 func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) (string, error) {
@@ -50,6 +52,9 @@ func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) (
 	} else if strings.Contains(program, "cpackget") {
 	} else if strings.Contains(program, "cmake") {
 		if len(args) > 0 && args[0] == "--build" {
+			if r.capturedBuildArgs != nil {
+				*r.capturedBuildArgs = append([]string(nil), args...)
+			}
 			buildArgs := strings.Join(args, " ")
 			if r.generateCMakeContexts && strings.Contains(buildArgs, "pending.Release+CM0") {
 				compileCommands := "[{\"directory\":\".\",\"file\":\"pending/main.c\",\"output\":\"main.c.o\",\"command\":\"cc -c pending/main.c\"}]"
@@ -62,6 +67,9 @@ func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) (
 		}
 	} else if strings.Contains(program, "ninja") {
 		if args[0] == "--version" {
+			if r.ninjaVersion != "" {
+				return r.ninjaVersion, nil
+			}
 			return "1.10.2.git.kitware.jobserver-1", nil
 		}
 	} else if strings.Contains(program, "xmllint") {
@@ -183,6 +191,33 @@ func TestBuild(t *testing.T) {
 		err := b.Build()
 		assert.Nil(err)
 	})
+}
+
+func TestVerboseBuildSuppressesNinjaProgress(t *testing.T) {
+	configs := inittest.GetTestConfigs(testRoot, testDir)
+	var capturedBuildArgs []string
+	b := CbuildIdxBuilder{
+		builder.BuilderParams{
+			Runner:    RunnerMock{capturedBuildArgs: &capturedBuildArgs, ninjaVersion: "1.11.1"},
+			InputFile: filepath.Join(testRoot, testDir, "Hello.cbuild-idx.yml"),
+			Options: builder.Options{
+				Contexts:      []string{"Hello.Debug+AVH"},
+				OutDir:        filepath.Join(testRoot, testDir, "OutDir"),
+				Packs:         true,
+				Generator:     "Ninja",
+				Jobs:          1,
+				BuildCommands: true,
+			},
+			InstallConfigs: utils.Configurations{
+				BinPath: configs.BinPath,
+				BinExtn: configs.BinExtn,
+				EtcPath: configs.EtcPath,
+			},
+		},
+	}
+
+	assert.NoError(t, b.Build())
+	assert.Contains(t, capturedBuildArgs, "--quiet")
 }
 
 func TestBuildAllContexts(t *testing.T) {

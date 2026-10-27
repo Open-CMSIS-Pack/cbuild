@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 Arm Limited. All rights reserved.
+ * Copyright (c) 2022-2026 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -250,7 +250,7 @@ func (b CprjBuilder) build() error {
 	if b.Options.Target != "" {
 		args = append(args, "--target", b.Options.Target)
 	}
-	if b.Options.Debug || b.Options.Verbose {
+	if b.Options.Debug || b.Options.BuildCommands || b.Options.Verbose {
 		args = append(args, "--verbose")
 	}
 

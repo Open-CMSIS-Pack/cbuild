@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 Arm Limited. All rights reserved.
+ * Copyright (c) 2023-2026 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -43,6 +43,7 @@ type Options struct {
 	Quiet           bool
 	Debug           bool
 	Verbose         bool
+	BuildCommands   bool
 	Clean           bool
 	SchemaChk       bool
 	Packs           bool
