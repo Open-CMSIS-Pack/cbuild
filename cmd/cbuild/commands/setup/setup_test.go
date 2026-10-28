@@ -70,6 +70,17 @@ func TestSetupCommand(t *testing.T) {
 		assert.Error(err)
 	})
 
+	t.Run("test valid command with --build-commands", func(t *testing.T) {
+		cmd := commands.NewRootCmd()
+		cmd.SetArgs([]string{"setup", csolutionFile, "--active", "test", "--context-set=false", "--build-commands"})
+
+		err := cmd.Execute()
+
+		if assert.Error(err) {
+			assert.Contains(err.Error(), "couldn't locate '../etc' directory relative to")
+		}
+	})
+
 	t.Run("No arguments", func(t *testing.T) {
 		cmd := commands.NewRootCmd()
 		cmd.SetArgs([]string{"setup"})
