@@ -213,7 +213,7 @@ func (b CbuildIdxBuilder) build() error {
 	}
 
 	//nolint:staticcheck // intentional logic for clarity
-	if b.Options.Generator == "Ninja" && !(b.Options.Debug || b.Options.Verbose) {
+	if b.Options.Generator == "Ninja" && !(b.Options.Debug || b.Options.Verbose || b.Options.BuildCommands) {
 		isVersionGreaterorEqual, err := b.validateNinjaVersion(NinjaVersion)
 		if err != nil {
 			return err

@@ -60,6 +60,7 @@ func setUpProject(cmd *cobra.Command, args []string) error {
 	output, _ := cmd.Flags().GetString("output")
 	quiet, _ := cmd.Flags().GetBool("quiet")
 	debug, _ := cmd.Flags().GetBool("debug")
+	buildCommands, _ := cmd.Flags().GetBool("build-commands")
 	verbose, _ := cmd.Flags().GetBool("verbose")
 	clean, _ := cmd.Flags().GetBool("clean")
 	noSchemaChk, _ := cmd.Flags().GetBool("no-schema-check")
@@ -104,6 +105,7 @@ func setUpProject(cmd *cobra.Command, args []string) error {
 		Jobs:            jobs,
 		Quiet:           quiet,
 		Debug:           debug,
+		BuildCommands:   buildCommands,
 		Verbose:         verbose,
 		Clean:           clean,
 		SchemaChk:       !noSchemaChk,
@@ -131,7 +133,7 @@ func setUpProject(cmd *cobra.Command, args []string) error {
 
 	params := builder.BuilderParams{
 		Runner: utils.Runner{
-			PlainOutput: options.Debug || options.Verbose,
+			PlainOutput: options.Debug || options.Verbose || options.BuildCommands,
 		},
 		Options:        options,
 		InputFile:      inputFile,
@@ -206,6 +208,7 @@ func init() {
 	SetUpCmd.Flags().BoolP("debug", "d", false, "Enable debug messages of the cmsis build tools")
 	SetUpCmd.Flags().BoolP("verbose", "v", false, "Enable verbose messages from toolchain builds")
 	SetUpCmd.Flags().BoolP("clean", "C", false, "Remove intermediate and output directories")
+	SetUpCmd.Flags().BoolP("build-commands", "", false, "Show command invocations during build process")
 	SetUpCmd.Flags().BoolP("packs", "p", false, "Download missing software packs with cpackget")
 	SetUpCmd.Flags().BoolP("rebuild", "r", false, "Remove intermediate and output directories and rebuild")
 	SetUpCmd.Flags().BoolP("update-rte", "", false, "Update the RTE directory and files")
