@@ -7,10 +7,20 @@ updates:
       day: "sunday"
     open-pull-requests-limit: 5
     rebase-strategy: disabled
+
     groups:
       codeql-actions:
         patterns:
           - "github/codeql-action/*"
+      github-actions-minor-patch:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "github/codeql-action/*"
+        update-types:
+          - "minor"
+          - "patch"
+
     cooldown:
       default-days: 14
     commit-message:
@@ -23,3 +33,11 @@ updates:
     directory: "/"
     schedule:
       interval: daily
+
+    groups:
+      go-modules-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
