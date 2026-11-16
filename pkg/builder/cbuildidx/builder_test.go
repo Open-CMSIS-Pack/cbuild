@@ -30,6 +30,7 @@ type RunnerMock struct {
 	generateCMakeContexts bool
 	generateWestContexts  bool
 	capturedBuildArgs     *[]string
+	capturedConfigureArgs *[]string
 	ninjaVersion          string
 }
 
@@ -51,6 +52,9 @@ func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) (
 		}
 	} else if strings.Contains(program, "cpackget") {
 	} else if strings.Contains(program, "cmake") {
+		if len(args) > 0 && args[0] == "-G" && r.capturedConfigureArgs != nil {
+			*r.capturedConfigureArgs = append([]string(nil), args...)
+		}
 		if len(args) > 0 && args[0] == "--build" {
 			if r.capturedBuildArgs != nil {
 				*r.capturedBuildArgs = append([]string(nil), args...)
@@ -191,6 +195,40 @@ func TestBuild(t *testing.T) {
 		err := b.Build()
 		assert.Nil(err)
 	})
+}
+
+func TestCMakeConfigureArgs(t *testing.T) {
+	configs := inittest.GetTestConfigs(testRoot, testDir)
+	for _, mode := range []string{"default", "quiet", "debug", "verbose"} {
+		t.Run(mode, func(t *testing.T) {
+			var args []string
+			b := CbuildIdxBuilder{
+				builder.BuilderParams{
+					Runner:    RunnerMock{capturedConfigureArgs: &args},
+					InputFile: filepath.Join(testRoot, testDir, "Hello.cbuild-idx.yml"),
+					Options: builder.Options{
+						Contexts:  []string{"Hello.Debug+AVH"},
+						OutDir:    filepath.Join(testRoot, testDir, "OutDir"),
+						Packs:     true,
+						Generator: "Ninja",
+						Quiet:     mode == "quiet",
+						Debug:     mode == "debug",
+						Verbose:   mode == "verbose",
+					},
+					InstallConfigs: utils.Configurations{
+						BinPath: configs.BinPath,
+						BinExtn: configs.BinExtn,
+						EtcPath: configs.EtcPath,
+					},
+				},
+			}
+
+			assert.NoError(t, b.Build())
+			intDir, err := filepath.Abs(filepath.Join(testRoot, testDir, "tmp"))
+			assert.NoError(t, err)
+			assert.Equal(t, []string{"-G", "Ninja", "-S", intDir, "-B", intDir}, args)
+		})
+	}
 }
 
 func TestNinjaQuietOutput(t *testing.T) {
