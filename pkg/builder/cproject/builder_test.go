@@ -26,7 +26,9 @@ func init() {
 	inittest.TestInitialization(testRoot, testDir)
 }
 
-type RunnerMock struct{}
+type RunnerMock struct {
+	capturedConfigureArgs *[]string
+}
 
 func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) (string, error) {
 	if strings.Contains(program, "cbuildgen") {
@@ -42,6 +44,9 @@ func (r RunnerMock) ExecuteCommand(program string, quiet bool, args ...string) (
 		}
 	} else if strings.Contains(program, "cpackget") {
 	} else if strings.Contains(program, "cmake") {
+		if len(args) > 0 && args[0] == "-G" && r.capturedConfigureArgs != nil {
+			*r.capturedConfigureArgs = append([]string(nil), args...)
+		}
 	} else if strings.Contains(program, "ninja") {
 	} else if strings.Contains(program, "xmllint") {
 	} else {
@@ -284,6 +289,40 @@ func TestBuild(t *testing.T) {
 		err := b.Build()
 		assert.Nil(err)
 	})
+}
+
+func TestCMakeConfigureArgs(t *testing.T) {
+	configs := inittest.GetTestConfigs(testRoot, testDir)
+	for _, mode := range []string{"default", "quiet", "debug", "verbose"} {
+		t.Run(mode, func(t *testing.T) {
+			var args []string
+			b := CprjBuilder{
+				builder.BuilderParams{
+					Runner:    RunnerMock{capturedConfigureArgs: &args},
+					InputFile: filepath.Join(testRoot, testDir, "minimal.cprj"),
+					Options: builder.Options{
+						IntDir:    filepath.Join(testRoot, testDir, "IntDir"),
+						OutDir:    filepath.Join(testRoot, testDir, "OutDir"),
+						Packs:     true,
+						Generator: "Ninja",
+						Quiet:     mode == "quiet",
+						Debug:     mode == "debug",
+						Verbose:   mode == "verbose",
+					},
+					InstallConfigs: utils.Configurations{
+						BinPath: configs.BinPath,
+						BinExtn: configs.BinExtn,
+						EtcPath: configs.EtcPath,
+					},
+				},
+			}
+
+			assert.NoError(t, b.Build())
+			intDir, err := filepath.Abs(b.Options.IntDir)
+			assert.NoError(t, err)
+			assert.Equal(t, []string{"-G", "Ninja", "-S", intDir, "-B", intDir}, args)
+		})
+	}
 }
 
 func TestBuildFail(t *testing.T) {

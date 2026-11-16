@@ -227,12 +227,6 @@ func (b CprjBuilder) build() error {
 
 	args = []string{"-G", b.Options.Generator, "-S", dirs.IntDir, "-B", dirs.IntDir}
 	if b.Options.Debug {
-		args = append(args, "-Wdev")
-	} else {
-		args = append(args, "-Wno-dev")
-	}
-
-	if b.Options.Debug {
 		log.Debug("cmake configuration command: " + vars.CmakeBin + " " + strings.Join(args, " "))
 	}
 
