@@ -193,31 +193,66 @@ func TestBuild(t *testing.T) {
 	})
 }
 
-func TestVerboseBuildSuppressesNinjaProgress(t *testing.T) {
+func TestNinjaQuietOutput(t *testing.T) {
 	configs := inittest.GetTestConfigs(testRoot, testDir)
-	var capturedBuildArgs []string
-	b := CbuildIdxBuilder{
-		builder.BuilderParams{
-			Runner:    RunnerMock{capturedBuildArgs: &capturedBuildArgs, ninjaVersion: "1.11.1"},
-			InputFile: filepath.Join(testRoot, testDir, "Hello.cbuild-idx.yml"),
-			Options: builder.Options{
-				Contexts:      []string{"Hello.Debug+AVH"},
-				OutDir:        filepath.Join(testRoot, testDir, "OutDir"),
-				Packs:         true,
-				Generator:     "Ninja",
-				Jobs:          1,
-				BuildCommands: true,
-			},
-			InstallConfigs: utils.Configurations{
-				BinPath: configs.BinPath,
-				BinExtn: configs.BinExtn,
-				EtcPath: configs.EtcPath,
-			},
-		},
+	tests := []struct {
+		name          string
+		debug         bool
+		verbose       bool
+		buildCommands bool
+		wantQuiet     bool
+	}{
+		{name: "default", wantQuiet: true},
+		{name: "debug", debug: true},
+		{name: "verbose", verbose: true},
+		{name: "build commands", buildCommands: true},
 	}
 
-	assert.NoError(t, b.Build())
-	assert.Contains(t, capturedBuildArgs, "--quiet")
+	for _, setup := range []bool{false, true} {
+		mode := "build"
+		if setup {
+			mode = "setup"
+		}
+		t.Run(mode, func(t *testing.T) {
+			for _, test := range tests {
+				t.Run(test.name, func(t *testing.T) {
+					var capturedBuildArgs []string
+					b := CbuildIdxBuilder{
+						builder.BuilderParams{
+							Runner:    RunnerMock{capturedBuildArgs: &capturedBuildArgs, ninjaVersion: "1.11.1"},
+							InputFile: filepath.Join(testRoot, testDir, "Hello.cbuild-idx.yml"),
+							Options: builder.Options{
+								Contexts:      []string{"Hello.Debug+AVH"},
+								OutDir:        filepath.Join(testRoot, testDir, "OutDir"),
+								Packs:         true,
+								Generator:     "Ninja",
+								Jobs:          1,
+								Debug:         test.debug,
+								Verbose:       test.verbose,
+								BuildCommands: test.buildCommands,
+							},
+							InstallConfigs: utils.Configurations{
+								BinPath: configs.BinPath,
+								BinExtn: configs.BinExtn,
+								EtcPath: configs.EtcPath,
+							},
+							Setup: setup,
+						},
+					}
+
+					if !assert.NoError(t, b.Build()) {
+						return
+					}
+					assert.Contains(t, capturedBuildArgs, "--build")
+					if test.wantQuiet {
+						assert.Contains(t, capturedBuildArgs, "--quiet")
+					} else {
+						assert.NotContains(t, capturedBuildArgs, "--quiet")
+					}
+				})
+			}
+		})
+	}
 }
 
 func TestBuildAllContexts(t *testing.T) {
