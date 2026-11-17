@@ -7,11 +7,11 @@
 | github.com/hashicorp/go-version | v1.9.0  | [MPL-2.0](https://github.com/hashicorp/go-version/blob/v1.9.0/LICENSE) |
 | github.com/sirupsen/logrus | v1.10.2  | [MIT](https://github.com/sirupsen/logrus/blob/v1.10.2/LICENSE) |
 | github.com/spf13/cobra | v1.10.2  | [Apache-2.0](https://github.com/spf13/cobra/blob/v1.10.2/LICENSE.txt) |
-| github.com/spf13/pflag | v1.0.10  | [BSD-3-Clause](https://github.com/spf13/pflag/blob/v1.0.10/LICENSE) |
+| github.com/spf13/pflag | v1.1.0  | [BSD-3-Clause](https://github.com/spf13/pflag/blob/v1.1.0/LICENSE) |
 | github.com/u-root/u-root/pkg/termios | v0.16.0  | [BSD-3-Clause](https://github.com/u-root/u-root/blob/v0.16.0/LICENSE) |
 | golang.org/x/crypto | v0.56.0  | [BSD-3-Clause](https://cs.opensource.google/go/x/crypto/+/v0.56.0:LICENSE) |
-| golang.org/x/sys/unix | v0.49.0  | [BSD-3-Clause](https://cs.opensource.google/go/x/sys/+/v0.49.0:LICENSE) |
-| golang.org/x/term | v0.47.0  | [BSD-3-Clause](https://cs.opensource.google/go/x/term/+/v0.47.0:LICENSE) |
+| golang.org/x/sys/unix | v0.50.0  | [BSD-3-Clause](https://cs.opensource.google/go/x/sys/+/v0.50.0:LICENSE) |
+| golang.org/x/term | v0.48.0  | [BSD-3-Clause](https://cs.opensource.google/go/x/term/+/v0.48.0:LICENSE) |
 | gopkg.in/yaml.v3 | v3.0.1  | [MIT](https://github.com/go-yaml/yaml/blob/v3.0.1/LICENSE) |
 
 Report generated and repository checked for [forbidden](https://github.com/google/licenseclassifier/blob/842c0d70d7027215932deb13801890992c9ba364/license_type.go#L323) and [restricted](https://github.com/google/licenseclassifier/blob/842c0d70d7027215932deb13801890992c9ba364/license_type.go#L176) licenses.
